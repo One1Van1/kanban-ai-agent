@@ -41,6 +41,9 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 
+# Development instructions (local only)
+DEV_INSTRUCTIONS.md
+
 # temp
 /tmp
 /temp
