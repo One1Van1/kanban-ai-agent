@@ -22,16 +22,19 @@ export class WebhookController {
 
   @Post('jira')
   async handleJiraWebhook(
-    @Body() payload: JiraWebhookDto,
+    @Body() payload: any, // Временно убираем валидацию
     @Headers() headers: Record<string, string>,
   ) {
-    this.logger.log(`Received Jira webhook: ${payload.webhookEvent}`);
+    this.logger.log(
+      `Received Jira webhook: ${JSON.stringify(payload, null, 2)}`,
+    );
+    this.logger.log(`Headers: ${JSON.stringify(headers, null, 2)}`);
 
     try {
       // Проверяем webhook secret (опционально) - ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТИРОВАНИЯ
       // this.validateWebhookSecret(headers);
 
-      // Обрабатываем только события создания задач
+      // Обрабатываем события создания задач и изменения статуса
       if (payload.webhookEvent === 'jira:issue_created') {
         this.logger.log(`Processing new issue: ${payload.issue.key}`);
 
@@ -42,6 +45,20 @@ export class WebhookController {
           message: 'Webhook processed successfully',
           issueKey: payload.issue.key,
           decision: result.decision,
+        };
+      }
+
+      // Обрабатываем изменения задач (например, перемещение в колонку NEW)
+      if (payload.webhookEvent === 'jira:issue_updated') {
+        this.logger.log(`Processing updated issue: ${payload.issue.key}`);
+
+        const result = await this.webhookService.processUpdatedIssue(payload);
+
+        return {
+          status: 'success',
+          message: 'Issue update processed successfully',
+          issueKey: payload.issue.key,
+          action: result.action,
         };
       }
 

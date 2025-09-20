@@ -1,0 +1,26 @@
+{
+  "webhookEvent": "jira:issue_updated",
+  "issue": {
+    "id": "12347",
+    "key": "TEST-125",
+    "fields": {
+      "summary": "Создать сущность Product",
+      "description": "Нужно создать сущность Product с полями: id, name, price, description, createdAt, updatedAt. Должны быть созданы:\n- Entity с TypeORM декораторами\n- Service для CRUD операций\n- Controller с REST эндпоинтами",
+      "issuetype": {
+        "name": "Task"
+      },
+      "status": {
+        "name": "NEW"
+      }
+    }
+  },
+  "changelog": {
+    "items": [
+      {
+        "field": "status",
+        "fromString": "BACKLOG",
+        "toString": "NEW"
+      }
+    ]
+  }
+}

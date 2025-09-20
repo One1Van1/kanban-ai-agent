@@ -6,6 +6,7 @@ import { appConfig, jiraConfig, claudeConfig } from './config';
 import { WebhookModule } from './webhook';
 import { AIAnalysisModule } from './ai-analysis';
 import { KanbanModule } from './kanban';
+import { TaskExecutorModule } from './task-executor/task-executor.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { KanbanModule } from './kanban';
     WebhookModule,
     AIAnalysisModule,
     KanbanModule,
+    TaskExecutorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

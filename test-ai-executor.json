@@ -1,0 +1,17 @@
+{
+  "webhookEvent": "jira:issue_created",
+  "issue": {
+    "id": "12345",
+    "key": "TEST-123",
+    "fields": {
+      "summary": "Создать сущность User",
+      "description": "Нужно создать сущность User с полями: id, name, email, createdAt, updatedAt. Должны быть созданы:\n- Entity с TypeORM декораторами\n- Service для CRUD операций\n- Controller с REST эндпоинтами\n- DTO для создания и обновления",
+      "issuetype": {
+        "name": "Task"
+      },
+      "status": {
+        "name": "To Do"
+      }
+    }
+  }
+}
