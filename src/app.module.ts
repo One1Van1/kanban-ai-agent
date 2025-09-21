@@ -3,15 +3,6 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { appConfig, jiraConfig, claudeConfig } from './config';
-import { WebhookModule } from './webhook';
-import { AIAnalysisModule } from './ai-analysis';
-import { KanbanModule } from './kanban';
-import { TaskExecutorModule } from './task-executor/task-executor.module';
-
-// Enhanced Workflow модули
-import { EnhancedWorkflowModule } from './enhanced-workflow/enhanced-workflow.module';
-import { StatusTransitionsModule } from './status-transitions/status-transitions.module';
-import { WorkflowOrchestratorModule } from './workflow-orchestrator/workflow-orchestrator.module';
 
 @Module({
   imports: [
@@ -20,15 +11,6 @@ import { WorkflowOrchestratorModule } from './workflow-orchestrator/workflow-orc
       load: [appConfig, jiraConfig, claudeConfig],
       envFilePath: '.env',
     }),
-    WebhookModule,
-    AIAnalysisModule,
-    KanbanModule,
-    TaskExecutorModule,
-
-    // Enhanced Workflow модули
-    StatusTransitionsModule,
-    WorkflowOrchestratorModule,
-    EnhancedWorkflowModule,
   ],
   controllers: [AppController],
   providers: [AppService],
