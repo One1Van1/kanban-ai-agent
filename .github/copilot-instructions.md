@@ -13,3 +13,4 @@
 - Всегда используй yarn для установки пакетов
 - Придерживайся TypeScript best practices
 - Используй NestJS конвенции для структуры проекта
+- Используй файлы development-guidelines.md и project-plan.md для справки по архитектуре и прогрессу
