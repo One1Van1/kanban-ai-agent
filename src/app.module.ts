@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { appConfig, jiraConfig, claudeConfig } from './config';
+import { JiraModule } from './jira/jira.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { appConfig, jiraConfig, claudeConfig } from './config';
       load: [appConfig, jiraConfig, claudeConfig],
       envFilePath: '.env',
     }),
+    JiraModule,
   ],
   controllers: [AppController],
   providers: [AppService],
