@@ -417,6 +417,8 @@ ${taskList}
 
     let analysisType: TaskAnalysisResult['analysisType'] = 'unknown';
     let complexity: TaskAnalysisResult['complexity'] = 'medium';
+    let canAutoExecute = false;
+    let requiredActions = ['Требует анализа'];
 
     // Простые эвристики
     if (
@@ -425,6 +427,16 @@ ${taskList}
       summary.includes('add')
     ) {
       analysisType = 'code';
+      // Автоматически выполняем простые задачи создания
+      if (
+        summary.includes('entity') ||
+        summary.includes('сущность') ||
+        summary.includes('file') ||
+        summary.includes('файл')
+      ) {
+        canAutoExecute = true;
+        requiredActions = ['Создать файл на основе шаблона'];
+      }
     } else if (summary.includes('test') || summary.includes('тест')) {
       analysisType = 'testing';
     } else if (summary.includes('doc') || summary.includes('документ')) {
@@ -437,6 +449,8 @@ ${taskList}
       summary.includes('quick')
     ) {
       complexity = 'low';
+      canAutoExecute = true; // Простые задачи можно выполнять автоматически
+      requiredActions = ['Выполнить простую задачу'];
     } else if (
       summary.includes('complex') ||
       summary.includes('сложн') ||
@@ -452,9 +466,11 @@ ${taskList}
       complexity,
       estimatedTime:
         complexity === 'low' ? 15 : complexity === 'high' ? 60 : 30,
-      requiredActions: ['Требует анализа'],
-      canAutoExecute: false,
-      reasoning: 'Fallback analysis - AI not available',
+      requiredActions,
+      canAutoExecute,
+      reasoning: canAutoExecute
+        ? 'Simple task - can auto-execute with fallback analysis'
+        : 'Fallback analysis - AI not available',
     };
   }
 }
