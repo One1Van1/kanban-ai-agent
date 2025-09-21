@@ -84,6 +84,8 @@ export interface TransitionResult {
   toStatus: string;
   transitionId?: string;
   error?: string;
+  message?: string;
+  warning?: string;
 }
 
 export interface ColumnConfiguration {

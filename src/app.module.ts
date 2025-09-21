@@ -4,6 +4,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { appConfig, jiraConfig, claudeConfig } from './config';
 import { JiraModule } from './jira/jira.module';
+import { AIAnalysisModule } from './ai-analysis/ai-analysis.module';
+import { TaskExecutorModule } from './task-executor/task-executor.module';
 
 @Module({
   imports: [
@@ -13,6 +15,8 @@ import { JiraModule } from './jira/jira.module';
       envFilePath: '.env',
     }),
     JiraModule,
+    AIAnalysisModule,
+    TaskExecutorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

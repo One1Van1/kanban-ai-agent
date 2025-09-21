@@ -142,5 +142,17 @@ export interface JiraTaskCommentsResponse {
 }
 
 export interface AddJiraCommentRequest {
-  body: string;
+  body:
+    | string
+    | {
+        version: number;
+        type: string;
+        content: Array<{
+          type: string;
+          content?: Array<{
+            type: string;
+            text: string;
+          }>;
+        }>;
+      };
 }

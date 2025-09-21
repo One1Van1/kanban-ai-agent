@@ -28,6 +28,20 @@ export class TaskStatusManagerService {
       const currentTask = await this.jiraService.getTask(taskKey);
       const fromStatus = currentTask.fields.status.name;
 
+      // Проверить, не находится ли задача уже в целевом статусе
+      if (fromStatus.toLowerCase() === targetStatusName.toLowerCase()) {
+        this.logger.log(
+          `Task ${taskKey} is already in status "${targetStatusName}"`,
+        );
+        return {
+          success: true,
+          taskKey,
+          fromStatus,
+          toStatus: targetStatusName,
+          message: 'Task already in target status',
+        };
+      }
+
       // Получить доступные переходы
       const transitions = await this.getAvailableTransitions(taskKey);
 
@@ -45,25 +59,64 @@ export class TaskStatusManagerService {
         );
       }
 
-      // Выполнить переход
-      await this.jiraService.transitionTask(taskKey, targetTransition.id);
-
-      // Добавить комментарий если указан
-      if (comment) {
-        await this.jiraService.addComment(taskKey, { body: comment });
+      // Выполнить переход (может вернуть ошибку, но задача может переместиться)
+      let transitionError = null;
+      try {
+        await this.jiraService.transitionTask(taskKey, targetTransition.id);
+      } catch (error) {
+        transitionError = error;
+        this.logger.warn(
+          `Transition API returned error, but checking if task actually moved: ${error.message}`,
+        );
       }
 
-      this.logger.log(
-        `Task ${taskKey} moved from "${fromStatus}" to "${targetStatusName}"`,
-      );
+      // Проверить, действительно ли задача переместилась
+      const updatedTask = await this.jiraService.getTask(taskKey);
+      const actualStatus = updatedTask.fields.status.name;
 
-      return {
-        success: true,
-        taskKey,
-        fromStatus,
-        toStatus: targetStatusName,
-        transitionId: targetTransition.id,
-      };
+      // Добавить комментарий если указан и переход успешен
+      if (
+        comment &&
+        actualStatus.toLowerCase() === targetStatusName.toLowerCase()
+      ) {
+        try {
+          await this.jiraService.addComment(taskKey, { body: comment });
+        } catch (commentError) {
+          this.logger.warn(`Failed to add comment: ${commentError.message}`);
+        }
+      }
+
+      // Определить успешность по фактическому статусу
+      const isSuccess =
+        actualStatus.toLowerCase() === targetStatusName.toLowerCase();
+
+      if (isSuccess) {
+        this.logger.log(
+          `Task ${taskKey} successfully moved from "${fromStatus}" to "${actualStatus}"`,
+        );
+        return {
+          success: true,
+          taskKey,
+          fromStatus,
+          toStatus: actualStatus,
+          transitionId: targetTransition.id,
+          warning: transitionError
+            ? 'Transition API returned error, but task moved successfully'
+            : undefined,
+        };
+      } else {
+        this.logger.error(
+          `Task ${taskKey} failed to move. Expected: "${targetStatusName}", Actual: "${actualStatus}"`,
+        );
+        return {
+          success: false,
+          taskKey,
+          fromStatus,
+          toStatus: targetStatusName,
+          error:
+            transitionError?.message || `Task didn't move to expected status`,
+        };
+      }
     } catch (error) {
       this.logger.error(
         `Failed to move task ${taskKey} to "${targetStatusName}":`,

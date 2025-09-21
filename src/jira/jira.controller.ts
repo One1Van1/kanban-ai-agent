@@ -83,4 +83,28 @@ export class JiraController {
       maxResults: body.maxResults || 20,
     });
   }
+
+  /**
+   * Добавить комментарий к задаче (для тестирования)
+   */
+  @Post('tasks/:taskKey/comment')
+  async addComment(
+    @Param('taskKey') taskKey: string,
+    @Body() body: { comment: string },
+  ) {
+    try {
+      await this.jiraService.addComment(taskKey, { body: body.comment });
+      return {
+        success: true,
+        taskKey,
+        message: 'Comment added successfully',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        taskKey,
+        error: error.message,
+      };
+    }
+  }
 }

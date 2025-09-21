@@ -192,15 +192,33 @@ export class JiraService {
    */
   async transitionTask(taskKey: string, transitionId: string): Promise<void> {
     try {
-      await this.httpClient.post(`/issue/${taskKey}/transitions`, {
+      this.logger.log(
+        `Attempting to transition task ${taskKey} with transition ID: ${transitionId}`,
+      );
+
+      const payload = {
         transition: {
           id: transitionId,
         },
-      });
+      };
 
-      this.logger.log(`Task ${taskKey} transitioned with ID: ${transitionId}`);
+      const response = await this.httpClient.post(
+        `/issue/${taskKey}/transitions`,
+        payload,
+      );
+
+      this.logger.log(
+        `Task ${taskKey} transitioned successfully. Response status: ${response.status}`,
+      );
     } catch (error) {
       this.logger.error(`Failed to transition task ${taskKey}:`, error.message);
+      if (error.response) {
+        this.logger.error(`Transition error status: ${error.response.status}`);
+        this.logger.error(
+          `Transition error details:`,
+          JSON.stringify(error.response.data, null, 2),
+        );
+      }
       throw error;
     }
   }
@@ -213,13 +231,49 @@ export class JiraService {
     comment: AddJiraCommentRequest,
   ): Promise<void> {
     try {
-      await this.httpClient.post(`/issue/${taskKey}/comment`, comment);
+      // Преобразуем простой текст в ADF формат если нужно
+      let commentBody: any;
+
+      if (typeof comment.body === 'string') {
+        // Конвертируем простой текст в Atlassian Document Format
+        commentBody = {
+          body: {
+            version: 1,
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  {
+                    type: 'text',
+                    text: comment.body,
+                  },
+                ],
+              },
+            ],
+          },
+        };
+      } else {
+        commentBody = { body: comment.body };
+      }
+
+      this.logger.log(
+        `Adding comment to task ${taskKey}: "${typeof comment.body === 'string' ? comment.body : 'ADF format'}"`,
+      );
+
+      await this.httpClient.post(`/issue/${taskKey}/comment`, commentBody);
       this.logger.log(`Comment added to task ${taskKey}`);
     } catch (error) {
       this.logger.error(
         `Failed to add comment to task ${taskKey}:`,
         error.message,
       );
+      if (error.response) {
+        this.logger.error(
+          `Comment error details:`,
+          JSON.stringify(error.response.data, null, 2),
+        );
+      }
       throw error;
     }
   }
