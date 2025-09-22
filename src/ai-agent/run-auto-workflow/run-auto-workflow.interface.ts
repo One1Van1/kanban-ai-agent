@@ -8,6 +8,10 @@ export interface RunAutoWorkflowResponse {
     checked: number;
     moved: number;
   };
+  executedTasks: {
+    executed: number;
+    successful: number;
+  };
   totalMoved: number;
   duration: number; // в миллисекундах
 }

@@ -14,7 +14,7 @@ export class AiAgentSchedulerService {
    * Запускает AI workflow каждую минуту
    * ВРЕМЕННО ОТКЛЮЧЕНО для тестирования
    */
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleAutoWorkflow() {
     this.logger.log('⏰ Running scheduled AI workflow...');
 

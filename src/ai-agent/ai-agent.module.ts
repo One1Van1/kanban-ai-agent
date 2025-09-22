@@ -6,6 +6,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AnalyzeNewTasksModule } from './analyze-new-tasks/analyze-new-tasks.module';
 import { CheckProgressTasksModule } from './check-progress-tasks/check-progress-tasks.module';
 import { CheckEntityExistsModule } from './check-entity-exists/check-entity-exists.module';
+import { ExecuteTasksModule } from './execute-tasks/execute-tasks.module';
 import { RunAutoWorkflowModule } from './run-auto-workflow/run-auto-workflow.module';
 
 // Shared сервисы
@@ -18,6 +19,7 @@ import { AiAgentSchedulerService } from './shared/ai-agent-scheduler.service';
     AnalyzeNewTasksModule,
     CheckProgressTasksModule,
     CheckEntityExistsModule,
+    ExecuteTasksModule,
     RunAutoWorkflowModule,
   ],
   providers: [AiAgentSchedulerService],
@@ -25,6 +27,7 @@ import { AiAgentSchedulerService } from './shared/ai-agent-scheduler.service';
     AnalyzeNewTasksModule,
     CheckProgressTasksModule,
     CheckEntityExistsModule,
+    ExecuteTasksModule,
     RunAutoWorkflowModule,
   ],
 })
