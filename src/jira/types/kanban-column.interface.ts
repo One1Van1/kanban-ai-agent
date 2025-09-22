@@ -28,6 +28,7 @@ export interface KanbanTaskSummary {
   id: string;
   key: string;
   summary: string;
+  description?: string; // Добавляем поле описания
   status: {
     id: string;
     name: string;

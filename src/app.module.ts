@@ -4,6 +4,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { appConfig, jiraConfig, claudeConfig } from './config';
 import { JiraModule } from './jira/jira-integration.module';
+import { AiAgentModule } from './ai-agent/ai-agent.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { JiraModule } from './jira/jira-integration.module';
       envFilePath: '.env',
     }),
     JiraModule,
+    AiAgentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

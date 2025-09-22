@@ -142,6 +142,18 @@ export class JiraBaseService {
           jql,
           startAt,
           maxResults,
+          fields: [
+            'summary',
+            'description', // Явно запрашиваем description
+            'status',
+            'assignee',
+            'priority',
+            'issuetype',
+            'created',
+            'updated',
+            'duedate',
+            'labels',
+          ],
         });
       return response.data;
     } catch (error) {

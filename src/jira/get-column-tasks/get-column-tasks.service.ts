@@ -72,6 +72,7 @@ export class GetColumnTasksService extends JiraBaseService {
       id: task.id,
       key: task.key,
       summary: task.fields.summary,
+      description: this.extractDescription(task.fields.description),
       status: {
         id: task.fields.status.id,
         name: task.fields.status.name,
@@ -96,5 +97,37 @@ export class GetColumnTasksService extends JiraBaseService {
       duedate: task.fields.duedate,
       labels: task.fields.labels || [],
     }));
+  }
+
+  /**
+   * Извлекает текстовое описание из Jira description объекта
+   */
+  private extractDescription(descriptionObj: any): string | undefined {
+    console.log('=== DESCRIPTION DEBUG ===');
+    console.log(
+      'Raw description object:',
+      JSON.stringify(descriptionObj, null, 2),
+    );
+
+    if (!descriptionObj || !descriptionObj.content) {
+      console.log('No description content found');
+      return undefined;
+    }
+
+    let text = '';
+    for (const contentItem of descriptionObj.content) {
+      if (contentItem.type === 'paragraph' && contentItem.content) {
+        for (const textItem of contentItem.content) {
+          if (textItem.type === 'text' && textItem.text) {
+            text += textItem.text + ' ';
+          }
+        }
+      }
+    }
+
+    const result = text.trim() || undefined;
+    console.log('Extracted text:', result);
+    console.log('=== END DESCRIPTION DEBUG ===');
+    return result;
   }
 }
