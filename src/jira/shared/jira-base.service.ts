@@ -9,13 +9,13 @@ import {
   UpdateJiraTaskRequest,
   AddJiraCommentRequest,
   JiraTaskCommentsResponse,
-} from './types/jira-task.interface';
+} from '../types/jira-task.interface';
 import {
   JiraBoard,
   JiraBoardsResponse,
   JiraBoardConfiguration,
   BoardTasksInColumnResponse,
-} from './types/jira-board.interface';
+} from '../types/jira-board.interface';
 
 export interface JiraConfig {
   baseUrl: string;
@@ -26,8 +26,8 @@ export interface JiraConfig {
 }
 
 @Injectable()
-export class JiraService {
-  private readonly logger = new Logger(JiraService.name);
+export class JiraBaseService {
+  protected readonly logger = new Logger(JiraBaseService.name);
   private readonly httpClient: AxiosInstance;
   private readonly config: JiraConfig;
 
@@ -100,6 +100,20 @@ export class JiraService {
   }
 
   /**
+   * Тестирование подключения к Jira
+   */
+  async testConnection(): Promise<boolean> {
+    try {
+      await this.httpClient.get('/myself');
+      this.logger.log('Jira connection test successful');
+      return true;
+    } catch (error) {
+      this.logger.error(`Jira connection test failed: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
    * Получить задачу по ключу
    */
   async getTask(taskKey: string): Promise<JiraTask> {
@@ -109,63 +123,31 @@ export class JiraService {
       );
       return response.data;
     } catch (error) {
-      this.logger.error(`Failed to get task ${taskKey}:`, error.message);
+      this.logger.error(`Failed to get task ${taskKey}: ${error.message}`);
       throw error;
     }
   }
 
   /**
-   * Поиск задач с JQL запросом
+   * Поиск задач по JQL
    */
   async searchTasks(
     jql: string,
-    maxResults: number = 50,
     startAt: number = 0,
+    maxResults: number = 50,
   ): Promise<JiraTaskSearchResult> {
     try {
       const response: AxiosResponse<JiraTaskSearchResult> =
         await this.httpClient.post('/search', {
           jql,
-          maxResults,
           startAt,
-          fields: [
-            'summary',
-            'description',
-            'status',
-            'assignee',
-            'reporter',
-            'priority',
-            'issuetype',
-            'project',
-            'created',
-            'updated',
-            'duedate',
-            'labels',
-            'components',
-          ],
+          maxResults,
         });
-
-      this.logger.log(`Found ${response.data.total} tasks with JQL: ${jql}`);
       return response.data;
     } catch (error) {
-      this.logger.error(
-        `Failed to search tasks with JQL "${jql}":`,
-        error.message,
-      );
+      this.logger.error(`Failed to search tasks: ${error.message}`);
       throw error;
     }
-  }
-
-  /**
-   * Получить задачи из конкретной колонки доски
-   */
-  async getTasksFromColumn(
-    boardId: number,
-    statusName: string,
-  ): Promise<JiraTask[]> {
-    const jql = `project = ${this.config.projectKey} AND status = "${statusName}" ORDER BY created ASC`;
-    const result = await this.searchTasks(jql);
-    return result.issues;
   }
 
   /**
@@ -180,45 +162,27 @@ export class JiraService {
       return response.data;
     } catch (error) {
       this.logger.error(
-        `Failed to get transitions for task ${taskKey}:`,
-        error.message,
+        `Failed to get transitions for task ${taskKey}: ${error.message}`,
       );
       throw error;
     }
   }
 
   /**
-   * Изменить статус задачи
+   * Выполнить переход задачи
    */
   async transitionTask(taskKey: string, transitionId: string): Promise<void> {
     try {
+      await this.httpClient.post(`/issue/${taskKey}/transitions`, {
+        transition: { id: transitionId },
+      });
       this.logger.log(
-        `Attempting to transition task ${taskKey} with transition ID: ${transitionId}`,
-      );
-
-      const payload = {
-        transition: {
-          id: transitionId,
-        },
-      };
-
-      const response = await this.httpClient.post(
-        `/issue/${taskKey}/transitions`,
-        payload,
-      );
-
-      this.logger.log(
-        `Task ${taskKey} transitioned successfully. Response status: ${response.status}`,
+        `Task ${taskKey} transitioned using transition ${transitionId}`,
       );
     } catch (error) {
-      this.logger.error(`Failed to transition task ${taskKey}:`, error.message);
-      if (error.response) {
-        this.logger.error(`Transition error status: ${error.response.status}`);
-        this.logger.error(
-          `Transition error details:`,
-          JSON.stringify(error.response.data, null, 2),
-        );
-      }
+      this.logger.error(
+        `Failed to transition task ${taskKey}: ${error.message}`,
+      );
       throw error;
     }
   }
@@ -231,64 +195,21 @@ export class JiraService {
     comment: AddJiraCommentRequest,
   ): Promise<void> {
     try {
-      // Преобразуем простой текст в ADF формат если нужно
-      let commentBody: any;
-
-      if (typeof comment.body === 'string') {
-        // Конвертируем простой текст в Atlassian Document Format
-        commentBody = {
-          body: {
-            version: 1,
-            type: 'doc',
-            content: [
-              {
-                type: 'paragraph',
-                content: [
-                  {
-                    type: 'text',
-                    text: comment.body,
-                  },
-                ],
-              },
-            ],
-          },
-        };
-      } else {
-        commentBody = { body: comment.body };
-      }
-
-      this.logger.log(
-        `Adding comment to task ${taskKey}: "${typeof comment.body === 'string' ? comment.body : 'ADF format'}"`,
-      );
-
-      await this.httpClient.post(`/issue/${taskKey}/comment`, commentBody);
+      await this.httpClient.post(`/issue/${taskKey}/comment`, comment);
       this.logger.log(`Comment added to task ${taskKey}`);
     } catch (error) {
       this.logger.error(
-        `Failed to add comment to task ${taskKey}:`,
-        error.message,
+        `Failed to add comment to task ${taskKey}: ${error.message}`,
       );
-      if (error.response) {
-        this.logger.error(
-          `Comment error details:`,
-          JSON.stringify(error.response.data, null, 2),
-        );
-      }
       throw error;
     }
   }
 
-  /**
-   * Проверить подключение к Jira
-   */
-  async testConnection(): Promise<boolean> {
-    try {
-      await this.httpClient.get('/myself');
-      this.logger.log('Jira connection test successful');
-      return true;
-    } catch (error) {
-      this.logger.error('Jira connection test failed:', error.message);
-      return false;
-    }
+  protected getHttpClient(): AxiosInstance {
+    return this.httpClient;
+  }
+
+  protected getConfig(): JiraConfig {
+    return this.config;
   }
 }

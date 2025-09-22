@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { appConfig, jiraConfig, claudeConfig } from './config';
-import { JiraModule } from './jira/jira.module';
+import { JiraModule } from './jira/jira-integration.module';
 
 @Module({
   imports: [
