@@ -27,7 +27,7 @@ export class CheckProgressTasksService extends AiBaseService {
         const analysis: TaskProgressResult = await this.analyzeProgressTask(
           task.key,
           task.summary,
-          task.labels?.join(' '), // Используем labels как дополнительное описание
+          task.description, // Используем реальное описание задачи
         );
 
         // Выполняем решение
