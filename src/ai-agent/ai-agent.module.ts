@@ -9,6 +9,7 @@ import { CheckEntityExistsModule } from './check-entity-exists/check-entity-exis
 import { ExecuteTasksModule } from './execute-tasks/execute-tasks.module';
 import { RunAutoWorkflowModule } from './run-auto-workflow/run-auto-workflow.module';
 import { AnalyzeHaircutTasksModule } from './analyze-haircut-tasks/analyze-haircut-tasks.module';
+import { ExecuteHaircutTasksModule } from './execute-haircut-tasks/execute-haircut-tasks.module';
 import { AutoHaircutMonitorModule } from './auto-haircut-monitor/auto-haircut-monitor.module';
 import { SharedModule } from './shared/shared.module';
 
@@ -24,6 +25,7 @@ import { SharedModule } from './shared/shared.module';
     ExecuteTasksModule,
     RunAutoWorkflowModule,
     AnalyzeHaircutTasksModule,
+    ExecuteHaircutTasksModule,
     AutoHaircutMonitorModule,
     SharedModule,
   ],
@@ -35,6 +37,7 @@ import { SharedModule } from './shared/shared.module';
     ExecuteTasksModule,
     RunAutoWorkflowModule,
     AnalyzeHaircutTasksModule,
+    ExecuteHaircutTasksModule,
     AutoHaircutMonitorModule,
   ],
 })

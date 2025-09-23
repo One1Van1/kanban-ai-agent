@@ -29,6 +29,10 @@ import { SearchTasksService } from './search-tasks/search-tasks.service';
 import { AddTaskCommentController } from './add-task-comment/add-task-comment.controller';
 import { AddTaskCommentService } from './add-task-comment/add-task-comment.service';
 
+// Attach File
+import { AttachFileController } from './attach-file/attach-file.controller';
+import { AttachFileService } from './attach-file/attach-file.service';
+
 @Module({
   imports: [ConfigModule],
   controllers: [
@@ -39,6 +43,7 @@ import { AddTaskCommentService } from './add-task-comment/add-task-comment.servi
     GetColumnTasksController,
     SearchTasksController,
     AddTaskCommentController,
+    AttachFileController,
   ],
   providers: [
     HealthCheckService,
@@ -48,6 +53,7 @@ import { AddTaskCommentService } from './add-task-comment/add-task-comment.servi
     GetColumnTasksService,
     SearchTasksService,
     AddTaskCommentService,
+    AttachFileService,
   ],
   exports: [
     HealthCheckService,
@@ -57,6 +63,7 @@ import { AddTaskCommentService } from './add-task-comment/add-task-comment.servi
     GetColumnTasksService,
     SearchTasksService,
     AddTaskCommentService,
+    AttachFileService,
   ],
 })
 export class JiraModule {}
