@@ -123,7 +123,7 @@ export class ExecuteHaircutTasksService extends AiBaseService {
       const imagePath = path.join(
         process.cwd(),
         'assets',
-        'Снимок экрана 2025-09-22 в 22.03.42.png',
+        'Сделал стрижку.png',
       );
 
       let attachmentInfo = null;
