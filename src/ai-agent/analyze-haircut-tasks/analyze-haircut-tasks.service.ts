@@ -127,6 +127,33 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
       try {
         await this.moveTaskService.moveTaskToColumn(task.key, 'In Progress');
 
+        // Добавляем комментарий для полной задачи
+        const progressComment = 'Стрижка займёт минуту';
+        const progressCommentRequest = {
+          body: {
+            version: 1,
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  {
+                    type: 'text',
+                    text: progressComment,
+                  },
+                ],
+              },
+            ],
+          },
+        };
+
+        // Используем базовый сервис для добавления комментария
+        const httpClient = (this.addTaskCommentService as any).getHttpClient();
+        await httpClient.post(
+          `/issue/${task.key}/comment`,
+          progressCommentRequest,
+        );
+
         this.logger.log(
           `Task ${task.key} moved to In Progress (complete haircut request)`,
         );
@@ -136,6 +163,7 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
           decision: 'move_to_progress',
           reason: 'Task has title, description and photo attachment',
           moved: true,
+          commentAdded: progressComment,
         };
       } catch (error) {
         this.logger.error(
