@@ -56,6 +56,14 @@ export interface JiraTaskFields {
     id: string;
     name: string;
   }>;
+  attachment?: Array<{
+    id: string;
+    filename: string;
+    size: number;
+    mimeType: string;
+    created: string;
+    author: JiraUser;
+  }>;
 }
 
 export interface JiraTask {

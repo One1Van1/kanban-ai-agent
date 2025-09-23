@@ -8,6 +8,7 @@ import { CheckProgressTasksModule } from './check-progress-tasks/check-progress-
 import { CheckEntityExistsModule } from './check-entity-exists/check-entity-exists.module';
 import { ExecuteTasksModule } from './execute-tasks/execute-tasks.module';
 import { RunAutoWorkflowModule } from './run-auto-workflow/run-auto-workflow.module';
+import { AnalyzeHaircutTasksModule } from './analyze-haircut-tasks/analyze-haircut-tasks.module';
 
 // Shared сервисы
 import { AiAgentSchedulerService } from './shared/ai-agent-scheduler.service';
@@ -21,6 +22,7 @@ import { AiAgentSchedulerService } from './shared/ai-agent-scheduler.service';
     CheckEntityExistsModule,
     ExecuteTasksModule,
     RunAutoWorkflowModule,
+    AnalyzeHaircutTasksModule,
   ],
   providers: [AiAgentSchedulerService],
   exports: [
@@ -29,6 +31,7 @@ import { AiAgentSchedulerService } from './shared/ai-agent-scheduler.service';
     CheckEntityExistsModule,
     ExecuteTasksModule,
     RunAutoWorkflowModule,
+    AnalyzeHaircutTasksModule,
   ],
 })
 export class AiAgentModule {}
