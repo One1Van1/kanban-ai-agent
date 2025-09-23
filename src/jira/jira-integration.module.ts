@@ -33,6 +33,10 @@ import { AddTaskCommentService } from './add-task-comment/add-task-comment.servi
 import { AttachFileController } from './attach-file/attach-file.controller';
 import { AttachFileService } from './attach-file/attach-file.service';
 
+// Jira Webhook Handler
+import { JiraWebhookHandlerController } from './jira-webhook-handler/jira-webhook-handler.controller';
+import { JiraWebhookHandlerService } from './jira-webhook-handler/jira-webhook-handler.service';
+
 @Module({
   imports: [ConfigModule],
   controllers: [
@@ -44,6 +48,7 @@ import { AttachFileService } from './attach-file/attach-file.service';
     SearchTasksController,
     AddTaskCommentController,
     AttachFileController,
+    JiraWebhookHandlerController,
   ],
   providers: [
     HealthCheckService,
@@ -54,6 +59,7 @@ import { AttachFileService } from './attach-file/attach-file.service';
     SearchTasksService,
     AddTaskCommentService,
     AttachFileService,
+    JiraWebhookHandlerService,
   ],
   exports: [
     HealthCheckService,
@@ -64,6 +70,7 @@ import { AttachFileService } from './attach-file/attach-file.service';
     SearchTasksService,
     AddTaskCommentService,
     AttachFileService,
+    JiraWebhookHandlerService,
   ],
 })
 export class JiraModule {}

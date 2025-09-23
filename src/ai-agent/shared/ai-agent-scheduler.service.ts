@@ -16,7 +16,8 @@ export class AiAgentSchedulerService {
 
   /**
    * Запускает AI workflow каждую минуту
-   * ВРЕМЕННО ОТКЛЮЧЕНО для тестирования стрижек
+   * ОТКЛЮЧЕНО: теперь используем webhook для мгновенной реакции
+   * Оставлен как fallback для случаев, когда webhook не сработал
    */
   // @Cron(CronExpression.EVERY_MINUTE)
   async handleAutoWorkflow() {
@@ -34,9 +35,10 @@ export class AiAgentSchedulerService {
 
   /**
    * Запускает анализ задач о стрижках каждую минуту
-   * Проверяет колонку New на наличие задач о стрижках
+   * ОТКЛЮЧЕНО: теперь используем webhook для мгновенной реакции
+   * Оставлен как fallback для обеспечения надежности
    */
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   async handleHaircutScheduler() {
     this.logger.log('✂️ Running scheduled haircut analysis...');
 
@@ -76,7 +78,33 @@ export class AiAgentSchedulerService {
         );
       }
     } catch (error) {
-      this.logger.error('✂️ Haircut scheduler failed:', error.message);
+      this.logger.error('✂️ Scheduled haircut analysis failed:', error.message);
+    }
+  }
+
+  /**
+   * Fallback анализ для случаев, когда webhook не сработал
+   * Запускается раз в час для проверки пропущенных задач
+   */
+  @Cron('0 */1 * * *') // Каждый час
+  async handleFallbackAnalysis() {
+    this.logger.log('🔍 Running fallback analysis for missed tasks...');
+
+    try {
+      // Анализируем задачи, которые могли быть пропущены webhook'ом
+      const analyzeResult = await this.analyzeHaircutTasksService.execute({
+        sourceColumn: 'New',
+      });
+
+      if (analyzeResult.tasksAnalyzed > 0) {
+        this.logger.warn(
+          `🔍 Fallback found ${analyzeResult.tasksAnalyzed} missed tasks - webhook might have issues`,
+        );
+      } else {
+        this.logger.log('🔍 Fallback analysis: no missed tasks found');
+      }
+    } catch (error) {
+      this.logger.error('🔍 Fallback analysis failed:', error.message);
     }
   }
 }
