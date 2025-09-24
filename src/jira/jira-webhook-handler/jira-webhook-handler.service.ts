@@ -23,6 +23,8 @@ export class JiraWebhookHandlerService {
       enableAiAnalysis: true,
       enableNotifications: true,
       enableAutoAssignment: false,
+      // Ограничиваем активные статусы только Review
+      activeStatuses: ['Review'], // Только этот статус будет обрабатываться
       haircutKeywords: [
         'стрижка',
         'стрижку',
@@ -170,47 +172,78 @@ export class JiraWebhookHandlerService {
         `Processing haircut task: ${payload.issue?.key} with status: ${currentStatus}, event: ${eventType}`,
       );
 
-      // Простая логика: запускаем нужный эндпоинт агента в зависимости от статуса
+      // Проверяем наличие статуса и активен ли веб-хук для этого статуса
+      if (
+        !currentStatus ||
+        !this.config.activeStatuses.includes(currentStatus)
+      ) {
+        this.logger.log(
+          `Status ${currentStatus || 'undefined'} is not in active statuses list [${this.config.activeStatuses.join(', ')}] - webhook disabled for haircut tasks`,
+        );
+        return {
+          success: true,
+          message: `Haircut task webhook disabled for status: ${currentStatus || 'undefined'}`,
+          triggeredActions: ['haircut-status-disabled'],
+          timestamp: new Date().toISOString(),
+          issueKey: payload.issue?.key,
+        };
+      }
+
+      // Обработка только активных статусов (в данном случае только Review)
       switch (currentStatus) {
-        case 'New':
-        case 'To Do':
-        case 'Questions':
-          // Задача в New/Questions -> запускаем анализ задач на стрижку
-          this.logger.log(
-            `Triggering haircut analysis for status: ${currentStatus}`,
-          );
-          await this.triggerAiAction(
-            AIAgentAction.ANALYZE_HAIRCUT_TASK,
-            currentStatus,
-          );
-          triggeredActions.push('haircut-analysis');
-          break;
-
-        case 'In Progress':
-          // Задача в In Progress -> запускаем выполнение стрижки
-          this.logger.log(
-            `Triggering haircut execution for status: ${currentStatus}`,
-          );
-          await this.triggerAiAction(
-            AIAgentAction.EXECUTE_HAIRCUT_TASK,
-            currentStatus,
-          );
-          triggeredActions.push('haircut-execution');
-          break;
-
         case 'Review':
-          // Задача в Review -> пока только логируем
+          // Задача в Review -> полный цикл обработки
           this.logger.log(
-            `Haircut task ${payload.issue?.key} moved to Review for quality check`,
+            `🔍 Haircut task ${payload.issue?.key} moved to Review - starting full analysis workflow`,
           );
-          triggeredActions.push('review-initiated');
-          break;
 
+          try {
+            // 1. Анализируем задачу
+            this.logger.log(`📊 Step 1: Analyzing task ${payload.issue?.key}`);
+            const analysisResult = await this.analyzeReviewTask(payload.issue);
+            triggeredActions.push('task-analyzed');
+
+            // 2. Создаём отчёт
+            this.logger.log(
+              `📝 Step 2: Creating report for task ${payload.issue?.key}`,
+            );
+            const reportResult = await this.createTaskReport(
+              payload.issue,
+              analysisResult,
+            );
+            triggeredActions.push('report-created');
+
+            // 3. Перемещаем в Done
+            this.logger.log(
+              `✅ Step 3: Moving task ${payload.issue?.key} to Done`,
+            );
+            if (payload.issue?.key) {
+              await this.moveTaskToDone(payload.issue.key);
+              triggeredActions.push('moved-to-done');
+            } else {
+              this.logger.warn(
+                '❌ Cannot move task to Done: issue key is undefined',
+              );
+              triggeredActions.push('move-to-done-failed-no-key');
+            }
+
+            this.logger.log(
+              `🎉 Full Review workflow completed for ${payload.issue?.key}: Analysis → Report → Done`,
+            );
+            triggeredActions.push('full-workflow-completed');
+          } catch (workflowError) {
+            this.logger.error(
+              `❌ Review workflow failed for ${payload.issue?.key}: ${workflowError.message}`,
+            );
+            triggeredActions.push('workflow-failed');
+          }
+          break;
         default:
+          // Этот код не должен выполняться из-за проверки выше, но оставляем для безопасности
           this.logger.log(
-            `No specific action for haircut task status: ${currentStatus}`,
+            `Haircut task status ${currentStatus} should not be processed - configuration error`,
           );
-          triggeredActions.push('status-logged');
+          triggeredActions.push('haircut-status-configuration-error');
       }
 
       return {
@@ -237,27 +270,15 @@ export class JiraWebhookHandlerService {
     if (!issue) return;
 
     this.logger.log(
-      `New issue created: ${issue.key} - "${issue.fields.summary}"`,
+      `New issue created: ${issue.key} - "${issue.fields.summary}" - webhook disabled for creation event`,
     );
 
-    // Задержка для обработки в Jira
+    // Отключаем автоматические действия для создания задач
+    // Только логируем событие
+    triggeredActions.push('issue-created-logged-only');
+
+    // Задержка для обработки в Jira (оставляем для стабильности)
     await this.delay(this.config.delayMs);
-
-    // Запуск анализа новых задач
-    if (this.config.enableAiAnalysis) {
-      const currentStatus = issue.fields.status?.name || 'New';
-      await this.triggerAiAction(
-        AIAgentAction.ANALYZE_HAIRCUT_TASK,
-        currentStatus,
-      );
-      triggeredActions.push('haircut-analysis');
-    }
-
-    // Отправка уведомлений
-    if (this.config.enableNotifications) {
-      await this.sendNotification(issue.key, 'New task created');
-      triggeredActions.push('notification-sent');
-    }
   }
 
   /**
@@ -315,17 +336,12 @@ export class JiraWebhookHandlerService {
     if (!comment || !issue) return;
 
     this.logger.log(
-      `Comment added to ${issue.key} by ${comment.author.displayName}`,
+      `Comment added to ${issue.key} by ${comment.author.displayName} - webhook disabled for comments`,
     );
 
-    // Анализ комментария на предмет важной информации
-    if (this.containsImportantKeywords(comment.body)) {
-      const currentStatus = issue.fields?.status?.name || 'New';
-      await this.triggerAiAction(AIAgentAction.ANALYZE_NEW_TASK, currentStatus);
-      triggeredActions.push('comment-analysis');
-    }
-
-    triggeredActions.push('comment-logged');
+    // Отключаем автоматические действия для комментариев
+    // Только логируем событие
+    triggeredActions.push('comment-logged-only');
   }
 
   /**
@@ -339,52 +355,66 @@ export class JiraWebhookHandlerService {
   ): Promise<void> {
     this.logger.log(`Handling status change for ${issueKey} to: ${newStatus}`);
 
+    // Проверяем, активен ли веб-хук для этого статуса
+    if (!this.config.activeStatuses.includes(newStatus)) {
+      this.logger.log(
+        `Status ${newStatus} is not in active statuses list [${this.config.activeStatuses.join(', ')}] - webhook disabled`,
+      );
+      triggeredActions.push('status-change-disabled');
+      return;
+    }
+
+    // Обрабатываем только активные статусы (в данном случае только Review)
     switch (newStatus) {
-      case 'Done':
-        // Анализ выполненных задач о стрижках
-        await this.triggerAiAction(
-          AIAgentAction.ANALYZE_HAIRCUT_TASK,
-          newStatus,
-        );
-        triggeredActions.push('haircut-completion-analysis');
-        break;
-
-      case 'In Progress':
-        // Выполнение стрижки
-        await this.triggerAiAction(
-          AIAgentAction.EXECUTE_HAIRCUT_TASK,
-          newStatus,
-        );
-        triggeredActions.push('haircut-execution');
-        break;
-
       case 'Review':
-        // Проверка качества выполнения
+        // Только для статуса Review запускаем действия
+        this.logger.log(`🔍 Processing Review status for ${issueKey}`);
         triggeredActions.push('review-initiated');
-        break;
 
-      case 'Questions':
-        // Анализ задач в статусе Questions
-        await this.triggerAiAction(
-          AIAgentAction.ANALYZE_HAIRCUT_TASK,
-          newStatus,
-        );
-        triggeredActions.push('haircut-questions-analysis');
-        break;
+        try {
+          // Создаём mock issue object для передачи в workflow
+          const mockIssue = {
+            key: issueKey,
+            fields: {
+              summary: issueSummary,
+              status: { name: newStatus },
+            },
+          };
 
-      case 'To Do':
-      case 'New':
-        // Анализ новых задач стрижек
-        await this.triggerAiAction(
-          AIAgentAction.ANALYZE_HAIRCUT_TASK,
-          newStatus,
-        );
-        triggeredActions.push('haircut-analysis');
+          // Запускаем полный workflow для Review
+          this.logger.log(`🚀 Starting full Review workflow for ${issueKey}`);
+
+          // 1. Анализируем задачу
+          const analysisResult = await this.analyzeReviewTask(mockIssue);
+          triggeredActions.push('task-analyzed');
+
+          // 2. Создаём отчёт
+          const reportResult = await this.createTaskReport(
+            mockIssue,
+            analysisResult,
+          );
+          triggeredActions.push('report-created');
+
+          // 3. Перемещаем в Done
+          await this.moveTaskToDone(issueKey);
+          triggeredActions.push('moved-to-done');
+
+          triggeredActions.push('full-workflow-completed');
+          this.logger.log(`🎉 Full Review workflow completed for ${issueKey}`);
+        } catch (workflowError) {
+          this.logger.error(
+            `❌ Review workflow failed for ${issueKey}: ${workflowError.message}`,
+          );
+          triggeredActions.push('workflow-failed');
+        }
         break;
 
       default:
-        this.logger.log(`No specific action for status: ${newStatus}`);
-        triggeredActions.push('status-change-logged');
+        // Этот код не должен выполняться из-за проверки выше, но оставляем для безопасности
+        this.logger.log(
+          `Status ${newStatus} should not be processed - configuration error`,
+        );
+        triggeredActions.push('status-change-configuration-error');
         break;
     }
   } /**
@@ -508,5 +538,226 @@ export class JiraWebhookHandlerService {
    */
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  /**
+   * 1. Анализ задачи в Review
+   */
+  private async analyzeReviewTask(issue: any): Promise<any> {
+    this.logger.log(`🔍 Starting analysis for task: ${issue?.key}`);
+
+    try {
+      // Проверяем, является ли это тестовым запросом
+      const isTestMode = process.env.NODE_ENV === 'development';
+
+      if (isTestMode) {
+        // Возвращаем mock-данные для тестирования
+        this.logger.log(
+          `🧪 Test mode: returning mock analysis for ${issue?.key}`,
+        );
+        const mockAnalysis = {
+          success: true,
+          summary: `Анализ задачи ${issue?.key} завершён`,
+          quality: 'Отличное качество выполнения',
+          recommendations: 'Задача выполнена согласно требованиям',
+          completionStatus: 'Готово к завершению',
+          isHaircutTask: this.isHaircutRelated(issue?.fields?.summary || ''),
+          confidence: 0.95,
+        };
+
+        // Добавляем задержку для реалистичности
+        await this.delay(1000);
+        return mockAnalysis;
+      }
+
+      // Вызов AI агента для анализа задачи (в production)
+      const baseUrl = 'http://localhost:3000';
+      const response = await axios.post(
+        `${baseUrl}/ai-agent/analyze-haircut-tasks`,
+        {
+          issueKey: issue?.key,
+          summary: issue?.fields?.summary,
+          description: issue?.fields?.description,
+          status: issue?.fields?.status?.name,
+          analysisType: 'review-analysis',
+        },
+        {
+          timeout: 60000, // 60 секунд для анализа
+        },
+      );
+
+      this.logger.log(
+        `✅ Analysis completed for ${issue?.key}: ${JSON.stringify(response.data)}`,
+      );
+      return response.data;
+    } catch (error) {
+      this.logger.error(
+        `❌ Analysis failed for ${issue?.key}: ${error.message}`,
+      );
+      throw new Error(`Task analysis failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * 2. Создание отчёта по задаче
+   */
+  private async createTaskReport(
+    issue: any,
+    analysisResult: any,
+  ): Promise<any> {
+    this.logger.log(`📝 Creating report for task: ${issue?.key}`);
+
+    try {
+      const reportContent = this.generateReportContent(issue, analysisResult);
+
+      // Проверяем, является ли это тестовым запросом
+      const isTestMode = process.env.NODE_ENV === 'development';
+
+      if (isTestMode) {
+        // В тестовом режиме просто логируем отчёт
+        this.logger.log(
+          `📋 Test mode report for ${issue?.key}:\n${reportContent}`,
+        );
+        await this.delay(500); // Задержка для реалистичности
+      } else {
+        // В production добавляем комментарий в Jira
+        await this.addCommentToJiraTask(issue?.key, reportContent);
+      }
+
+      this.logger.log(`✅ Report created and processed for ${issue?.key}`);
+      return { success: true, reportContent };
+    } catch (error) {
+      this.logger.error(
+        `❌ Report creation failed for ${issue?.key}: ${error.message}`,
+      );
+      throw new Error(`Report creation failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * 3. Перемещение задачи в Done
+   */
+  private async moveTaskToDone(issueKey: string): Promise<void> {
+    this.logger.log(`🚀 Moving task ${issueKey} to Done status`);
+
+    try {
+      // Проверяем, является ли это тестовым запросом
+      const isTestMode = process.env.NODE_ENV === 'development';
+
+      if (isTestMode) {
+        // В тестовом режиме просто логируем действие
+        this.logger.log(`🧪 Test mode: simulating move of ${issueKey} to Done`);
+        await this.delay(500); // Задержка для реалистичности
+      } else {
+        // В production вызываем реальный API Jira
+        const baseUrl = 'http://localhost:3000';
+        const response = await axios.post(
+          `${baseUrl}/jira/move-task`,
+          {
+            issueKey: issueKey,
+            targetStatus: 'Done',
+            comment:
+              'Task automatically moved to Done after AI analysis and report generation',
+          },
+          {
+            timeout: 30000,
+          },
+        );
+      }
+
+      this.logger.log(
+        `✅ Task ${issueKey} successfully processed for Done status`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `❌ Failed to process task ${issueKey} for Done: ${error.message}`,
+      );
+      throw new Error(`Move to Done failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Генерация содержимого отчёта
+   */
+  private generateReportContent(issue: any, analysisResult: any): string {
+    const timestamp = new Date().toLocaleString('ru-RU');
+
+    return `
+🤖 **AI ОТЧЁТ ПО ЗАДАЧЕ** - ${timestamp}
+
+**📋 Задача:** ${issue?.key}
+**📝 Название:** ${issue?.fields?.summary}
+
+**🔍 РЕЗУЛЬТАТЫ АНАЛИЗА:**
+${this.formatAnalysisResult(analysisResult)}
+
+**✅ ЗАКЛЮЧЕНИЕ:**
+- Задача проанализирована AI агентом
+- Выполнена проверка качества
+- Задача автоматически перемещена в Done
+
+**🎯 СТАТУС:** Завершено успешно
+
+---
+*Отчёт создан автоматически AI агентом*
+    `.trim();
+  }
+
+  /**
+   * Форматирование результатов анализа
+   */
+  private formatAnalysisResult(analysisResult: any): string {
+    if (!analysisResult) {
+      return '- Анализ выполнен, детали недоступны';
+    }
+
+    let formatted = '';
+
+    if (analysisResult.summary) {
+      formatted += `- **Краткое описание:** ${analysisResult.summary}\n`;
+    }
+
+    if (analysisResult.quality) {
+      formatted += `- **Качество выполнения:** ${analysisResult.quality}\n`;
+    }
+
+    if (analysisResult.recommendations) {
+      formatted += `- **Рекомендации:** ${analysisResult.recommendations}\n`;
+    }
+
+    if (analysisResult.completionStatus) {
+      formatted += `- **Статус завершения:** ${analysisResult.completionStatus}\n`;
+    }
+
+    return formatted || '- Анализ выполнен успешно';
+  }
+
+  /**
+   * Добавление комментария в Jira задачу
+   */
+  private async addCommentToJiraTask(
+    issueKey: string,
+    commentText: string,
+  ): Promise<void> {
+    try {
+      const baseUrl = 'http://localhost:3000';
+      const response = await axios.post(
+        `${baseUrl}/jira/add-task-comment`,
+        {
+          issueKey: issueKey,
+          comment: commentText,
+        },
+        {
+          timeout: 30000,
+        },
+      );
+
+      this.logger.log(`✅ Comment added to task ${issueKey}`);
+    } catch (error) {
+      this.logger.error(
+        `❌ Failed to add comment to ${issueKey}: ${error.message}`,
+      );
+      throw error;
+    }
   }
 }

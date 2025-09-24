@@ -121,6 +121,7 @@ export interface WebhookProcessingConfig {
   enableAiAnalysis: boolean;
   enableNotifications: boolean;
   enableAutoAssignment: boolean;
+  activeStatuses: string[]; // Статусы, для которых активен веб-хук
   haircutKeywords: string[];
   delayMs: number; // Задержка перед обработкой
 }
