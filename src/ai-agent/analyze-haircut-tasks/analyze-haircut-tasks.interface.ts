@@ -6,7 +6,7 @@ export interface AnalyzeHaircutTasksResponse {
 
 export interface HaircutTaskAnalysisResult {
   taskKey: string;
-  decision: 'move_to_progress' | 'move_to_questions';
+  decision: 'move_to_progress' | 'move_to_questions' | 'skip';
   reason: string;
   moved: boolean;
   commentAdded?: string;

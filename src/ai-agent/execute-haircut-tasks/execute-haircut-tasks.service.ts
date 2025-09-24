@@ -7,12 +7,13 @@ import { GetColumnTasksService } from '../../jira/get-column-tasks/get-column-ta
 import { GetTaskService } from '../../jira/get-task/get-task.service';
 import { MoveTaskService } from '../../jira/move-task/move-task.service';
 import { AddTaskCommentService } from '../../jira/add-task-comment/add-task-comment.service';
-import { CheckEntityExistsService } from '../check-entity-exists/check-entity-exists.service';
+// import { CheckEntityExistsService } from '../check-entity-exists/check-entity-exists.service';
 import * as path from 'path';
 
 @Injectable()
 export class ExecuteHaircutTasksService extends AiBaseService {
   protected readonly logger = new Logger(ExecuteHaircutTasksService.name);
+  private readonly processingTasks = new Set<string>(); // Защита от дублирования
 
   constructor(
     getColumnTasksService: GetColumnTasksService,

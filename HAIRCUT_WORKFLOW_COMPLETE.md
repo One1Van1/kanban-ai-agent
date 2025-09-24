@@ -92,7 +92,7 @@ if (hasTitle && hasDescription && hasPhoto) {
   await this.moveTaskService.moveTaskToColumn(task.key, 'In Progress');
   await this.addTaskCommentService.addCommentToTask(
     task.key,
-    'Стрижка займёт минуту',
+    'Стрижка займёт некоторое время',
   );
 } else {
   // НЕПОЛНАЯ ЗАДАЧА
@@ -168,7 +168,7 @@ const completionComment = `Стрижка выполнена! ✂️ Сдела�
    - ✅ hasDescription = true
    - ✅ hasPhoto = true
 6. **Перемещает в "In Progress"**
-7. **Добавляет комментарий:** "Стрижка займёт минуту"
+7. **Добавляет комментарий:** "Стрижка займёт некоторое время"
 
 **Ожидаемый результат:** Задача автоматически перемещена в "In Progress" с комментарием
 

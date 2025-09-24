@@ -74,7 +74,7 @@
 // ПОЛНАЯ задача (название + описание + фото)
 if (hasTitle && hasDescription && hasPhoto) {
   // → Move to "In Progress"
-  // → Add comment: "Стрижка займёт минуту"
+  // → Add comment: "Стрижка займёт некоторое время"
 }
 
 // НЕПОЛНАЯ задача
