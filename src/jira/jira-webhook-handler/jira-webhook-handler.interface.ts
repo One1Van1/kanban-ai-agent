@@ -156,6 +156,7 @@ export enum JiraWebhookEvent {
 export enum AIAgentAction {
   ANALYZE_NEW_TASK = 'analyze-new-task',
   ANALYZE_HAIRCUT_TASK = 'analyze-haircut-task',
+  EXECUTE_HAIRCUT_TASK = 'execute-haircut-task',
   CHECK_PROGRESS = 'check-progress',
   AUTO_ASSIGNMENT = 'auto-assignment',
   SEND_NOTIFICATION = 'send-notification',

@@ -25,6 +25,8 @@ export class JiraWebhookHandlerService {
       enableAutoAssignment: false,
       haircutKeywords: [
         'стрижка',
+        'стрижку',
+        'стрижки',
         'haircut',
         'окрашивание',
         'укладка',
@@ -161,16 +163,54 @@ export class JiraWebhookHandlerService {
         };
       }
 
-      // Анализ задачи о стрижке
-      if (payload.issue?.fields?.status?.name === 'To Do') {
-        await this.triggerAiAction(AIAgentAction.ANALYZE_HAIRCUT_TASK);
-        triggeredActions.push('haircut-analysis');
-      }
+      const eventType = payload.webhookEvent as JiraWebhookEvent;
+      const currentStatus = payload.issue?.fields?.status?.name;
 
-      // Мониторинг выполнения
-      if (payload.issue?.fields?.status?.name === 'In Progress') {
-        await this.triggerAiAction(AIAgentAction.CHECK_PROGRESS);
-        triggeredActions.push('progress-monitoring');
+      this.logger.log(
+        `Processing haircut task: ${payload.issue?.key} with status: ${currentStatus}, event: ${eventType}`,
+      );
+
+      // Простая логика: запускаем нужный эндпоинт агента в зависимости от статуса
+      switch (currentStatus) {
+        case 'New':
+        case 'To Do':
+        case 'Questions':
+          // Задача в New/Questions -> запускаем анализ задач на стрижку
+          this.logger.log(
+            `Triggering haircut analysis for status: ${currentStatus}`,
+          );
+          await this.triggerAiAction(
+            AIAgentAction.ANALYZE_HAIRCUT_TASK,
+            currentStatus,
+          );
+          triggeredActions.push('haircut-analysis');
+          break;
+
+        case 'In Progress':
+          // Задача в In Progress -> запускаем выполнение стрижки
+          this.logger.log(
+            `Triggering haircut execution for status: ${currentStatus}`,
+          );
+          await this.triggerAiAction(
+            AIAgentAction.EXECUTE_HAIRCUT_TASK,
+            currentStatus,
+          );
+          triggeredActions.push('haircut-execution');
+          break;
+
+        case 'Review':
+          // Задача в Review -> пока только логируем
+          this.logger.log(
+            `Haircut task ${payload.issue?.key} moved to Review for quality check`,
+          );
+          triggeredActions.push('review-initiated');
+          break;
+
+        default:
+          this.logger.log(
+            `No specific action for haircut task status: ${currentStatus}`,
+          );
+          triggeredActions.push('status-logged');
       }
 
       return {
@@ -205,15 +245,12 @@ export class JiraWebhookHandlerService {
 
     // Запуск анализа новых задач
     if (this.config.enableAiAnalysis) {
-      const isHaircut = this.isHaircutRelated(issue.fields.summary);
-
-      if (isHaircut) {
-        await this.triggerAiAction(AIAgentAction.ANALYZE_HAIRCUT_TASK);
-        triggeredActions.push('haircut-analysis');
-      } else {
-        await this.triggerAiAction(AIAgentAction.ANALYZE_NEW_TASK);
-        triggeredActions.push('new-task-analysis');
-      }
+      const currentStatus = issue.fields.status?.name || 'New';
+      await this.triggerAiAction(
+        AIAgentAction.ANALYZE_HAIRCUT_TASK,
+        currentStatus,
+      );
+      triggeredActions.push('haircut-analysis');
     }
 
     // Отправка уведомлений
@@ -248,6 +285,7 @@ export class JiraWebhookHandlerService {
       await this.handleStatusChange(
         issue.key,
         statusChange.toString || '',
+        issue.fields.summary,
         triggeredActions,
       );
     }
@@ -282,7 +320,8 @@ export class JiraWebhookHandlerService {
 
     // Анализ комментария на предмет важной информации
     if (this.containsImportantKeywords(comment.body)) {
-      await this.triggerAiAction(AIAgentAction.ANALYZE_NEW_TASK);
+      const currentStatus = issue.fields?.status?.name || 'New';
+      await this.triggerAiAction(AIAgentAction.ANALYZE_NEW_TASK, currentStatus);
       triggeredActions.push('comment-analysis');
     }
 
@@ -295,87 +334,111 @@ export class JiraWebhookHandlerService {
   private async handleStatusChange(
     issueKey: string,
     newStatus: string,
+    issueSummary: string,
     triggeredActions: string[],
   ): Promise<void> {
+    this.logger.log(`Handling status change for ${issueKey} to: ${newStatus}`);
+
     switch (newStatus) {
       case 'Done':
         // Анализ выполненных задач о стрижках
-        await this.triggerAiAction(AIAgentAction.ANALYZE_HAIRCUT_TASK);
-        triggeredActions.push('completion-analysis');
+        await this.triggerAiAction(
+          AIAgentAction.ANALYZE_HAIRCUT_TASK,
+          newStatus,
+        );
+        triggeredActions.push('haircut-completion-analysis');
         break;
 
       case 'In Progress':
-        // Мониторинг прогресса
-        await this.triggerAiAction(AIAgentAction.CHECK_PROGRESS);
-        triggeredActions.push('progress-monitoring');
+        // Выполнение стрижки
+        await this.triggerAiAction(
+          AIAgentAction.EXECUTE_HAIRCUT_TASK,
+          newStatus,
+        );
+        triggeredActions.push('haircut-execution');
         break;
 
       case 'Review':
         // Проверка качества выполнения
         triggeredActions.push('review-initiated');
         break;
-    }
-  }
 
-  /**
+      case 'Questions':
+        // Анализ задач в статусе Questions
+        await this.triggerAiAction(
+          AIAgentAction.ANALYZE_HAIRCUT_TASK,
+          newStatus,
+        );
+        triggeredActions.push('haircut-questions-analysis');
+        break;
+
+      case 'To Do':
+      case 'New':
+        // Анализ новых задач стрижек
+        await this.triggerAiAction(
+          AIAgentAction.ANALYZE_HAIRCUT_TASK,
+          newStatus,
+        );
+        triggeredActions.push('haircut-analysis');
+        break;
+
+      default:
+        this.logger.log(`No specific action for status: ${newStatus}`);
+        triggeredActions.push('status-change-logged');
+        break;
+    }
+  } /**
    * Запуск действия AI агента
    */
-  private async triggerAiAction(action: AIAgentAction): Promise<void> {
+  private async triggerAiAction(
+    action: AIAgentAction,
+    targetStatus?: string,
+  ): Promise<void> {
     try {
-      const baseUrl = 'http://localhost:3000'; // Простая конфигурация для разработки
-
-      const endpoints = {
-        [AIAgentAction.ANALYZE_NEW_TASK]: '/ai-agent/analyze-new-tasks',
-        [AIAgentAction.ANALYZE_HAIRCUT_TASK]: '/ai-agent/analyze-haircut-tasks',
-        [AIAgentAction.CHECK_PROGRESS]: '/ai-agent/check-progress-tasks',
-        [AIAgentAction.AUTO_ASSIGNMENT]: '/ai-agent/auto-assignment',
-        [AIAgentAction.SEND_NOTIFICATION]: '/ai-agent/send-notification',
-        [AIAgentAction.UPDATE_TASK_METADATA]: '/ai-agent/update-metadata',
-      };
-
-      const endpoint = endpoints[action];
-      if (!endpoint) {
-        this.logger.warn(`Unknown AI action: ${action}`);
-        return;
-      }
-
       this.logger.log(
-        `Triggering AI action: ${action} -> ${baseUrl}${endpoint}`,
+        `Triggering AI action: ${action} for status: ${targetStatus}`,
       );
 
-      // Даём небольшую задержку для асинхронного выполнения
-      setTimeout(async () => {
-        try {
-          // Формируем правильные параметры для каждого AI сервиса
-          let payload = {};
+      // Просто вызываем соответствующий AI сервис напрямую
+      if (action === AIAgentAction.ANALYZE_HAIRCUT_TASK) {
+        // Вызываем анализ задач на стрижку через внутренний HTTP-клиент
+        const baseUrl = 'http://localhost:3000';
+        const response = await axios.post(
+          `${baseUrl}/ai-agent/analyze-haircut-tasks`,
+          {},
+          {
+            timeout: 30000, // 30 секунд для AI операций
+          },
+        );
 
-          if (
-            action === AIAgentAction.ANALYZE_NEW_TASK ||
-            action === AIAgentAction.ANALYZE_HAIRCUT_TASK
-          ) {
-            payload = { sourceColumn: 'New' };
-          } else if (action === AIAgentAction.CHECK_PROGRESS) {
-            payload = { sourceColumn: 'In Progress' };
-          } else {
-            payload = {
-              trigger: 'webhook',
-              timestamp: new Date().toISOString(),
-            };
-          }
+        this.logger.log(
+          `Haircut analysis completed: ${JSON.stringify(response.data)}`,
+        );
+      } else if (action === AIAgentAction.EXECUTE_HAIRCUT_TASK) {
+        // Вызываем выполнение задач на стрижку
+        const baseUrl = 'http://localhost:3000';
+        const response = await axios.post(
+          `${baseUrl}/ai-agent/execute-haircut-tasks`,
+          {},
+          {
+            timeout: 30000,
+          },
+        );
 
-          await axios.post(`${baseUrl}${endpoint}`, payload, {
-            timeout: 5000, // 5 секунд таймаут
-          });
-
-          this.logger.log(`AI action completed: ${action}`);
-        } catch (error) {
-          this.logger.error(`AI action failed: ${action} - ${error.message}`);
-        }
-      }, 100); // 100ms задержка
+        this.logger.log(
+          `Haircut execution completed: ${JSON.stringify(response.data)}`,
+        );
+      } else {
+        this.logger.warn(`AI action ${action} not implemented for direct call`);
+      }
     } catch (error) {
-      this.logger.error(
-        `Failed to schedule AI action ${action}: ${error.message}`,
-      );
+      this.logger.error(`AI action ${action} failed: ${error.message}`);
+      if (error.response) {
+        this.logger.error(`Response status: ${error.response.status}`);
+        this.logger.error(
+          `Response data: ${JSON.stringify(error.response.data)}`,
+        );
+      }
     }
   }
 
@@ -400,9 +463,11 @@ export class JiraWebhookHandlerService {
    */
   private isHaircutRelated(summary: string): boolean {
     const text = summary.toLowerCase();
-    return this.config.haircutKeywords.some((keyword) =>
+    const isHaircut = this.config.haircutKeywords.some((keyword) =>
       text.includes(keyword.toLowerCase()),
     );
+    this.logger.log(`Checking haircut: "${summary}" -> ${isHaircut}`);
+    return isHaircut;
   }
 
   /**

@@ -143,7 +143,8 @@ export class AutoHaircutMonitorService {
   }
 
   // Дополнительная cron-задача для резервного мониторинга (каждые 5 минут)
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  // ВРЕМЕННО ОТКЛЮЧЕН для тестирования
+  // @Cron(CronExpression.EVERY_5_MINUTES)
   async handleBackupMonitoring(): Promise<void> {
     if (this.settings.enabled && !this.isMonitoring) {
       this.logger.warn(

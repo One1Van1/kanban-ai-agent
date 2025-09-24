@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { RunAutoWorkflowService } from '../run-auto-workflow/run-auto-workflow.service';
+// import { RunAutoWorkflowService } from '../run-auto-workflow/run-auto-workflow.service'; // НЕ СТРИЖКИ: закомментировано
 import { AnalyzeHaircutTasksService } from '../analyze-haircut-tasks/analyze-haircut-tasks.service';
 import { ExecuteHaircutTasksService } from '../execute-haircut-tasks/execute-haircut-tasks.service';
 
@@ -9,7 +9,7 @@ export class AiAgentSchedulerService {
   private readonly logger = new Logger(AiAgentSchedulerService.name);
 
   constructor(
-    private readonly runAutoWorkflowService: RunAutoWorkflowService,
+    // private readonly runAutoWorkflowService: RunAutoWorkflowService, // НЕ СТРИЖКИ: закомментировано
     private readonly analyzeHaircutTasksService: AnalyzeHaircutTasksService,
     private readonly executeHaircutTasksService: ExecuteHaircutTasksService,
   ) {}
@@ -18,20 +18,21 @@ export class AiAgentSchedulerService {
    * Запускает AI workflow каждую минуту
    * ОТКЛЮЧЕНО: теперь используем webhook для мгновенной реакции
    * Оставлен как fallback для случаев, когда webhook не сработал
+   * НЕ СТРИЖКИ: закомментировано, так как не относится к сценарию стрижек
    */
   // @Cron(CronExpression.EVERY_MINUTE)
-  async handleAutoWorkflow() {
-    this.logger.log('⏰ Running scheduled AI workflow...');
+  // async handleAutoWorkflow() {
+  //   this.logger.log('⏰ Running scheduled AI workflow...');
 
-    try {
-      const result = await this.runAutoWorkflowService.runAutoWorkflow();
-      this.logger.log(
-        `⏰ Scheduled workflow complete: ${result.totalMoved} tasks moved in ${result.duration}ms`,
-      );
-    } catch (error) {
-      this.logger.error('⏰ Scheduled workflow failed:', error.message);
-    }
-  }
+  //   try {
+  //     const result = await this.runAutoWorkflowService.runAutoWorkflow();
+  //     this.logger.log(
+  //       `⏰ Scheduled workflow complete: ${result.totalMoved} tasks moved in ${result.duration}ms`,
+  //     );
+  //   } catch (error) {
+  //     this.logger.error('⏰ Scheduled workflow failed:', error.message);
+  //   }
+  // }
 
   /**
    * Запускает анализ задач о стрижках каждую минуту
@@ -85,8 +86,9 @@ export class AiAgentSchedulerService {
   /**
    * Fallback анализ для случаев, когда webhook не сработал
    * Запускается раз в час для проверки пропущенных задач
+   * ВРЕМЕННО ОТКЛЮЧЕН для тестирования
    */
-  @Cron('0 */1 * * *') // Каждый час
+  // @Cron('0 */1 * * *') // Каждый час
   async handleFallbackAnalysis() {
     this.logger.log('🔍 Running fallback analysis for missed tasks...');
 

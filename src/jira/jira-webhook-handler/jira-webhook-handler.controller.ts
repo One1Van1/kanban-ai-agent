@@ -172,13 +172,27 @@ export class JiraWebhookHandlerController {
     @Body() payload: JiraWebhookPayload,
   ): Promise<WebhookResponse> {
     try {
-      this.logger.log(
-        `Processing haircut task webhook for issue ${payload.issue?.key}`,
-      );
+      this.logger.log('=== HAIRCUT WEBHOOK RECEIVED ===');
+      this.logger.log(`Event: ${payload.webhookEvent}`);
+      this.logger.log(`Issue: ${payload.issue?.key}`);
+      this.logger.log(`Summary: ${payload.issue?.fields?.summary}`);
+      this.logger.log(`Status: ${payload.issue?.fields?.status?.name}`);
+
+      if (payload.changelog?.items) {
+        this.logger.log('Changelog items:');
+        payload.changelog.items.forEach((item) => {
+          this.logger.log(
+            `  ${item.field}: ${item.fromString} -> ${item.toString}`,
+          );
+        });
+      }
 
       const result =
         await this.jiraWebhookHandlerService.processHaircutTaskWebhook(payload);
 
+      this.logger.log(
+        `=== HAIRCUT WEBHOOK PROCESSED: ${result.triggeredActions.join(', ')} ===`,
+      );
       return result;
     } catch (error) {
       this.logger.error(

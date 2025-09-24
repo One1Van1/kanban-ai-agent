@@ -11,6 +11,9 @@ import { RunAutoWorkflowModule } from './run-auto-workflow/run-auto-workflow.mod
 import { AnalyzeHaircutTasksModule } from './analyze-haircut-tasks/analyze-haircut-tasks.module';
 import { ExecuteHaircutTasksModule } from './execute-haircut-tasks/execute-haircut-tasks.module';
 import { AutoHaircutMonitorModule } from './auto-haircut-monitor/auto-haircut-monitor.module';
+// Новые специализированные модули для стрижек
+import { AnalyzeNewHaircutTasksModule } from './analyze-new-haircut-tasks/analyze-new-haircut-tasks.module';
+import { CheckHaircutProgressModule } from './check-haircut-progress/check-haircut-progress.module';
 import { SharedModule } from './shared/shared.module';
 
 // Shared сервисы уже в SharedModule
@@ -19,26 +22,38 @@ import { SharedModule } from './shared/shared.module';
   imports: [
     ConfigModule,
     ScheduleModule.forRoot(), // Для cron jobs
+
+    // Общие модули (без сценариев стрижек)
     AnalyzeNewTasksModule,
     CheckProgressTasksModule,
     CheckEntityExistsModule,
     ExecuteTasksModule,
     RunAutoWorkflowModule,
+
+    // Специализированные модули только для стрижек
     AnalyzeHaircutTasksModule,
     ExecuteHaircutTasksModule,
     AutoHaircutMonitorModule,
+    AnalyzeNewHaircutTasksModule,
+    CheckHaircutProgressModule,
+
     SharedModule,
   ],
   providers: [],
   exports: [
+    // Общие модули
     AnalyzeNewTasksModule,
     CheckProgressTasksModule,
     CheckEntityExistsModule,
     ExecuteTasksModule,
     RunAutoWorkflowModule,
+
+    // Модули для стрижек
     AnalyzeHaircutTasksModule,
     ExecuteHaircutTasksModule,
     AutoHaircutMonitorModule,
+    AnalyzeNewHaircutTasksModule,
+    CheckHaircutProgressModule,
   ],
 })
 export class AiAgentModule {}

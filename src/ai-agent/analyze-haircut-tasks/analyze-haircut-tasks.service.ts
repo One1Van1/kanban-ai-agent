@@ -4,7 +4,7 @@ import { GetTaskService } from '../../jira/get-task/get-task.service';
 import { GetColumnTasksService } from '../../jira/get-column-tasks/get-column-tasks.service';
 import { MoveTaskService } from '../../jira/move-task/move-task.service';
 import { AddTaskCommentService } from '../../jira/add-task-comment/add-task-comment.service';
-import { CheckEntityExistsService } from '../check-entity-exists/check-entity-exists.service';
+// import { CheckEntityExistsService } from '../check-entity-exists/check-entity-exists.service';
 import { AnalyzeHaircutTasksDto } from './analyze-haircut-tasks.dto';
 import {
   AnalyzeHaircutTasksResponse,
@@ -18,14 +18,14 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
     getColumnTasksService: GetColumnTasksService,
     moveTaskService: MoveTaskService,
     addTaskCommentService: AddTaskCommentService,
-    checkEntityExistsService: CheckEntityExistsService,
+    // checkEntityExistsService: CheckEntityExistsService,
     private readonly getTaskService: GetTaskService,
   ) {
     super(
       getColumnTasksService,
       moveTaskService,
       addTaskCommentService,
-      checkEntityExistsService,
+      // checkEntityExistsService,
     );
   }
   async execute(
@@ -76,7 +76,8 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
           `Task ${task.key}: attachments=${taskDetails.attachmentCount}, hasDesc=${!!taskDetails.description}`,
         );
 
-        const analysisResult = await this.analyzeHaircutTask(taskDetails);
+        const analysisResult =
+          await this.analyzeSpecificHaircutTask(taskDetails);
         results.push(analysisResult);
 
         if (analysisResult.moved) {
@@ -99,13 +100,19 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
     }
   }
 
-  private async analyzeHaircutTask(
+  private async analyzeSpecificHaircutTask(
     task: HaircutTaskDetails,
   ): Promise<HaircutTaskAnalysisResult> {
-    this.logger.log(`Analyzing task: ${task.key} - ${task.summary}`);
+    this.logger.log(`🔍 Analyzing task: ${task.key} - "${task.summary}"`);
+    this.logger.log(
+      `Task details: description="${task.description}", hasAttachments=${task.hasAttachments}, attachmentCount=${task.attachmentCount}`,
+    );
 
     // Проверяем, связана ли задача со стрижкой
-    const isHaircutTask = this.isHaircutRelated(task.summary, task.description);
+    const isHaircutTask = this.isSpecificHaircutRelated(
+      task.summary,
+      task.description,
+    );
 
     if (!isHaircutTask) {
       this.logger.log(`Task ${task.key} is not haircut-related, skipping`);
@@ -122,37 +129,41 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
     const hasDescription = Boolean(task.description && task.description.trim());
     const hasPhoto = task.hasAttachments;
 
+    this.logger.log(
+      `Task ${task.key} completeness check: title=${hasTitle}, description=${hasDescription}, photo=${hasPhoto}`,
+    );
+
     // Полная задача: есть название, описание и фото
     if (hasTitle && hasDescription && hasPhoto) {
+      this.logger.log(`Task ${task.key} is COMPLETE - moving to In Progress`);
       try {
         await this.moveTaskService.moveTaskToColumn(task.key, 'In Progress');
 
-        // Добавляем комментарий для полной задачи
+        // Проверяем, не добавляли ли уже этот комментарий
         const progressComment = 'Стрижка займёт минуту';
-        const progressCommentRequest = {
-          body: {
-            version: 1,
-            type: 'doc',
-            content: [
-              {
-                type: 'paragraph',
-                content: [
-                  {
-                    type: 'text',
-                    text: progressComment,
-                  },
-                ],
-              },
-            ],
-          },
-        };
+        const fullTaskInfo = await this.getTaskService.getTaskByKey(task.key);
+        const existingComments =
+          (fullTaskInfo as any).fields?.comment?.comments || [];
 
-        // Используем базовый сервис для добавления комментария
-        const httpClient = (this.addTaskCommentService as any).getHttpClient();
-        await httpClient.post(
-          `/issue/${task.key}/comment`,
-          progressCommentRequest,
+        const alreadyCommented = existingComments.some((existingComment: any) =>
+          existingComment.body?.content?.[0]?.content?.[0]?.text?.includes(
+            'займёт минуту',
+          ),
         );
+
+        if (!alreadyCommented) {
+          await this.addTaskCommentService.addCommentToTask(
+            task.key,
+            progressComment,
+          );
+          this.logger.log(
+            `✅ Comment added to task ${task.key}: "${progressComment}"`,
+          );
+        } else {
+          this.logger.log(
+            `⚠️ Comment already exists for task ${task.key}, skipping`,
+          );
+        }
 
         this.logger.log(
           `Task ${task.key} moved to In Progress (complete haircut request)`,
@@ -180,32 +191,40 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
     }
 
     // Неполная задача: перемещаем в Questions и добавляем комментарий
+    this.logger.log(
+      `Task ${task.key} is incomplete - moving to Questions with comment`,
+    );
+
     try {
+      this.logger.log(`Attempting to move task ${task.key} to Questions...`);
       await this.moveTaskService.moveTaskToColumn(task.key, 'Questions');
+      this.logger.log(`✅ Successfully moved task ${task.key} to Questions`);
 
       const comment = 'Какую именно стрижку ты хочешь?';
-      // Используем правильный формат для Jira API (ADF)
-      const commentRequest = {
-        body: {
-          version: 1,
-          type: 'doc',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  text: comment,
-                },
-              ],
-            },
-          ],
-        },
-      };
 
-      // Используем базовый сервис для добавления комментария
-      const httpClient = (this.addTaskCommentService as any).getHttpClient();
-      await httpClient.post(`/issue/${task.key}/comment`, commentRequest);
+      // Проверяем, не добавляли ли мы уже этот комментарий
+      this.logger.log(`Checking existing comments for task ${task.key}...`);
+      const fullTaskInfo = await this.getTaskService.getTaskByKey(task.key);
+      const existingComments =
+        (fullTaskInfo as any).fields?.comment?.comments || [];
+
+      const alreadyCommented = existingComments.some((existingComment: any) =>
+        existingComment.body?.content?.[0]?.content?.[0]?.text?.includes(
+          comment.substring(0, 10),
+        ),
+      );
+
+      if (!alreadyCommented) {
+        this.logger.log(
+          `Attempting to add comment to task ${task.key}: "${comment}"`,
+        );
+        await this.addTaskCommentService.addCommentToTask(task.key, comment);
+        this.logger.log(`✅ Successfully added comment to task ${task.key}`);
+      } else {
+        this.logger.log(
+          `⚠️ Comment already exists for task ${task.key}, skipping`,
+        );
+      }
 
       this.logger.log(
         `Task ${task.key} moved to Questions (incomplete haircut request)`,
@@ -219,7 +238,15 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
         commentAdded: comment,
       };
     } catch (error) {
-      this.logger.error(`Failed to move task ${task.key} to Questions`, error);
+      this.logger.error(
+        `❌ Failed to move task ${task.key} to Questions:`,
+        error.message,
+      );
+      this.logger.error(`Error details:`, {
+        errorName: error.name,
+        errorMessage: error.message,
+        errorStack: error.stack?.split('\n').slice(0, 3).join('\n'), // First 3 lines of stack
+      });
       return {
         taskKey: task.key,
         decision: 'move_to_questions',
@@ -229,7 +256,10 @@ export class AnalyzeHaircutTasksService extends AiBaseService {
     }
   }
 
-  private isHaircutRelated(summary: string, description: string): boolean {
+  private isSpecificHaircutRelated(
+    summary: string,
+    description: string,
+  ): boolean {
     const haircutKeywords = [
       'стрижк',
       'haircut',

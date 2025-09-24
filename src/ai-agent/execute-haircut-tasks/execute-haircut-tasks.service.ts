@@ -4,6 +4,7 @@ import { ExecuteHaircutTasksDto } from './execute-haircut-tasks.dto';
 import { ExecuteHaircutTasksResponse } from './execute-haircut-tasks.interface';
 import { AttachFileService } from '../../jira/attach-file/attach-file.service';
 import { GetColumnTasksService } from '../../jira/get-column-tasks/get-column-tasks.service';
+import { GetTaskService } from '../../jira/get-task/get-task.service';
 import { MoveTaskService } from '../../jira/move-task/move-task.service';
 import { AddTaskCommentService } from '../../jira/add-task-comment/add-task-comment.service';
 import { CheckEntityExistsService } from '../check-entity-exists/check-entity-exists.service';
@@ -17,14 +18,15 @@ export class ExecuteHaircutTasksService extends AiBaseService {
     getColumnTasksService: GetColumnTasksService,
     moveTaskService: MoveTaskService,
     addTaskCommentService: AddTaskCommentService,
-    checkEntityExistsService: CheckEntityExistsService,
+    private readonly getTaskService: GetTaskService,
+    // checkEntityExistsService: CheckEntityExistsService,
     private readonly attachFileService: AttachFileService,
   ) {
     super(
       getColumnTasksService,
       moveTaskService,
       addTaskCommentService,
-      checkEntityExistsService,
+      // checkEntityExistsService,
     );
   }
 
@@ -58,7 +60,7 @@ export class ExecuteHaircutTasksService extends AiBaseService {
         this.logger.log(`🎯 Processing task: ${task.key} - ${task.summary}`);
 
         // Проверяем, является ли задача о стрижке
-        if (this.isHaircutRelated(task.summary, task.description)) {
+        if (this.isExecuteHaircutRelated(task.summary, task.description)) {
           tasksExecuted++;
 
           // Выполняем стрижку (перемещаем в Review + комментарий + фото)
@@ -89,7 +91,10 @@ export class ExecuteHaircutTasksService extends AiBaseService {
   /**
    * Проверяет, является ли задача связанной со стрижкой
    */
-  private isHaircutRelated(summary: string, description?: string): boolean {
+  private isExecuteHaircutRelated(
+    summary: string,
+    description?: string,
+  ): boolean {
     const text = (summary + ' ' + (description || '')).toLowerCase();
     const haircutKeywords = [
       'стрижка',
@@ -148,28 +153,49 @@ export class ExecuteHaircutTasksService extends AiBaseService {
         completionComment = `Стрижка выполнена! ✂️ Сделан стильный андеркат с плавным переходом и текстурированным верхом. 📷 Фото результата: ${attachmentInfo.filename} (${Math.round(attachmentInfo.size / 1024)} KB)`;
       }
 
-      // Формируем комментарий в формате ADF (как в analyze-haircut-tasks)
-      const commentRequest = {
-        body: {
-          version: 1,
-          type: 'doc',
-          content: [
-            {
-              type: 'paragraph',
-              content: [
-                {
-                  type: 'text',
-                  text: completionComment,
-                },
-              ],
-            },
-          ],
-        },
-      };
+      // Проверяем, не добавляли ли уже комментарий о выполнении
+      const fullTaskInfo = await this.getTaskService.getTaskByKey(taskKey);
+      const existingComments =
+        (fullTaskInfo as any).fields?.comment?.comments || [];
 
-      // Используем прямой httpClient как в рабочем коде
-      const httpClient = (this.addTaskCommentService as any).getHttpClient();
-      await httpClient.post(`/issue/${taskKey}/comment`, commentRequest);
+      const alreadyCompleted = existingComments.some((existingComment: any) =>
+        existingComment.body?.content?.[0]?.content?.[0]?.text?.includes(
+          'Стрижка выполнена',
+        ),
+      );
+
+      if (!alreadyCompleted) {
+        // Формируем комментарий в формате ADF (как в analyze-haircut-tasks)
+        const commentRequest = {
+          body: {
+            version: 1,
+            type: 'doc',
+            content: [
+              {
+                type: 'paragraph',
+                content: [
+                  {
+                    type: 'text',
+                    text: completionComment,
+                  },
+                ],
+              },
+            ],
+          },
+        };
+
+        // Используем прямой httpClient как в рабочем коде
+        const httpClient = (this.addTaskCommentService as any).getHttpClient();
+        await httpClient.post(`/issue/${taskKey}/comment`, commentRequest);
+
+        this.logger.log(
+          `✅ Completion comment added to task ${taskKey}: "${completionComment}"`,
+        );
+      } else {
+        this.logger.log(
+          `⚠️ Completion comment already exists for task ${taskKey}, skipping`,
+        );
+      }
 
       this.logger.log(`✅ Task ${taskKey} completed with photo and comment`);
     } catch (error) {

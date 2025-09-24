@@ -9,7 +9,26 @@ export class AddTaskCommentService extends JiraBaseService {
     comment: string,
   ): Promise<AddTaskCommentResponse> {
     try {
-      await this.addComment(taskKey, { body: comment });
+      // Формируем комментарий в формате ADF для Jira Cloud
+      const commentBody = {
+        body: {
+          version: 1,
+          type: 'doc',
+          content: [
+            {
+              type: 'paragraph',
+              content: [
+                {
+                  type: 'text',
+                  text: comment,
+                },
+              ],
+            },
+          ],
+        },
+      };
+
+      await this.addComment(taskKey, commentBody);
       this.logger.log(`Comment added to task ${taskKey}`);
       return {
         success: true,
