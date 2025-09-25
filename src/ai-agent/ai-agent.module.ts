@@ -10,6 +10,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 // import { RunAutoWorkflowModule } from './run-auto-workflow/run-auto-workflow.module';
 import { AnalyzeHaircutTasksModule } from './analyze-haircut-tasks/analyze-haircut-tasks.module';
 import { ExecuteHaircutTasksModule } from './execute-haircut-tasks/execute-haircut-tasks.module';
+import { ProcessHaircutTaskModule } from './process-haircut-task/process-haircut-task.module';
 // import { AutoHaircutMonitorModule } from './auto-haircut-monitor/auto-haircut-monitor.module';
 // Новые специализированные модули для стрижек
 // import { AnalyzeNewHaircutTasksModule } from './analyze-new-haircut-tasks/analyze-new-haircut-tasks.module';
@@ -33,6 +34,7 @@ import { SharedModule } from './shared/shared.module';
     // Специализированные модули только для стрижек
     AnalyzeHaircutTasksModule,
     ExecuteHaircutTasksModule,
+    ProcessHaircutTaskModule,
     // AutoHaircutMonitorModule,
     // AnalyzeNewHaircutTasksModule,
     // CheckHaircutProgressModule,
@@ -51,6 +53,7 @@ import { SharedModule } from './shared/shared.module';
     // Модули для стрижек
     AnalyzeHaircutTasksModule,
     ExecuteHaircutTasksModule,
+    ProcessHaircutTaskModule,
     // AutoHaircutMonitorModule,
     // AnalyzeNewHaircutTasksModule,
     // CheckHaircutProgressModule,

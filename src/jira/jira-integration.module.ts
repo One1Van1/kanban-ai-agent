@@ -41,11 +41,20 @@ import { AttachFileService } from './attach-file/attach-file.service';
 import { HaircutReportWebhookController } from './haircut-report-webhook/haircut-report-webhook.controller';
 import { HaircutReportWebhookService } from './haircut-report-webhook/haircut-report-webhook.service';
 
+// Time Validation Webhook
+import { TimeValidationWebhookModule } from './time-validation-webhook/time-validation-webhook.module';
+
 // AI Reporting Agent for integration
 import { AnalyzeCompletedHaircutTasksModule } from '../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.module';
+import { ProcessHaircutTaskModule } from '../ai-agent/process-haircut-task/process-haircut-task.module';
 
 @Module({
-  imports: [ConfigModule, AnalyzeCompletedHaircutTasksModule],
+  imports: [
+    ConfigModule,
+    AnalyzeCompletedHaircutTasksModule,
+    ProcessHaircutTaskModule,
+    TimeValidationWebhookModule,
+  ],
   controllers: [
     HealthCheckController,
     GetTaskController,

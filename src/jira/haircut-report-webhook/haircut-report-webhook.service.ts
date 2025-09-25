@@ -1,304 +1,120 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { HaircutReportWebhookDto } from './haircut-report-webhook.dto';
-import {
-  WebhookResponse,
-  HaircutAnalysisData,
-  HaircutWebhookEvent,
-  TaskStatus,
-  ChangeType,
-} from './haircut-report-webhook.interface';
-import { AnalyzeCompletedHaircutTasksService } from '../../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.service';
-import { HaircutTaskAnalysisInput } from '../../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.interface';
+import { ProcessHaircutTaskService } from '../../ai-agent/process-haircut-task/process-haircut-task.service';
+import { ProcessHaircutTaskDto } from '../../ai-agent/process-haircut-task/process-haircut-task.dto';
 
 @Injectable()
 export class HaircutReportWebhookService {
   private readonly logger = new Logger(HaircutReportWebhookService.name);
 
   constructor(
-    private readonly aiReportingService: AnalyzeCompletedHaircutTasksService,
+    private readonly processHaircutTaskService: ProcessHaircutTaskService,
   ) {}
 
   /**
-   * Обрабатывает webhook события от Jira
+   * Обрабатывает webhook события от Jira - просто передает данные AI агенту
    */
   async processWebhook(webhookData: HaircutReportWebhookDto): Promise<any> {
-    this.logger.log(`Processing webhook event: ${webhookData.webhookEvent}`);
+    this.logger.log(
+      `📞 Webhook received: ${webhookData.webhookEvent} for task ${webhookData.issue?.key}`,
+    );
 
     try {
-      // Проверяем, что это интересующее нас событие
-      if (!this.isRelevantEvent(webhookData)) {
-        return {
-          processed: false,
-          reason: 'Event not relevant for haircut analysis',
-        };
-      }
+      // Просто конвертируем webhook данные в формат для AI агента
+      const taskData = this.convertWebhookToTaskData(webhookData);
 
-      // Проверяем, что задача связана со стрижками
-      if (!this.isHaircutTask(webhookData)) {
-        return {
-          processed: false,
-          reason: 'Task is not related to haircuts',
-        };
-      }
+      // Передаем все обработку unified AI агенту
+      const result = await this.processHaircutTaskService.processTask(taskData);
 
-      // Проверяем, что задача перешла в статус Review
-      if (!this.isReviewStatusChange(webhookData)) {
-        return {
-          processed: false,
-          reason: 'Task did not transition to Review status',
-        };
-      }
-
-      // Извлекаем данные для анализа
-      const analysisData = this.extractAnalysisData(webhookData);
-
-      // Здесь должен быть вызов AI агента для анализа
-      const analysisResult = await this.triggerHaircutAnalysis(analysisData);
+      this.logger.log(
+        `✅ Webhook processed for task ${taskData.taskKey}: ${result.action}`,
+      );
 
       return {
-        processed: true,
-        taskKey: analysisData.taskKey,
-        analysisTriggered: true,
-        analysisResult: analysisResult,
+        webhookProcessed: true,
+        agentResult: result,
+        timestamp: new Date().toISOString(),
       };
     } catch (error) {
       this.logger.error(
-        `Error processing webhook: ${error.message}`,
+        `❌ Webhook processing failed: ${error.message}`,
         error.stack,
       );
-      throw error;
+
+      return {
+        webhookProcessed: false,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      };
     }
   }
 
   /**
-   * Проверяет, является ли событие релевантным для анализа стрижек
+   * Конвертирует webhook данные в формат для AI агента
    */
-  private isRelevantEvent(webhookData: HaircutReportWebhookDto): boolean {
-    const relevantEvents = [
-      HaircutWebhookEvent.ISSUE_UPDATED,
-      HaircutWebhookEvent.COMMENT_CREATED,
-      HaircutWebhookEvent.COMMENT_UPDATED,
-    ];
-
-    return relevantEvents.includes(
-      webhookData.webhookEvent as HaircutWebhookEvent,
-    );
-  }
-
-  /**
-   * Проверяет, связана ли задача со стрижками
-   */
-  private isHaircutTask(webhookData: HaircutReportWebhookDto): boolean {
-    if (!webhookData.issue) return false;
-
-    const haircutKeywords = ['стрижка', 'стричь', 'haircut', 'hair', 'волосы'];
-    const summary = webhookData.issue.fields?.summary?.toLowerCase() || '';
-    const description =
-      webhookData.issue.fields?.description?.toLowerCase() || '';
-
-    const text = `${summary} ${description}`;
-
-    return haircutKeywords.some((keyword) =>
-      text.includes(keyword.toLowerCase()),
-    );
-  }
-
-  /**
-   * Проверяет, была ли задача переведена в статус Review
-   */
-  private isReviewStatusChange(webhookData: HaircutReportWebhookDto): boolean {
-    // Проверяем текущий статус
-    const currentStatus = webhookData.issue?.fields?.status?.name;
-    if (currentStatus !== TaskStatus.REVIEW) {
-      return false;
-    }
-
-    // Если есть changelog, проверяем изменение статуса
-    if (webhookData.changelog?.items) {
-      const statusChange = webhookData.changelog.items.find(
-        (item: any) => item.field === ChangeType.STATUS_CHANGE,
-      );
-
-      if (statusChange && statusChange.toString === TaskStatus.REVIEW) {
-        return true;
-      }
-    }
-
-    // Если нет changelog, считаем что это релевантное событие
-    // (например, ручная проверка задач в статусе Review)
-    return true;
-  }
-
-  /**
-   * Извлекает данные для анализа из webhook'а
-   */
-  private extractAnalysisData(
+  private convertWebhookToTaskData(
     webhookData: HaircutReportWebhookDto,
-  ): HaircutAnalysisData {
+  ): ProcessHaircutTaskDto {
     const issue = webhookData.issue;
+    const changelog = webhookData.changelog;
 
     return {
-      taskKey: issue?.key || 'unknown',
-      masterName:
-        issue?.fields?.assignee?.displayName || webhookData.user?.displayName,
-      timeSpent: this.extractTimeSpent(issue),
-      questions: this.extractQuestions(issue),
-      category: this.extractCategory(issue),
-      employeeComments: this.extractEmployeeComments(issue), // Добавляем извлечение комментариев
+      webhookEvent: webhookData.webhookEvent,
+      taskKey: issue.key,
+      taskSummary: issue.fields.summary,
+      taskDescription: issue.fields.description || '',
+      currentStatus: issue.fields.status?.name || 'Unknown',
+      assigneeName: issue.fields.assignee?.displayName || 'Unassigned',
+      fromStatus: this.getPreviousStatus(changelog),
+      totalTimeSeconds: issue.fields.timespent || 0,
+      worklogEntries: this.extractWorklogEntries(issue),
+      comments: this.extractComments(issue),
+      timestamp: webhookData.timestamp
+        ? String(webhookData.timestamp)
+        : new Date().toISOString(),
     };
   }
 
   /**
-   * Извлекает потраченное время из worklog
+   * Извлекает предыдущий статус из changelog
    */
-  private extractTimeSpent(issue: any): number | undefined {
-    const worklogs = issue?.fields?.worklog?.worklogs || [];
-    if (worklogs.length === 0) return undefined;
+  private getPreviousStatus(changelog: any): string {
+    if (!changelog?.items) return 'Unknown';
 
-    const totalSeconds = worklogs.reduce((total: number, worklog: any) => {
-      return total + (worklog.timeSpentSeconds || 0);
-    }, 0);
-
-    return totalSeconds;
-  }
-
-  /**
-   * Извлекает вопросы из комментариев
-   */
-  private extractQuestions(issue: any): string[] {
-    const comments = issue?.fields?.comment?.comments || [];
-    const questions: string[] = [];
-
-    comments.forEach((comment: any) => {
-      const body = comment.body || '';
-      // Ищем текст, который выглядит как вопросы
-      const questionMatches = body.match(/[?？]/g);
-      if (questionMatches) {
-        questions.push(body.trim());
-      }
-    });
-
-    return questions;
-  }
-
-  /**
-   * Извлекает все комментарии сотрудников для анализа
-   */
-  private extractEmployeeComments(issue: any): string[] {
-    const comments = issue?.fields?.comment?.comments || [];
-    const employeeComments: string[] = [];
-
-    comments.forEach((comment: any) => {
-      const body = comment.body || '';
-      if (body.trim()) {
-        employeeComments.push(body.trim());
-      }
-    });
-
-    return employeeComments;
-  }
-
-  /**
-   * Пытается определить категорию стрижки из названия и описания
-   */
-  private extractCategory(issue: any): string | undefined {
-    const summary = issue?.fields?.summary?.toLowerCase() || '';
-    const description = issue?.fields?.description?.toLowerCase() || '';
-    const text = `${summary} ${description}`;
-
-    const categories = [
-      {
-        name: 'Быстрая стрижка',
-        keywords: ['быстра', 'простая', 'обычная', 'базовая'],
-      },
-      {
-        name: 'Модельная стрижка',
-        keywords: ['модельная', 'сложная', 'креативная'],
-      },
-      { name: 'Детская стрижка', keywords: ['детская', 'ребенок', 'малыш'] },
-      { name: 'Женская стрижка', keywords: ['женская', 'дамская'] },
-      { name: 'Мужская стрижка', keywords: ['мужская'] },
-    ];
-
-    for (const category of categories) {
-      const found = category.keywords.some((keyword) => text.includes(keyword));
-      if (found) {
-        return category.name;
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Запускает анализ стрижки через AI агента
-   */
-  private async triggerHaircutAnalysis(
-    analysisData: HaircutAnalysisData,
-  ): Promise<any> {
-    this.logger.log(
-      `🤖 Triggering AI analysis for task: ${analysisData.taskKey}`,
+    const statusChange = changelog.items.find(
+      (item: any) => item.field === 'status',
     );
-
-    try {
-      // Преобразуем данные webhook'а в формат для AI агента
-      const aiInput: HaircutTaskAnalysisInput = {
-        issueKey: analysisData.taskKey,
-        taskTitle: `Анализ стрижки ${analysisData.taskKey}`,
-        taskDescription: analysisData.category || 'Категория не определена',
-        employeeComment: this.buildEmployeeComment(analysisData),
-        actualTimeMinutes: Math.round((analysisData.timeSpent || 0) / 60), // конвертируем секунды в минуты
-      };
-
-      this.logger.log(`📊 Calling AI agent with data:`, {
-        issueKey: aiInput.issueKey,
-        category: aiInput.taskDescription,
-        timeMinutes: aiInput.actualTimeMinutes,
-      });
-
-      // Вызываем AI агента для анализа
-      const analysisResult = await this.aiReportingService.analyzeTask(aiInput);
-
-      this.logger.log(`✅ AI analysis completed for ${analysisData.taskKey}:`, {
-        success: analysisResult.success,
-        finalPrice: analysisResult.price?.finalPrice,
-        timeStatus: analysisResult.timeAnalysis?.status,
-      });
-
-      return {
-        success: true,
-        aiAnalysisResult: analysisResult,
-        extractedData: analysisData,
-        aiInput: aiInput,
-      };
-    } catch (error) {
-      this.logger.error(
-        `❌ AI analysis failed for ${analysisData.taskKey}:`,
-        error,
-      );
-
-      return {
-        success: false,
-        error: error.message,
-        extractedData: analysisData,
-      };
-    }
+    return statusChange?.fromString || 'Unknown';
   }
 
   /**
-   * Формирует комментарий сотрудника из данных webhook'а
+   * Извлекает записи времени из задачи
    */
-  private buildEmployeeComment(analysisData: HaircutAnalysisData): string {
-    let comment = `Работу выполнил: ${analysisData.masterName || 'не указан'}`;
+  private extractWorklogEntries(issue: any): any[] {
+    if (!issue.fields.worklog?.worklogs) return [];
 
-    // Добавляем все комментарии сотрудника для полного анализа
-    if (
-      analysisData.employeeComments &&
-      analysisData.employeeComments.length > 0
-    ) {
-      comment += `\n\nОтчёт сотрудника:\n${analysisData.employeeComments.join('\n\n')}`;
-    }
+    return issue.fields.worklog.worklogs.map((worklog: any) => ({
+      timeSpentSeconds: worklog.timeSpentSeconds || 0,
+      started: worklog.started || '',
+      comment: worklog.comment || '',
+      author: {
+        displayName: worklog.author?.displayName || 'Unknown',
+      },
+    }));
+  }
 
-    return comment;
+  /**
+   * Извлекает комментарии из задачи
+   */
+  private extractComments(issue: any): any[] {
+    if (!issue.fields.comment?.comments) return [];
+
+    return issue.fields.comment.comments.map((comment: any) => ({
+      body: comment.body || '',
+      author: {
+        displayName: comment.author?.displayName || 'Unknown',
+      },
+      created: comment.created,
+    }));
   }
 }
