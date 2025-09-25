@@ -123,8 +123,11 @@ export class ProcessHaircutTaskService {
   private async performFullAnalysis(
     taskData: ProcessHaircutTaskDto,
   ): Promise<HaircutAnalysis> {
-    // 1. Определяем категорию из описания задачи
-    let category = this.extractCategory(taskData.taskDescription || '');
+    // 1. Определяем категорию из заголовка и описания задачи
+    const fullText = `${taskData.taskSummary || ''} ${taskData.taskDescription || ''}`;
+    this.logger.log(`🔍 Full text for analysis: "${fullText}"`);
+    let category = this.extractCategory(fullText);
+    this.logger.log(`📝 Initial category detected: ${category}`);
 
     // 2. Анализируем время
     const timeData = this.analyzeTime(taskData);
@@ -335,16 +338,50 @@ export class ProcessHaircutTaskService {
     if (!description) return 'Обычная стрижка';
 
     const desc = description.toLowerCase();
-    if (desc.includes('быстра') || desc.includes('под насадку')) {
+
+    // Быстрая стрижка
+    const fastKeywords = [
+      'быстра',
+      'быструю',
+      'быстрой',
+      'быстрая',
+      'под насадку',
+      'коротко',
+      'простая',
+      'простую',
+    ];
+    if (fastKeywords.some((keyword) => desc.includes(keyword))) {
       return 'Быстрая стрижка';
     }
-    if (
-      desc.includes('креативна') ||
-      desc.includes('окраск') ||
-      desc.includes('укладк')
-    ) {
+
+    // Креативная стрижка
+    const creativeKeywords = [
+      'креативна',
+      'креативную',
+      'креативной',
+      'креативная',
+      'окраск',
+      'окрашив',
+      'покраск',
+      'цвет',
+      'укладк',
+      'стайлинг',
+      'волн',
+      'сложна',
+      'сложную',
+      'сложной',
+      'сложная',
+      'модельн',
+      'стильн',
+      'эксклюзивн',
+      'плетени',
+      'коса',
+      'локоны',
+    ];
+    if (creativeKeywords.some((keyword) => desc.includes(keyword))) {
       return 'Креативная стрижка';
     }
+
     return 'Обычная стрижка';
   }
 
