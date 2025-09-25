@@ -1,7 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { HaircutReportWebhookDto } from './haircut-report-webhook.dto';
 import { ProcessHaircutTaskService } from '../../ai-agent/process-haircut-task/process-haircut-task.service';
 import { ProcessHaircutTaskDto } from '../../ai-agent/process-haircut-task/process-haircut-task.dto';
+import axios from 'axios';
 
 @Injectable()
 export class HaircutReportWebhookService {
@@ -9,6 +11,7 @@ export class HaircutReportWebhookService {
 
   constructor(
     private readonly processHaircutTaskService: ProcessHaircutTaskService,
+    private readonly configService: ConfigService,
   ) {}
 
   /**
@@ -20,8 +23,8 @@ export class HaircutReportWebhookService {
     );
 
     try {
-      // Просто конвертируем webhook данные в формат для AI агента
-      const taskData = this.convertWebhookToTaskData(webhookData);
+      // Просто конвертируем webhook данные в формат для AI агента (с полными данными из Jira)
+      const taskData = await this.convertWebhookToTaskData(webhookData);
 
       // Передаем все обработку unified AI агенту
       const result = await this.processHaircutTaskService.processTask(taskData);
@@ -52,23 +55,45 @@ export class HaircutReportWebhookService {
   /**
    * Конвертирует webhook данные в формат для AI агента
    */
-  private convertWebhookToTaskData(
+  private async convertWebhookToTaskData(
     webhookData: HaircutReportWebhookDto,
-  ): ProcessHaircutTaskDto {
+  ): Promise<ProcessHaircutTaskDto> {
     const issue = webhookData.issue;
     const changelog = webhookData.changelog;
 
+    // Получаем полные данные задачи из Jira API
+    let fullIssue = issue;
+    try {
+      const fullTaskResponse = await axios.get(
+        `/rest/api/3/issue/${issue.key}?expand=changelog`,
+        {
+          baseURL: this.configService.get<string>('jira.baseUrl'),
+          auth: {
+            username: this.configService.get<string>('jira.email') || '',
+            password: this.configService.get<string>('jira.apiToken') || '',
+          },
+        },
+      );
+      fullIssue = fullTaskResponse.data;
+      this.logger.log(`📥 Fetched full data for ${issue.key}`);
+    } catch (error) {
+      this.logger.warn(
+        `⚠️ Could not fetch full data for ${issue.key}, using webhook data`,
+      );
+    }
+
     return {
       webhookEvent: webhookData.webhookEvent,
-      taskKey: issue.key,
-      taskSummary: issue.fields.summary,
-      taskDescription: issue.fields.description || '',
-      currentStatus: issue.fields.status?.name || 'Unknown',
-      assigneeName: issue.fields.assignee?.displayName || 'Unassigned',
+      taskKey: fullIssue.key,
+      taskSummary: fullIssue.fields.summary,
+      taskDescription:
+        this.extractTextFromADF(fullIssue.fields.description) || '',
+      currentStatus: fullIssue.fields.status?.name || 'Unknown',
+      assigneeName: fullIssue.fields.assignee?.displayName || 'Unassigned',
       fromStatus: this.getPreviousStatus(changelog),
-      totalTimeSeconds: issue.fields.timespent || 0,
-      worklogEntries: this.extractWorklogEntries(issue),
-      comments: this.extractComments(issue),
+      totalTimeSeconds: fullIssue.fields.timespent || 0,
+      worklogEntries: this.extractWorklogEntries(fullIssue),
+      comments: this.extractComments(fullIssue),
       timestamp: webhookData.timestamp
         ? String(webhookData.timestamp)
         : new Date().toISOString(),
@@ -110,11 +135,33 @@ export class HaircutReportWebhookService {
     if (!issue.fields.comment?.comments) return [];
 
     return issue.fields.comment.comments.map((comment: any) => ({
-      body: comment.body || '',
+      body: this.extractTextFromADF(comment.body) || '',
       author: {
         displayName: comment.author?.displayName || 'Unknown',
       },
       created: comment.created,
     }));
+  }
+
+  /**
+   * Извлекает текст из Atlassian Document Format (ADF)
+   */
+  private extractTextFromADF(adfObject: any): string {
+    if (!adfObject) return '';
+
+    if (typeof adfObject === 'string') return adfObject;
+
+    if (adfObject.type === 'text') {
+      return adfObject.text || '';
+    }
+
+    if (adfObject.content && Array.isArray(adfObject.content)) {
+      return adfObject.content
+        .map((item: any) => this.extractTextFromADF(item))
+        .filter((text: string) => text.trim().length > 0)
+        .join(' ');
+    }
+
+    return '';
   }
 }

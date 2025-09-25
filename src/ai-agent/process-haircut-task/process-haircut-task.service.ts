@@ -131,26 +131,34 @@ export class ProcessHaircutTaskService {
 
     // 2. Анализируем время
     const timeData = this.analyzeTime(taskData);
+    this.logger.log(`⏱️ Time analysis: ${timeData.actualMinutes} minutes`);
 
     // 3. Получаем отчёт сотрудника
     const employeeReport = this.buildEmployeeComment(taskData);
+    this.logger.log(`📋 Employee report: "${employeeReport}"`);
 
     // 4. Проверяем тип клиента (в задаче И в отчёте сотрудника)
     const isRegularClient = this.checkIfRegularClient(employeeReport, fullText);
+    this.logger.log(`👤 Regular client: ${isRegularClient}`);
 
     // 5. Проверяем есть ли объяснение превышения времени
     const hasExplanation = this.hasTimeExceedExplanation(employeeReport);
+    this.logger.log(`💬 Has explanation: ${hasExplanation}`);
 
     // 6. Проверяем изменение категории в отчёте
     const newCategory = this.extractCategoryFromReport(employeeReport);
     if (newCategory) {
       category = newCategory;
+      this.logger.log(`🔄 Category updated to: ${category}`);
     }
 
     // 7. Пересчитываем время для новой категории
     const finalTimeData = this.analyzeTimeForCategory(
       timeData.actualMinutes,
       category,
+    );
+    this.logger.log(
+      `🎯 Time status: ${finalTimeData.timeStatus} (expected: ${finalTimeData.expectedRange})`,
     );
 
     // 8. Рассчитываем стоимость
@@ -159,6 +167,9 @@ export class ProcessHaircutTaskService {
     // 9. Определяем нужен ли вопрос в Questions
     const needsQuestion =
       finalTimeData.timeStatus === 'exceeded' && !hasExplanation;
+    this.logger.log(
+      `❓ Needs question: ${needsQuestion} (timeStatus=${finalTimeData.timeStatus}, hasExplanation=${hasExplanation})`,
+    );
 
     return {
       category,
@@ -466,27 +477,67 @@ export class ProcessHaircutTaskService {
   private hasTimeExceedExplanation(employeeReport: string): boolean {
     const report = employeeReport.toLowerCase();
     const explanationKeywords = [
+      // Сложности выполнения
       'был сложный',
       'была сложная',
       'нервный',
       'нервная',
       'технические проблемы',
       'пришлось переделать',
+      'возникли проблемы',
+
+      // Дополнительные просьбы клиента
       'просил дополнительн',
       'попросил добавить',
-      'возникли проблемы',
+      'попросил',
+      'попросила',
+      'захотел',
+      'захотела',
+      'передумал',
+      'передумала',
+      'изменил мнение',
+      'изменила мнение',
+
+      // Изменение категории
       'на самом деле это была',
+      'категория теперь',
+      'это была',
+      'оказалось',
+      'в итоге',
+      'в результате',
+      'клиент попросил',
+      'клиент захотел',
+      'не быструю',
+      'не обычную',
+      'не креативную',
+      'перепутали категорию',
+      'перепутал категорию',
+      'перепутала категорию',
+      'неправильная категория',
+      'ошиблись с категорией',
+      'ошибся с категорией',
+      'ошиблась с категорией',
+
+      // Объяснения задержки
+      'задержался',
+      'задержка',
+      'потому что',
+      'из-за',
+      'по причине',
+      'причина',
+      'объяснение',
     ];
 
     return explanationKeywords.some((keyword) => report.includes(keyword));
-  }
-
-  /**
+  } /**
    * Извлекает новую категорию из отчёта сотрудника
    */
   private extractCategoryFromReport(employeeReport: string): string | null {
     const report = employeeReport.toLowerCase();
 
+    // Проверяем различные варианты указания категории
+
+    // Вариант 1: "на самом деле это была..."
     if (report.includes('на самом деле это была быстрая')) {
       return 'Быстрая стрижка';
     }
@@ -497,6 +548,100 @@ export class ProcessHaircutTaskService {
       return 'Креативная стрижка';
     }
     if (report.includes('на самом деле это была обычная')) {
+      return 'Обычная стрижка';
+    }
+
+    // Вариант 2: "категория теперь:" и "теперь категория:"
+    if (
+      report.includes('категория теперь: быстрая') ||
+      report.includes('категория теперь быстрая') ||
+      report.includes('теперь категория: быстрая') ||
+      report.includes('теперь категория быстрая')
+    ) {
+      return 'Быстрая стрижка';
+    }
+    if (
+      report.includes('категория теперь: креативная') ||
+      report.includes('категория теперь креативная') ||
+      report.includes('категория теперь: стрижка с окраской') ||
+      report.includes('теперь категория: креативная') ||
+      report.includes('теперь категория креативная') ||
+      report.includes('теперь категория: стрижка с окраской')
+    ) {
+      return 'Креативная стрижка';
+    }
+    if (
+      report.includes('категория теперь: обычная') ||
+      report.includes('категория теперь обычная') ||
+      report.includes('теперь категория: обычная') ||
+      report.includes('теперь категория обычная')
+    ) {
+      return 'Обычная стрижка';
+    }
+
+    // Вариант 3: прямое указание "это была/это обычная/быстрая/креативная"
+    if (
+      report.includes('это была быстрая стрижка') ||
+      report.includes('это быстрая стрижка')
+    ) {
+      return 'Быстрая стрижка';
+    }
+    if (
+      report.includes('это была креативная стрижка') ||
+      report.includes('это креативная стрижка') ||
+      report.includes('это была стрижка с окраской')
+    ) {
+      return 'Креативная стрижка';
+    }
+    if (
+      report.includes('это была обычная стрижка') ||
+      report.includes('это обычная стрижка')
+    ) {
+      return 'Обычная стрижка';
+    }
+
+    // Вариант 4: "попросил обычную/быструю/креативную стрижку"
+    if (
+      report.includes('попросил быструю стрижку') ||
+      report.includes('попросила быструю стрижку')
+    ) {
+      return 'Быстрая стрижка';
+    }
+    if (
+      report.includes('попросил креативную стрижку') ||
+      report.includes('попросила креативную стрижку') ||
+      report.includes('попросил стрижку с окраской') ||
+      report.includes('попросила стрижку с окраской')
+    ) {
+      return 'Креативная стрижка';
+    }
+    if (
+      report.includes('попросил обычную стрижку') ||
+      report.includes('попросила обычную стрижку')
+    ) {
+      return 'Обычная стрижка';
+    }
+
+    // Вариант 5: "перепутали категорию, категория:"
+    if (
+      report.includes('перепутали категорию, категория: быстрая') ||
+      report.includes('перепутал категорию, категория: быстрая') ||
+      report.includes('перепутала категорию, категория: быстрая')
+    ) {
+      return 'Быстрая стрижка';
+    }
+    if (
+      report.includes('перепутали категорию, категория: креативная') ||
+      report.includes('перепутал категорию, категория: креативная') ||
+      report.includes('перепутала категорию, категория: креативная')
+    ) {
+      return 'Креативная стрижка';
+    }
+    if (
+      report.includes('перепутали категорию, категория: обычная') ||
+      report.includes('перепутал категорию, категория: обычная') ||
+      report.includes('перепутала категорию, категория: обычная')
+    ) {
       return 'Обычная стрижка';
     }
 
