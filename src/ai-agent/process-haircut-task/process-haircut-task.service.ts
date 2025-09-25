@@ -436,22 +436,27 @@ export class ProcessHaircutTaskService {
   /**
    * Проверяет является ли клиент постоянным
    */
-  private checkIfRegularClient(employeeReport: string, taskText?: string): boolean {
+  private checkIfRegularClient(
+    employeeReport: string,
+    taskText?: string,
+  ): boolean {
     const report = employeeReport.toLowerCase();
     const task = taskText?.toLowerCase() || '';
-    
+
     // Проверяем в отчёте сотрудника
-    const inEmployeeReport = report.includes('постоянный клиент') ||
+    const inEmployeeReport =
+      report.includes('постоянный клиент') ||
       report.includes('постоянная клиентка');
-    
+
     // Проверяем в самой задаче (заголовок + описание)
-    const inTaskText = task.includes('постоянный') ||
+    const inTaskText =
+      task.includes('постоянный') ||
       task.includes('постоянная') ||
       task.includes('постоянного') ||
       task.includes('постоянной') ||
       task.includes('постоянному') ||
       task.includes('постоянными');
-    
+
     return inEmployeeReport || inTaskText;
   }
 
