@@ -41,8 +41,11 @@ import { AttachFileService } from './attach-file/attach-file.service';
 import { HaircutReportWebhookController } from './haircut-report-webhook/haircut-report-webhook.controller';
 import { HaircutReportWebhookService } from './haircut-report-webhook/haircut-report-webhook.service';
 
+// AI Reporting Agent for integration
+import { AnalyzeCompletedHaircutTasksModule } from '../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.module';
+
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, AnalyzeCompletedHaircutTasksModule],
   controllers: [
     HealthCheckController,
     GetTaskController,

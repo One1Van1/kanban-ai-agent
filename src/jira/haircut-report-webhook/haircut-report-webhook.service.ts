@@ -7,12 +7,16 @@ import {
   TaskStatus,
   ChangeType,
 } from './haircut-report-webhook.interface';
+import { AnalyzeCompletedHaircutTasksService } from '../../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.service';
+import { HaircutTaskAnalysisInput } from '../../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.interface';
 
 @Injectable()
 export class HaircutReportWebhookService {
   private readonly logger = new Logger(HaircutReportWebhookService.name);
 
-  constructor() {}
+  constructor(
+    private readonly aiReportingService: AnalyzeCompletedHaircutTasksService,
+  ) {}
 
   /**
    * Обрабатывает webhook события от Jira
@@ -140,6 +144,7 @@ export class HaircutReportWebhookService {
       timeSpent: this.extractTimeSpent(issue),
       questions: this.extractQuestions(issue),
       category: this.extractCategory(issue),
+      employeeComments: this.extractEmployeeComments(issue), // Добавляем извлечение комментариев
     };
   }
 
@@ -177,6 +182,23 @@ export class HaircutReportWebhookService {
   }
 
   /**
+   * Извлекает все комментарии сотрудников для анализа
+   */
+  private extractEmployeeComments(issue: any): string[] {
+    const comments = issue?.fields?.comment?.comments || [];
+    const employeeComments: string[] = [];
+
+    comments.forEach((comment: any) => {
+      const body = comment.body || '';
+      if (body.trim()) {
+        employeeComments.push(body.trim());
+      }
+    });
+
+    return employeeComments;
+  }
+
+  /**
    * Пытается определить категорию стрижки из названия и описания
    */
   private extractCategory(issue: any): string | undefined {
@@ -210,25 +232,73 @@ export class HaircutReportWebhookService {
 
   /**
    * Запускает анализ стрижки через AI агента
-   * TODO: Интегрировать с AI агентом из ai-reporting-agent
    */
   private async triggerHaircutAnalysis(
     analysisData: HaircutAnalysisData,
   ): Promise<any> {
     this.logger.log(
-      `Triggering haircut analysis for task: ${analysisData.taskKey}`,
+      `🤖 Triggering AI analysis for task: ${analysisData.taskKey}`,
     );
 
-    // TODO: Здесь должен быть вызов сервиса анализа стрижек
-    // const aiReportingService = // ... получить сервис
-    // return await aiReportingService.analyzeCompletedHaircutTask(analysisData);
+    try {
+      // Преобразуем данные webhook'а в формат для AI агента
+      const aiInput: HaircutTaskAnalysisInput = {
+        issueKey: analysisData.taskKey,
+        taskTitle: `Анализ стрижки ${analysisData.taskKey}`,
+        taskDescription: analysisData.category || 'Категория не определена',
+        employeeComment: this.buildEmployeeComment(analysisData),
+        actualTimeMinutes: Math.round((analysisData.timeSpent || 0) / 60), // конвертируем секунды в минуты
+      };
 
-    // Пока что возвращаем мок-результат
-    return {
-      success: true,
-      taskAnalyzed: analysisData.taskKey,
-      mockResult: 'Analysis would be triggered here',
-      extractedData: analysisData,
-    };
+      this.logger.log(`📊 Calling AI agent with data:`, {
+        issueKey: aiInput.issueKey,
+        category: aiInput.taskDescription,
+        timeMinutes: aiInput.actualTimeMinutes,
+      });
+
+      // Вызываем AI агента для анализа
+      const analysisResult = await this.aiReportingService.analyzeTask(aiInput);
+
+      this.logger.log(`✅ AI analysis completed for ${analysisData.taskKey}:`, {
+        success: analysisResult.success,
+        finalPrice: analysisResult.price?.finalPrice,
+        timeStatus: analysisResult.timeAnalysis?.status,
+      });
+
+      return {
+        success: true,
+        aiAnalysisResult: analysisResult,
+        extractedData: analysisData,
+        aiInput: aiInput,
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ AI analysis failed for ${analysisData.taskKey}:`,
+        error,
+      );
+
+      return {
+        success: false,
+        error: error.message,
+        extractedData: analysisData,
+      };
+    }
+  }
+
+  /**
+   * Формирует комментарий сотрудника из данных webhook'а
+   */
+  private buildEmployeeComment(analysisData: HaircutAnalysisData): string {
+    let comment = `Работу выполнил: ${analysisData.masterName || 'не указан'}`;
+
+    // Добавляем все комментарии сотрудника для полного анализа
+    if (
+      analysisData.employeeComments &&
+      analysisData.employeeComments.length > 0
+    ) {
+      comment += `\n\nОтчёт сотрудника:\n${analysisData.employeeComments.join('\n\n')}`;
+    }
+
+    return comment;
   }
 }

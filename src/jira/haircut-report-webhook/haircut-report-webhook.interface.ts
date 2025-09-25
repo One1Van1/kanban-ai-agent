@@ -179,4 +179,5 @@ export interface HaircutAnalysisData {
   price?: number;
   questions?: string[];
   masterName?: string;
+  employeeComments?: string[]; // Комментарии сотрудника для анализа
 }
