@@ -108,7 +108,23 @@ export class ProcessHaircutTaskService {
    * Проверяет является ли задача связанной со стрижками
    */
   private isHaircutTask(taskData: ProcessHaircutTaskDto): boolean {
-    const haircutKeywords = ['стрижка', 'стричь', 'haircut', 'hair', 'волосы'];
+    const haircutKeywords = [
+      'стрижка',
+      'стрижку',
+      'стрижки',
+      'стрижке',
+      'стрижкой',
+      'стричь',
+      'стригу',
+      'стриг',
+      'стригла',
+      'постричь',
+      'haircut',
+      'hair',
+      'волосы',
+      'волос',
+      'парикмахер',
+    ];
     const text =
       `${taskData.taskSummary} ${taskData.taskDescription || ''}`.toLowerCase();
 
@@ -127,6 +143,51 @@ export class ProcessHaircutTaskService {
     const fullText = `${taskData.taskSummary || ''} ${taskData.taskDescription || ''}`;
     this.logger.log(`🔍 Full text for analysis: "${fullText}"`);
     let category = this.extractCategory(fullText);
+
+    // 1.0. Если категория не определена, проверяем комментарии на предмет ответа
+    if (!category) {
+      // Собираем все комментарии в одну строку для анализа
+      const employeeReport = (taskData.comments || [])
+        .map((comment) => comment.body)
+        .join(' ');
+      this.logger.log(
+        `📋 Employee report for category extraction: "${employeeReport}"`,
+      );
+
+      // Пытаемся извлечь категорию из комментариев
+      const categoryFromComments =
+        this.extractCategoryFromReport(employeeReport);
+      if (categoryFromComments) {
+        category = categoryFromComments;
+        this.logger.log(`🔄 Category found in comments: ${category}`);
+      }
+    }
+
+    // 1.1. Если категория все еще не определена, отправляем в Questions
+    if (!category) {
+      this.logger.log(`❓ Category not specified, sending to Questions`);
+      const timeData = this.analyzeTime(taskData);
+      const suggestedCategory = this.suggestCategoryByTime(
+        timeData.actualMinutes,
+      );
+      const categoryQuestion = this.buildCategoryQuestion(suggestedCategory);
+
+      return {
+        category: null,
+        actualTimeMinutes: timeData.actualMinutes,
+        expectedTimeRange: 'не определено',
+        timeStatus: 'unknown',
+        hasExplanation: false,
+        isRegularClient: false,
+        basePrice: 0,
+        discount: 0,
+        finalPrice: 0,
+        needsQuestion: true,
+        questionComment: categoryQuestion,
+        finalReport: undefined,
+      };
+    }
+
     this.logger.log(`📝 Initial category detected: ${category}`);
 
     // 2. Анализируем время
@@ -345,8 +406,8 @@ export class ProcessHaircutTaskService {
   /**
    * Определяет категорию стрижки из описания задачи
    */
-  private extractCategory(description: string): string {
-    if (!description) return 'Обычная стрижка';
+  private extractCategory(description: string): string | null {
+    if (!description) return null;
 
     const desc = description.toLowerCase();
 
@@ -393,7 +454,20 @@ export class ProcessHaircutTaskService {
       return 'Креативная стрижка';
     }
 
-    return 'Обычная стрижка';
+    // Обычная стрижка
+    const normalKeywords = [
+      'обычн',
+      'средн',
+      'классическ',
+      'подстричь',
+      'подрезать',
+    ];
+    if (normalKeywords.some((keyword) => desc.includes(keyword))) {
+      return 'Обычная стрижка';
+    }
+
+    // Если ни одно из ключевых слов не найдено, категория не определена
+    return null;
   }
 
   /**
@@ -412,7 +486,14 @@ export class ProcessHaircutTaskService {
   /**
    * Анализирует время для конкретной категории
    */
-  private analyzeTimeForCategory(actualMinutes: number, category: string) {
+  private analyzeTimeForCategory(
+    actualMinutes: number,
+    category: string | null,
+  ) {
+    if (!category) {
+      return { expectedRange: 'не определено', timeStatus: 'unknown' as const };
+    }
+
     let minTime: number, maxTime: number;
 
     switch (category) {
@@ -582,20 +663,26 @@ export class ProcessHaircutTaskService {
     // Вариант 3: прямое указание "это была/это обычная/быстрая/креативная"
     if (
       report.includes('это была быстрая стрижка') ||
-      report.includes('это быстрая стрижка')
+      report.includes('это быстрая стрижка') ||
+      report.includes('да это быстрая стрижка') ||
+      report.includes('да, это быстрая стрижка')
     ) {
       return 'Быстрая стрижка';
     }
     if (
       report.includes('это была креативная стрижка') ||
       report.includes('это креативная стрижка') ||
+      report.includes('да это креативная стрижка') ||
+      report.includes('да, это креативная стрижка') ||
       report.includes('это была стрижка с окраской')
     ) {
       return 'Креативная стрижка';
     }
     if (
       report.includes('это была обычная стрижка') ||
-      report.includes('это обычная стрижка')
+      report.includes('это обычная стрижка') ||
+      report.includes('да это обычная стрижка') ||
+      report.includes('да, это обычная стрижка')
     ) {
       return 'Обычная стрижка';
     }
@@ -659,7 +746,11 @@ export class ProcessHaircutTaskService {
   /**
    * Рассчитывает стоимость
    */
-  private calculatePricing(category: string, isRegularClient: boolean) {
+  private calculatePricing(category: string | null, isRegularClient: boolean) {
+    if (!category) {
+      return { basePrice: 0, discount: 0, finalPrice: 0 };
+    }
+
     let basePrice: number;
 
     switch (category) {
@@ -694,6 +785,27 @@ export class ProcessHaircutTaskService {
 ` +
       `Если категория верная, объясните причину превышения времени.`
     );
+  }
+
+  /**
+   * Предлагает категорию на основе времени выполнения
+   */
+  private suggestCategoryByTime(actualMinutes: number): string | null {
+    if (actualMinutes <= 0) return null;
+
+    if (actualMinutes <= 30) return 'Быстрая стрижка';
+    if (actualMinutes <= 60) return 'Обычная стрижка';
+    return 'Креативная стрижка';
+  }
+
+  /**
+   * Строит комментарий с вопросом о категории
+   */
+  private buildCategoryQuestion(suggestedCategory: string | null): string {
+    if (suggestedCategory) {
+      return `❓ Какая это категория стрижки? "${suggestedCategory}"?`;
+    }
+    return '❓ Какая это категория стрижки?';
   }
 
   /**

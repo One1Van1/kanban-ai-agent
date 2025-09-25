@@ -28,10 +28,10 @@ export interface ProcessHaircutTaskResponse {
 }
 
 export interface HaircutAnalysis {
-  category: string;
+  category: string | null;
   actualTimeMinutes: number;
   expectedTimeRange: string;
-  timeStatus: 'within_norm' | 'exceeded' | 'insufficient';
+  timeStatus: 'within_norm' | 'exceeded' | 'insufficient' | 'unknown';
   hasExplanation: boolean;
   explanation?: string;
   isRegularClient: boolean;
