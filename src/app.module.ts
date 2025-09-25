@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { appConfig, jiraConfig, claudeConfig } from './config';
 import { JiraModule } from './jira/jira-integration.module';
 import { AiAgentModule } from './ai-agent/ai-agent.module';
+import { AiReportingAgentModule } from './ai-reporting-agent/ai-reporting-agent.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AiAgentModule } from './ai-agent/ai-agent.module';
     }),
     JiraModule,
     AiAgentModule,
+    AiReportingAgentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

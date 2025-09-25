@@ -33,9 +33,13 @@ import { AddTaskCommentService } from './add-task-comment/add-task-comment.servi
 import { AttachFileController } from './attach-file/attach-file.controller';
 import { AttachFileService } from './attach-file/attach-file.service';
 
-// Jira Webhook Handler
-import { JiraWebhookHandlerController } from './jira-webhook-handler/jira-webhook-handler.controller';
-import { JiraWebhookHandlerService } from './jira-webhook-handler/jira-webhook-handler.service';
+// Jira Webhook Handler - ЗАКОММЕНТИРОВАНО (СЛОМАН)
+// import { JiraWebhookHandlerController } from './jira-webhook-handler/jira-webhook-handler.controller';
+// import { JiraWebhookHandlerService } from './jira-webhook-handler/jira-webhook-handler.service';
+
+// Haircut Report Webhook
+import { HaircutReportWebhookController } from './haircut-report-webhook/haircut-report-webhook.controller';
+import { HaircutReportWebhookService } from './haircut-report-webhook/haircut-report-webhook.service';
 
 @Module({
   imports: [ConfigModule],
@@ -48,7 +52,8 @@ import { JiraWebhookHandlerService } from './jira-webhook-handler/jira-webhook-h
     SearchTasksController,
     AddTaskCommentController,
     AttachFileController,
-    JiraWebhookHandlerController,
+    // JiraWebhookHandlerController, // ЗАКОММЕНТИРОВАНО (СЛОМАН)
+    HaircutReportWebhookController,
   ],
   providers: [
     HealthCheckService,
@@ -59,7 +64,8 @@ import { JiraWebhookHandlerService } from './jira-webhook-handler/jira-webhook-h
     SearchTasksService,
     AddTaskCommentService,
     AttachFileService,
-    JiraWebhookHandlerService,
+    // JiraWebhookHandlerService, // ЗАКОММЕНТИРОВАНО (СЛОМАН)
+    HaircutReportWebhookService,
   ],
   exports: [
     HealthCheckService,
@@ -70,7 +76,8 @@ import { JiraWebhookHandlerService } from './jira-webhook-handler/jira-webhook-h
     SearchTasksService,
     AddTaskCommentService,
     AttachFileService,
-    JiraWebhookHandlerService,
+    // JiraWebhookHandlerService, // ЗАКОММЕНТИРОВАНО (СЛОМАН)
+    HaircutReportWebhookService,
   ],
 })
 export class JiraModule {}
