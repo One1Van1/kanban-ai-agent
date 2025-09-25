@@ -135,8 +135,8 @@ export class ProcessHaircutTaskService {
     // 3. Получаем отчёт сотрудника
     const employeeReport = this.buildEmployeeComment(taskData);
 
-    // 4. Проверяем тип клиента
-    const isRegularClient = this.checkIfRegularClient(employeeReport);
+    // 4. Проверяем тип клиента (в задаче И в отчёте сотрудника)
+    const isRegularClient = this.checkIfRegularClient(employeeReport, fullText);
 
     // 5. Проверяем есть ли объяснение превышения времени
     const hasExplanation = this.hasTimeExceedExplanation(employeeReport);
@@ -436,12 +436,23 @@ export class ProcessHaircutTaskService {
   /**
    * Проверяет является ли клиент постоянным
    */
-  private checkIfRegularClient(employeeReport: string): boolean {
+  private checkIfRegularClient(employeeReport: string, taskText?: string): boolean {
     const report = employeeReport.toLowerCase();
-    return (
-      report.includes('постоянный клиент') ||
-      report.includes('постоянная клиентка')
-    );
+    const task = taskText?.toLowerCase() || '';
+    
+    // Проверяем в отчёте сотрудника
+    const inEmployeeReport = report.includes('постоянный клиент') ||
+      report.includes('постоянная клиентка');
+    
+    // Проверяем в самой задаче (заголовок + описание)
+    const inTaskText = task.includes('постоянный') ||
+      task.includes('постоянная') ||
+      task.includes('постоянного') ||
+      task.includes('постоянной') ||
+      task.includes('постоянному') ||
+      task.includes('постоянными');
+    
+    return inEmployeeReport || inTaskText;
   }
 
   /**
