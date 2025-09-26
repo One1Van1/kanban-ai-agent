@@ -73,11 +73,15 @@ export class ProcessWebhookBeforeAfterService {
         this.logger.warn(
           `📷 No photos found for ${taskKey}: ${photosResult.message}`,
         );
+
+        // 🚫 Нет фото → перемещаем в Questions + комментарий
+        await this.moveTaskToQuestionsWithComment(taskKey!);
+
         this.processingTasks.delete(taskKey!); // 🧹 Очистка перед выходом
         return {
           success: true,
-          message: `Task processed but no photos found: ${photosResult.message}`,
-          processed: false,
+          message: `Task moved to Questions: no photos found`,
+          processed: true,
           taskKey,
           timestamp: new Date().toISOString(),
         };
@@ -88,6 +92,9 @@ export class ProcessWebhookBeforeAfterService {
 
       // 4. Обработка результатов и комментарий в Jira
       await this.postResultsToJira(taskKey!, claudeResult);
+
+      // 5. ✅ Есть фото → перемещаем в Done
+      await this.moveTaskToDone(taskKey!);
 
       this.logger.log(`✅ Claude webhook completed for ${taskKey}`);
 
@@ -183,6 +190,20 @@ export class ProcessWebhookBeforeAfterService {
       taskKey!,
     );
     if (hasExistingAnalysis) {
+      // 📸 Дополнительная проверка: если есть анализ "НЕТ РЕЗУЛЬТАТА", но сейчас появились фото
+      const hasPhotosNow = await this.hasPhotoAttachments(taskKey!);
+      const hasNoResultComment = await this.hasNoResultComment(taskKey!);
+
+      if (hasNoResultComment && hasPhotosNow) {
+        this.logger.log(
+          `🔄 Re-processing ${taskKey}: photos added after 'no result' analysis`,
+        );
+        return {
+          shouldProcess: true,
+          reason: 'Photos added after previous no-result analysis',
+        };
+      }
+
       return {
         shouldProcess: false,
         reason: 'Claude analysis already exists for this task',
@@ -458,14 +479,8 @@ export class ProcessWebhookBeforeAfterService {
       return;
     }
 
-    // 🚫 Дополнительная проверка перед добавлением комментария
-    const hasExisting = await this.checkExistingClaudeAnalysis(taskKey);
-    if (hasExisting) {
-      this.logger.warn(
-        `🚫 Skipping comment for ${taskKey}: Claude analysis already exists`,
-      );
-      return;
-    }
+    // ✅ Убираем блокирующую проверку - если метод вызван, значит комментарий нужен
+    this.logger.log(`📝 Adding Claude analysis comment for ${taskKey}`);
 
     try {
       const analysis = claudeResult.analysis;
@@ -510,6 +525,145 @@ ${analysis.recommendations.map((rec: string) => `• ${rec}`).join('\n')}
     } catch (error) {
       this.logger.error(`Failed to post results to ${taskKey}:`, error.message);
       throw error;
+    }
+  }
+
+  /**
+   * Перемещает задачу в колонку Questions с комментарием о том, что нет фото
+   */
+  private async moveTaskToQuestionsWithComment(taskKey: string): Promise<void> {
+    try {
+      // 1. Добавляем комментарий
+      const comment = `❌ **НЕТ РЕЗУЛЬТАТА ВЫПОЛНЕНИЯ РАБОТЫ**
+
+📷 В задаче отсутствуют фотографии результата работы (до/после).
+Пожалуйста, прикрепите фотографии для анализа качества.
+
+🤖 *Автоматическая проверка системы*`;
+
+      await axios.post(
+        `${this.baseUrl}/jira/tasks/${taskKey}/comment`,
+        { comment },
+        {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+
+      // 2. Перемещаем в Questions
+      await axios.post(
+        `${this.baseUrl}/jira/tasks/${taskKey}/move`,
+        { targetStatus: 'Questions' },
+        {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+
+      this.logger.log(`🔄 Task ${taskKey} moved to Questions: no photos found`);
+    } catch (error) {
+      this.logger.error(
+        `Failed to move ${taskKey} to Questions:`,
+        error.message,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Перемещает задачу в колонку Done после успешного анализа
+   */
+  private async moveTaskToDone(taskKey: string): Promise<void> {
+    try {
+      await axios.post(
+        `${this.baseUrl}/jira/tasks/${taskKey}/move`,
+        { targetStatus: 'Done' },
+        {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+
+      this.logger.log(
+        `✅ Task ${taskKey} moved to Done after successful analysis`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to move ${taskKey} to Done:`, error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Проверяет, есть ли прикрепленные фотографии в задаче
+   */
+  private async hasPhotoAttachments(taskKey: string): Promise<boolean> {
+    try {
+      const jiraConfig = {
+        baseURL: this.configService.get<string>('jira.baseUrl'),
+        auth: {
+          username: this.configService.get<string>('jira.email') || '',
+          password: this.configService.get<string>('jira.apiToken') || '',
+        },
+      };
+
+      const response = await axios.get(
+        `/rest/api/3/issue/${taskKey}`,
+        jiraConfig,
+      );
+
+      const attachments = response.data.fields?.attachment || [];
+      return attachments.length > 0;
+    } catch (error) {
+      this.logger.error(
+        `Failed to check photos for ${taskKey}:`,
+        error.message,
+      );
+      return false;
+    }
+  }
+
+  /**
+   * Проверяет, есть ли комментарий "НЕТ РЕЗУЛЬТАТА ВЫПОЛНЕНИЯ РАБОТЫ"
+   */
+  private async hasNoResultComment(taskKey: string): Promise<boolean> {
+    try {
+      const jiraConfig = {
+        baseURL: this.configService.get<string>('jira.baseUrl'),
+        auth: {
+          username: this.configService.get<string>('jira.email') || '',
+          password: this.configService.get<string>('jira.apiToken') || '',
+        },
+      };
+
+      const response = await axios.get(
+        `/rest/api/3/issue/${taskKey}/comment`,
+        jiraConfig,
+      );
+
+      const comments = response.data.comments || [];
+      return comments.some((comment: any) => {
+        const bodyText =
+          typeof comment.body === 'string'
+            ? comment.body
+            : comment.body?.content
+              ? comment.body.content
+                  .map(
+                    (c: any) =>
+                      c.content?.map((t: any) => t.text || '').join('') || '',
+                  )
+                  .join('')
+              : '';
+
+        return (
+          bodyText && bodyText.includes('НЕТ РЕЗУЛЬТАТА ВЫПОЛНЕНИЯ РАБОТЫ')
+        );
+      });
+    } catch (error) {
+      this.logger.error(
+        `Failed to check comments for ${taskKey}:`,
+        error.message,
+      );
+      return false;
     }
   }
 
