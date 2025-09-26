@@ -11,6 +11,8 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { AnalyzeHaircutTasksModule } from './analyze-haircut-tasks/analyze-haircut-tasks.module';
 import { ExecuteHaircutTasksModule } from './execute-haircut-tasks/execute-haircut-tasks.module';
 import { ProcessHaircutTaskModule } from './process-haircut-task/process-haircut-task.module';
+import { TrackWorkTimeModule } from './track-work-time/track-work-time.module';
+import { ProcessBeforeAfterTaskModule } from './process-before-after-task/process-before-after-task.module';
 // import { AutoHaircutMonitorModule } from './auto-haircut-monitor/auto-haircut-monitor.module';
 // Новые специализированные модули для стрижек
 // import { AnalyzeNewHaircutTasksModule } from './analyze-new-haircut-tasks/analyze-new-haircut-tasks.module';
@@ -35,6 +37,8 @@ import { SharedModule } from './shared/shared.module';
     AnalyzeHaircutTasksModule,
     ExecuteHaircutTasksModule,
     ProcessHaircutTaskModule,
+    TrackWorkTimeModule,
+    ProcessBeforeAfterTaskModule,
     // AutoHaircutMonitorModule,
     // AnalyzeNewHaircutTasksModule,
     // CheckHaircutProgressModule,
@@ -54,6 +58,8 @@ import { SharedModule } from './shared/shared.module';
     AnalyzeHaircutTasksModule,
     ExecuteHaircutTasksModule,
     ProcessHaircutTaskModule,
+    TrackWorkTimeModule,
+    ProcessBeforeAfterTaskModule,
     // AutoHaircutMonitorModule,
     // AnalyzeNewHaircutTasksModule,
     // CheckHaircutProgressModule,
