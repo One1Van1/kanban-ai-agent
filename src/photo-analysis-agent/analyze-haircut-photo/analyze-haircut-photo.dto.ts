@@ -13,10 +13,11 @@ export class PhotoAttachmentDto {
   @ApiProperty({
     description: 'URL фото стрижки',
     example: 'https://example.com/haircut.jpg',
+    required: false,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsUrl()
-  url: string;
+  url?: string;
 
   @ApiProperty({
     description: 'Имя файла',
@@ -33,6 +34,15 @@ export class PhotoAttachmentDto {
   })
   @IsOptional()
   size?: number;
+
+  @ApiProperty({
+    description: 'Base64 контент изображения',
+    example: 'iVBORw0KGgoAAAANSUhEUgAAA...',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  content?: string;
 }
 
 export class AnalyzeHaircutPhotoDto {

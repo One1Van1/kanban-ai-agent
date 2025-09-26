@@ -9,12 +9,16 @@ import {
   HaircutAnalysis,
 } from './process-haircut-task.interface';
 import axios from 'axios';
+import { AnalyzeHaircutPhotoService } from '../../photo-analysis-agent/analyze-haircut-photo/analyze-haircut-photo.service';
 
 @Injectable()
 export class ProcessHaircutTaskService {
   private readonly logger = new Logger(ProcessHaircutTaskService.name);
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly analyzeHaircutPhotoService: AnalyzeHaircutPhotoService,
+  ) {}
 
   /**
    * Главный метод - обрабатывает задачу согласно инструкции:
@@ -225,14 +229,22 @@ export class ProcessHaircutTaskService {
     // 8. Рассчитываем стоимость
     const pricing = this.calculatePricing(category, isRegularClient);
 
-    // 9. Определяем нужен ли вопрос в Questions
+    // 9. PHOTO ANALYSIS INTEGRATION - Анализируем фотографии если есть
+    this.logger.log('📸 Starting photo analysis integration...');
+    const photoAnalysisResult = await this.analyzePhotosIfAvailable(
+      taskData,
+      category,
+    );
+
+    // 10. Определяем нужен ли вопрос в Questions
     const needsQuestion =
       finalTimeData.timeStatus === 'exceeded' && !hasExplanation;
     this.logger.log(
       `❓ Needs question: ${needsQuestion} (timeStatus=${finalTimeData.timeStatus}, hasExplanation=${hasExplanation})`,
     );
 
-    return {
+    // 11. Создаем базовый анализ
+    const baseAnalysis = {
       category,
       actualTimeMinutes: timeData.actualMinutes,
       expectedTimeRange: finalTimeData.expectedRange,
@@ -264,6 +276,18 @@ export class ProcessHaircutTaskService {
           )
         : undefined,
     };
+
+    // 12. Объединяем с результатами фото анализа
+    const finalAnalysis = this.combineAnalysisResults(
+      baseAnalysis,
+      photoAnalysisResult,
+    );
+
+    this.logger.log(
+      `📊 Analysis completed with ${photoAnalysisResult ? 'photo analysis' : 'text analysis only'}`,
+    );
+
+    return finalAnalysis;
   }
 
   /**
@@ -857,5 +881,253 @@ export class ProcessHaircutTaskService {
       .join(' ');
 
     return `${worklogComments} ${taskComments}`.trim();
+  }
+
+  /**
+   * ===== PHOTO ANALYSIS INTEGRATION =====
+   */
+
+  /**
+   * Проверяет наличие фото вложений
+   */
+  private hasPhotoAttachments(taskData: ProcessHaircutTaskDto): boolean {
+    if (!taskData.attachments || taskData.attachments.length === 0) {
+      return false;
+    }
+
+    // Проверяем наличие изображений по MIME типу
+    return taskData.attachments.some((attachment) =>
+      attachment.mimeType?.startsWith('image/'),
+    );
+  }
+
+  /**
+   * Анализирует фото если они есть
+   */
+  private async analyzePhotosIfAvailable(
+    taskData: ProcessHaircutTaskDto,
+    declaredCategory: string,
+  ): Promise<any> {
+    try {
+      if (!this.hasPhotoAttachments(taskData)) {
+        this.logger.log(
+          '📷 No photo attachments found, skipping photo analysis',
+        );
+        return null;
+      }
+
+      this.logger.log(
+        `📸 Found ${taskData.attachments?.length || 0} attachments, analyzing photos...`,
+      );
+
+      // Конвертируем attachments в формат, ожидаемый PhotoAnalysisService
+      const imageAttachments =
+        taskData.attachments?.filter((attachment) =>
+          attachment.mimeType?.startsWith('image/'),
+        ) || [];
+
+      if (imageAttachments.length === 0) {
+        this.logger.log('📷 No image attachments found');
+        return null;
+      }
+
+      this.logger.log(
+        `📸 Processing ${imageAttachments.length} image attachments...`,
+      );
+
+      // Скачиваем и конвертируем изображения в base64
+      const photoPromises = imageAttachments.map(async (attachment) => {
+        try {
+          let base64Content = '';
+
+          // If we already have content, use it; otherwise download from URL
+          if (attachment.content) {
+            base64Content = attachment.content;
+          } else if (attachment.contentUrl) {
+            this.logger.log(`📥 Downloading image: ${attachment.filename}`);
+
+            // Prepare basic auth for Jira API
+            const baseURL = this.configService.get<string>('jira.baseUrl');
+            const username = this.configService.get<string>('jira.email');
+            const password = this.configService.get<string>('jira.apiToken');
+
+            if (!username || !password) {
+              this.logger.error(
+                '❌ Missing Jira credentials for downloading attachment',
+              );
+              return null;
+            }
+
+            const response = await axios.get(attachment.contentUrl, {
+              auth: { username, password },
+              responseType: 'arraybuffer',
+              timeout: 30000, // 30 seconds timeout
+            });
+
+            base64Content = Buffer.from(response.data).toString('base64');
+            this.logger.log(
+              `✅ Downloaded ${attachment.filename} (${(base64Content.length / 1024).toFixed(1)}KB base64)`,
+            );
+          }
+
+          return {
+            filename: attachment.filename,
+            size: attachment.size,
+            content: base64Content,
+            // Don't pass URL to avoid confusion in photo analysis service
+          };
+        } catch (error) {
+          this.logger.error(
+            `❌ Failed to download ${attachment.filename}:`,
+            error.message,
+          );
+          return null;
+        }
+      });
+
+      const photos = await Promise.all(photoPromises);
+
+      // Filter out failed downloads
+      const validPhotos = photos.filter(
+        (photo): photo is NonNullable<typeof photo> =>
+          photo !== null && !!photo.content,
+      );
+
+      if (validPhotos.length === 0) {
+        this.logger.log('📷 No valid images could be processed');
+        return null;
+      }
+
+      // Вызываем photo analysis сервис
+      const photoAnalysisResult =
+        await this.analyzeHaircutPhotoService.analyzeHaircutPhotos({
+          taskKey: taskData.taskKey,
+          declaredCategory,
+          photos: validPhotos,
+        });
+
+      if (photoAnalysisResult.success && photoAnalysisResult.analysis) {
+        this.logger.log(
+          `✅ Photo analysis completed: score ${photoAnalysisResult.analysis.photoAnalysis.qualityScore}/10`,
+        );
+        return photoAnalysisResult.analysis;
+      } else {
+        this.logger.warn(
+          `⚠️ Photo analysis failed: ${photoAnalysisResult.message}`,
+        );
+        return null;
+      }
+    } catch (error) {
+      this.logger.error('❌ Error during photo analysis:', error);
+      // Не прерываем основной процесс, просто логируем ошибку
+      return null;
+    }
+  }
+
+  /**
+   * Объединяет результаты текстового и фото анализа
+   */
+  private combineAnalysisResults(
+    textAnalysis: HaircutAnalysis,
+    photoAnalysisResult: any,
+  ): HaircutAnalysis {
+    // Если нет фото анализа, возвращаем только текстовый
+    if (!photoAnalysisResult) {
+      return {
+        ...textAnalysis,
+        photoAnalysis: {
+          hasPhotos: false,
+          photosAnalyzed: 0,
+          overallPhotoScore: 0,
+          photoQualityDetails: {
+            evenness: 0,
+            transitions: 0,
+            symmetry: 0,
+            cleanliness: 0,
+            styleCompliance: 0,
+          },
+          photoIssues: [],
+          photoHighlights: [],
+          photoAnalysisComplete: false,
+        },
+      };
+    }
+
+    // Объединяем результаты
+    const photoData = photoAnalysisResult.photoAnalysis;
+    const combinedAnalysis: HaircutAnalysis = {
+      ...textAnalysis,
+      photoAnalysis: {
+        hasPhotos: true,
+        photosAnalyzed: 1, // Для простоты пока 1
+        overallPhotoScore: photoData.qualityScore,
+        photoQualityDetails: photoData.details,
+        photoIssues: photoData.issues || [],
+        photoHighlights: photoData.highlights || [],
+        categoryFromPhoto: photoData.detectedCategory,
+        photoAnalysisComplete: true,
+      },
+    };
+
+    // Если фото анализ предлагает другую категорию, логируем это
+    if (photoData.detectedCategory !== textAnalysis.category) {
+      this.logger.log(
+        `🔄 Category mismatch: Text="${textAnalysis.category}" vs Photo="${photoData.detectedCategory}"`,
+      );
+    }
+
+    // Обновляем итоговый отчет с учетом фото анализа
+    combinedAnalysis.finalReport = this.buildCombinedReport(
+      textAnalysis,
+      photoAnalysisResult,
+    );
+
+    return combinedAnalysis;
+  }
+
+  /**
+   * Создает объединенный отчет с учетом фото анализа
+   */
+  private buildCombinedReport(
+    textAnalysis: HaircutAnalysis,
+    photoResult: any,
+  ): string {
+    let report = textAnalysis.finalReport || '';
+
+    if (photoResult && photoResult.photoAnalysis) {
+      const photoData = photoResult.photoAnalysis;
+
+      report += `\n\n📸 **Анализ фотографий:**`;
+      report += `\n• Качество работы: ${photoData.qualityScore}/10`;
+      report += `\n• Техническое исполнение: ${this.translateTechnicalExecution(photoData.technicalExecution)}`;
+
+      if (photoData.highlights.length > 0) {
+        report += `\n• Достоинства: ${photoData.highlights.join(', ')}`;
+      }
+
+      if (photoData.issues.length > 0) {
+        report += `\n• Замечания: ${photoData.issues.join(', ')}`;
+      }
+
+      // Если категории не совпадают
+      if (photoData.detectedCategory !== textAnalysis.category) {
+        report += `\n• ⚠️ На фото категория выглядит как: "${photoData.detectedCategory}"`;
+      }
+    }
+
+    return report;
+  }
+
+  /**
+   * Перевод технического исполнения
+   */
+  private translateTechnicalExecution(execution: string): string {
+    const translations: Record<string, string> = {
+      excellent: 'Отлично',
+      good: 'Хорошо',
+      satisfactory: 'Удовлетворительно',
+      poor: 'Плохо',
+    };
+    return translations[execution] || execution;
   }
 }

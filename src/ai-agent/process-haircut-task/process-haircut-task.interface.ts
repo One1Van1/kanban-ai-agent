@@ -41,6 +41,24 @@ export interface HaircutAnalysis {
   needsQuestion: boolean;
   questionComment?: string;
   finalReport?: string;
+
+  // Photo analysis results (optional - only when photos are attached)
+  photoAnalysis?: {
+    hasPhotos: boolean;
+    photosAnalyzed: number;
+    overallPhotoScore: number; // 1-10
+    photoQualityDetails: {
+      evenness: number;
+      transitions: number;
+      symmetry: number;
+      cleanliness: number;
+      styleCompliance: number;
+    };
+    photoIssues: string[];
+    photoHighlights: string[];
+    categoryFromPhoto?: string;
+    photoAnalysisComplete: boolean;
+  };
 }
 
 export interface WorklogEntry {

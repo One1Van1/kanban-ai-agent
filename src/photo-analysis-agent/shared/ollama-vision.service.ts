@@ -9,35 +9,95 @@ export class OllamaVisionService {
   /**
    * Анализ изображения с помощью Llava модели
    */
-  async analyzeImage(imageUrl: string, declaredCategory: string): Promise<any> {
+  async analyzeImage(
+    imageUrlOrBase64: string,
+    isBase64: boolean = false,
+    category: string = 'Обычная стрижка',
+  ): Promise<any> {
     try {
-      this.logger.log(`🔍 Analyzing image: ${imageUrl}`);
+      let imageData: string;
 
-      // Загружаем изображение и конвертируем в base64
-      const imageBase64 = await this.downloadImageAsBase64(imageUrl);
+      if (isBase64) {
+        // Check image size and optimize if needed
+        const sizeKB = (imageUrlOrBase64.length * 3) / 4 / 1024;
+        this.logger.log(`🔍 Analyzing base64 image (${sizeKB.toFixed(1)}KB)`);
 
-      // Промпт для анализа стрижки
-      const prompt = this.buildAnalysisPrompt(declaredCategory);
+        // If image is too large, we could implement resizing here
+        if (sizeKB > 100) {
+          this.logger.warn(
+            `⚠️ Large image detected (${sizeKB.toFixed(1)}KB) - Ollama may have resource issues`,
+          );
+        }
 
-      // Отправляем запрос к Ollama
-      const response = await axios.post(`${this.ollamaUrl}/api/generate`, {
+        imageData = imageUrlOrBase64;
+      } else {
+        // Download image and convert to base64
+        const response = await axios.get(imageUrlOrBase64, {
+          responseType: 'arraybuffer',
+        });
+        const buffer = Buffer.from(response.data);
+        imageData = buffer.toString('base64');
+        this.logger.log(`🔍 Analyzing image: ${imageUrlOrBase64}`);
+      }
+
+      const prompt = this.buildAnalysisPrompt(category);
+
+      const requestData = {
         model: 'llava',
-        prompt: prompt,
-        images: [imageBase64],
+        prompt,
+        images: [imageData],
         stream: false,
         options: {
-          temperature: 0.1, // Низкая температура для точного анализа
+          temperature: 0.1,
           top_p: 0.9,
         },
-      });
+      };
 
-      const analysisText = response.data.response;
-      this.logger.log(`✅ Analysis completed`);
+      this.logger.log('📤 Sending request to Ollama...');
 
-      // Парсим ответ AI и структурируем данные
-      return this.parseAnalysisResponse(analysisText, declaredCategory);
+      // Log the prompt for debugging
+      this.logger.debug(`🔍 Analysis prompt: ${prompt.substring(0, 300)}...`);
+
+      const response = await axios.post(
+        `${this.ollamaUrl}/api/generate`,
+        requestData,
+        { timeout: 60000 },
+      );
+
+      if (response.data && response.data.response) {
+        this.logger.log('✅ Analysis completed');
+
+        // Извлекаем JSON из ответа, очищая от markdown форматирования
+        let jsonResponse = response.data.response.trim();
+
+        // Удаляем markdown блоки ```json ... ```
+        jsonResponse = jsonResponse
+          .replace(/^```json\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .trim();
+
+        try {
+          return JSON.parse(jsonResponse);
+        } catch (parseError) {
+          this.logger.warn(
+            'Failed to parse JSON from Ollama response, attempting to extract JSON',
+          );
+
+          // Пытаемся найти JSON объект в ответе
+          const jsonMatch = jsonResponse.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            return JSON.parse(jsonMatch[0]);
+          }
+
+          throw new Error(
+            `Invalid JSON format in Ollama response: ${parseError.message}`,
+          );
+        }
+      } else {
+        throw new Error('Invalid response from Ollama');
+      }
     } catch (error) {
-      this.logger.error(`❌ Error analyzing image:`, error);
+      this.logger.error('Error analyzing image with Ollama:', error.message);
       throw new Error(`Failed to analyze image: ${error.message}`);
     }
   }
@@ -65,9 +125,11 @@ export class OllamaVisionService {
    */
   private buildAnalysisPrompt(declaredCategory: string): string {
     return `
-Ты - эксперт по парикмахерскому искусству. Проанализируй эту фотографию стрижки и дай подробную оценку.
+Ты - эксперт по парикмахерскому искусству. Проанализируй эту фотографию стрижки и дай подробную оценку КАЧЕСТВА ВЫПОЛНЕНИЯ.
 
 ЗАЯВЛЕННАЯ КАТЕГОРИЯ: "${declaredCategory}"
+
+ВАЖНО: Не меняй заявленную категорию! Просто оцени качество выполнения для данной категории.
 
 Оцени по шкале от 1 до 10:
 1. РОВНОСТЬ - насколько ровно выполнена стрижка
@@ -76,10 +138,39 @@ export class OllamaVisionService {
 4. ЧИСТОТА РАБОТЫ - аккуратность, отсутствие торчащих волос
 5. СООТВЕТСТВИЕ СТИЛЮ - соответствие заявленной категории
 
-КАТЕГОРИИ СТРИЖЕК:
-- Быстрая стрижка (20-30 мин): простые формы, машинка
-- Обычная стрижка (30-60 мин): классические формы, ножницы+машинка  
-- Креативная стрижка (60+ мин): сложные формы, окрашивание, укладки
+ВАЖНО! КАТЕГОРИИ СТРИЖЕК - внимательно определи правильную:
+
+🔥 БЫСТРАЯ СТРИЖКА (20-30 мин):
+- Волосы стрижены машинкой под одну насадку или с минимальными переходами
+- Простые формы: бокс, полубокс, "под ноль"
+- Минимум работы ножницами
+- Быстрое исполнение, основной инструмент - машинка
+- ПРИЗНАКИ: очень короткие бока, четкие линии, минимум градации
+
+⭐ ОБЫЧНАЯ СТРИЖКА (30-60 мин):
+- Классические мужские стрижки с плавными переходами
+- Использование ножниц + машинка
+- Средняя сложность, градиентные переходы
+- Более детальная проработка формы
+- ПРИЗНАКИ: плавные переходы, работа ножницами, средняя длина
+
+🎨 КРЕАТИВНАЯ СТРИЖКА (60+ мин):
+- Сложные формы, узоры, нестандартные решения
+- Асимметрия, окрашивание, укладки
+- Высокая сложность исполнения
+- ПРИЗНАКИ: необычные формы, цветовые акценты, сложная геометрия
+
+ВНИМАТЕЛЬНО посмотри на фото и определи:
+- Какими инструментами делалась стрижка (только машинка или ножницы тоже)?
+- Есть ли плавные переходы или четкие линии?
+- Какова общая сложность исполнения?
+
+КЛЮЧЕВЫЕ ПРИЗНАКИ:
+🔥 БЫСТРАЯ = только машинка, четкие линии, одна длина, минимум градации
+⭐ ОБЫЧНАЯ = машинка + ножницы, плавные переходы, средняя градация  
+🎨 КРЕАТИВНАЯ = сложная форма, необычные элементы, высокая градация
+
+ОБЯЗАТЕЛЬНО: Если видишь короткие бока под машинку и простую форму - это БЫСТРАЯ СТРИЖКА!
 
 Ответь в формате JSON:
 {
@@ -91,12 +182,12 @@ export class OllamaVisionService {
     "style_compliance": 7
   },
   "overall_score": 7.8,
-  "detected_category": "Обычная стрижка",
+  "detected_category": "${declaredCategory}",
   "category_matches": true,
   "technical_execution": "good",
   "issues": ["Небольшая неровность слева", "Переходы можно улучшить"],
   "highlights": ["Отличная симметрия", "Чистая работа"],
-  "recommendations": ["Больше внимания к деталям", "Отработать технику переходов"]
+  "recommendations": ["Больше внимания к деталям"]
 }`;
   }
 
@@ -116,8 +207,8 @@ export class OllamaVisionService {
 
         return {
           qualityScore: jsonData.overall_score || 8,
-          detectedCategory: jsonData.detected_category || declaredCategory,
-          categoryMatches: jsonData.category_matches !== false,
+          detectedCategory: declaredCategory, // Always use declared category
+          categoryMatches: true, // Always true since we trust the declared category
           technicalExecution: this.mapTechnicalExecution(
             jsonData.technical_execution,
           ),

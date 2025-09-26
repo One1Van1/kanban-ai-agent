@@ -78,7 +78,7 @@ export class AnalyzeHaircutPhotoService {
 
       // Используем Ollama Llava для анализа изображения
       const photoAnalysis = await this.analyzePhotoWithOllama(
-        photo.url,
+        photo, // Передаем весь объект photo
         data.declaredCategory,
       );
 
@@ -95,7 +95,7 @@ export class AnalyzeHaircutPhotoService {
    * Анализ фотографии с помощью Ollama Llava
    */
   private async analyzePhotoWithOllama(
-    photoUrl: string,
+    photo: any, // Объект с url, content, filename
     declaredCategory: string,
   ) {
     try {
@@ -108,9 +108,23 @@ export class AnalyzeHaircutPhotoService {
         return this.getMockPhotoAnalysis(declaredCategory);
       }
 
+      // Определяем, есть ли base64 контент или используем URL
+      const hasBase64 = photo.content && photo.content.trim().length > 0;
+      const imageSource = hasBase64 ? photo.content : photo.url;
+
+      // Проверяем, что у нас есть источник изображения
+      if (!imageSource) {
+        throw new Error('No image source available (no URL or base64 content)');
+      }
+
+      this.logger.log(
+        `📸 Analyzing ${photo.filename} via ${hasBase64 ? 'base64' : 'URL'}`,
+      );
+
       // Анализируем изображение через Ollama
       return await this.ollamaVisionService.analyzeImage(
-        photoUrl,
+        imageSource,
+        hasBase64, // Передаем флаг, что это base64
         declaredCategory,
       );
     } catch (error) {

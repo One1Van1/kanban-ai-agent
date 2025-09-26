@@ -94,6 +94,7 @@ export class HaircutReportWebhookService {
       totalTimeSeconds: fullIssue.fields.timespent || 0,
       worklogEntries: this.extractWorklogEntries(fullIssue),
       comments: this.extractComments(fullIssue),
+      attachments: this.extractAttachments(fullIssue),
       timestamp: webhookData.timestamp
         ? String(webhookData.timestamp)
         : new Date().toISOString(),
@@ -140,6 +141,34 @@ export class HaircutReportWebhookService {
         displayName: comment.author?.displayName || 'Unknown',
       },
       created: comment.created,
+    }));
+  }
+
+  /**
+   * Извлекает вложения из данных задачи Jira
+   */
+  private extractAttachments(fullIssue: any): Array<{
+    id: string;
+    filename: string;
+    mimeType: string;
+    size: number;
+    contentUrl?: string;
+    content?: string;
+  }> {
+    if (
+      !fullIssue.fields?.attachment ||
+      !Array.isArray(fullIssue.fields.attachment)
+    ) {
+      return [];
+    }
+
+    return fullIssue.fields.attachment.map((attachment: any) => ({
+      id: attachment.id,
+      filename: attachment.filename,
+      mimeType: attachment.mimeType,
+      size: attachment.size,
+      contentUrl: attachment.content, // URL для скачивания
+      // content будет заполнен позднее при скачивании изображения
     }));
   }
 
