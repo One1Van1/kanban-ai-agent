@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Anthropic from '@anthropic-ai/sdk';
+import OpenAI from 'openai';
 import {
   IClaudeVisionService,
   IBeforeAfterAnalysis,
@@ -12,23 +12,36 @@ import {
 @Injectable()
 export class ClaudeVisionService implements IClaudeVisionService {
   private readonly logger = new Logger(ClaudeVisionService.name);
-  private readonly anthropic: Anthropic | null;
+  private readonly openai: OpenAI | null;
   private readonly isConfigured: boolean;
+  private readonly model: string;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('claude.apiKey');
+    const baseUrl = this.configService.get<string>('claude.baseUrl');
+    this.model =
+      this.configService.get<string>('claude.model') ||
+      'anthropic/claude-3.5-sonnet';
+
+    // Диагностика конфигурации
+    this.logger.log(`🔍 Диагностика OpenRouter конфигурации:`);
+    this.logger.log(`📋 API Key: ${apiKey ? '✅ Найден' : '❌ Отсутствует'}`);
+    this.logger.log(`🌐 Base URL: ${baseUrl || 'не задан'}`);
+    this.logger.log(`🤖 Model: ${this.model}`);
+
     if (!apiKey) {
       this.logger.warn(
-        '⚠️ CLAUDE_API_KEY not found in environment variables - Claude Vision будет недоступен',
+        '⚠️ OPENROUTER_API_KEY not found in environment variables - Claude Vision будет недоступен',
       );
-      this.anthropic = null;
+      this.openai = null;
       this.isConfigured = false;
     } else {
-      this.anthropic = new Anthropic({
+      this.openai = new OpenAI({
         apiKey,
+        baseURL: baseUrl,
       });
       this.isConfigured = true;
-      this.logger.log('✅ Claude Vision Service initialized');
+      this.logger.log('✅ Claude Vision Service initialized via OpenRouter');
     }
   }
 
@@ -44,13 +57,13 @@ export class ClaudeVisionService implements IClaudeVisionService {
     try {
       this.logger.log(`🔍 Starting before/after analysis for task: ${taskKey}`);
 
-      // Проверяем, настроен ли Claude API
-      if (!this.isConfigured || !this.anthropic) {
+      // Проверяем, настроен ли OpenRouter API
+      if (!this.isConfigured || !this.openai) {
         this.logger.error(
-          '❌ Claude API не настроен - возвращаем fallback результат',
+          '❌ OpenRouter API не настроен - возвращаем fallback результат',
         );
         return this.createFallbackResult(
-          'Claude API не настроен (отсутствует CLAUDE_API_KEY)',
+          'OpenRouter API не настроен (отсутствует OPENROUTER_API_KEY)',
         );
       }
 
@@ -60,19 +73,16 @@ export class ClaudeVisionService implements IClaudeVisionService {
         `📷 Before photo: ${beforeSize}KB, After photo: ${afterSize}KB`,
       );
 
-      const model =
-        this.configService.get<string>('claude.model') ||
-        'claude-3-5-sonnet-20241022';
       const maxTokens =
         this.configService.get<number>('claude.maxTokens') || 2048;
       const temperature =
         this.configService.get<number>('claude.temperature') || 0.3;
 
       const prompt = this.buildAnalysisPrompt(taskKey, timeInMinutes);
-      this.logger.log(`📤 Sending request to Claude model: ${model}`);
+      this.logger.log(`📤 Sending request to Claude model: ${this.model}`);
 
-      const response = await this.anthropic.messages.create({
-        model,
+      const response = await this.openai.chat.completions.create({
+        model: this.model,
         max_tokens: maxTokens,
         temperature,
         messages: [
@@ -84,19 +94,15 @@ export class ClaudeVisionService implements IClaudeVisionService {
                 text: prompt,
               },
               {
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: 'image/png',
-                  data: beforeImageBase64,
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/png;base64,${beforeImageBase64}`,
                 },
               },
               {
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: 'image/png',
-                  data: afterImageBase64,
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/png;base64,${afterImageBase64}`,
                 },
               },
             ],
@@ -107,8 +113,7 @@ export class ClaudeVisionService implements IClaudeVisionService {
       this.logger.log(`✅ Claude analysis completed for ${taskKey}`);
 
       // Парсинг ответа
-      const analysisText =
-        response.content[0].type === 'text' ? response.content[0].text : '';
+      const analysisText = response.choices[0]?.message?.content || '';
       return this.parseClaudeResponse(analysisText, timeInMinutes);
     } catch (error) {
       this.logger.error(`❌ Claude API error for ${taskKey}:`, error.message);
@@ -326,27 +331,28 @@ ${timeInMinutes ? `ВРЕМЯ РАБОТЫ: ${timeInMinutes} минут` : 'ВР
   }
 
   /**
-   * Проверка доступности Claude API
+   * Проверка доступности OpenRouter API
    */
   async healthCheck(): Promise<boolean> {
     try {
-      // Проверяем, настроен ли Claude API
-      if (!this.isConfigured || !this.anthropic) {
-        this.logger.warn('⚠️ Claude API не настроен');
+      // Проверяем, настроен ли OpenRouter API
+      if (!this.isConfigured || !this.openai) {
+        this.logger.warn('⚠️ OpenRouter API не настроен');
         return false;
       }
 
       // Простой тест-запрос к API
-      await this.anthropic.messages.create({
-        model:
-          this.configService.get<string>('claude.model') ||
-          'claude-3-5-sonnet-20241022',
+      await this.openai.chat.completions.create({
+        model: this.model,
         max_tokens: 10,
         messages: [{ role: 'user', content: 'test' }],
       });
       return true;
     } catch (error) {
-      this.logger.error('❌ Claude API health check failed:', error.message);
+      this.logger.error(
+        '❌ OpenRouter API health check failed:',
+        error.message,
+      );
       return false;
     }
   }

@@ -691,7 +691,9 @@ export class ProcessWebhookBeforeAfterService {
       );
       await firstValueFrom(
         this.httpService
-          .get(`${baseUrl}/photo-analysis-agent/health`)
+          .get(
+            `${baseUrl}/photo-analysis-agent/analyze-before-after-photos/health`,
+          )
           .pipe(timeout(5000)),
       );
       return true;
