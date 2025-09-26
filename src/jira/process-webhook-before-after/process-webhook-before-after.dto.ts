@@ -74,6 +74,25 @@ export class ProcessWebhookBeforeAfterDto {
   @IsOptional()
   @IsObject()
   changelog?: any;
+
+  @ApiProperty({ description: 'Тип события задачи', required: false })
+  @IsOptional()
+  @IsString()
+  issue_event_type_name?: string;
+
+  @ApiProperty({
+    description: 'Пользователь, инициировавший событие',
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+  user?: {
+    self?: string;
+    accountId?: string;
+    avatarUrls?: any;
+    displayName?: string;
+    active?: boolean;
+  };
 }
 
 export class ClaudeAnalysisDto {

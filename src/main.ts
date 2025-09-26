@@ -4,13 +4,73 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import * as bodyParser from 'body-parser';
+import * as axios from 'axios';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Увеличиваем лимит размера запросов для больших изображений
+  // 🔥 КРИТИЧНО: body-parser должен быть ПЕРВЫМ для парсинга webhook данных
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+  // Обрабатываем webhook на корневом пути (исправляем неправильную настройку Jira)
+  app.use('/', async (req: any, res: any, next: any) => {
+    if (req.method === 'POST' && req.url.includes('triggeredByUser')) {
+      console.log(`🌐 WEBHOOK RECEIVED ON ROOT PATH: ${req.method} ${req.url}`);
+      console.log(
+        `📦 Body size:`,
+        JSON.stringify(req.body).length,
+        'characters',
+      );
+
+      console.log(`🔄 FORWARDING TO CORRECT ENDPOINT`);
+
+      try {
+        // Добавим логирование данных для диагностики
+        console.log(`📋 Webhook event:`, req.body.webhookEvent);
+        console.log(`🎯 Task key:`, req.body.issue?.key);
+        console.log(`📊 Status:`, req.body.issue?.fields?.status?.name);
+
+        // Делаем внутренний HTTP запрос к правильному endpoint
+        const response = await axios.default.post(
+          'http://localhost:3000/jira/process-webhook-before-after',
+          req.body,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            timeout: 30000, // 30 секунд таймаут
+          },
+        );
+
+        console.log(`✅ WEBHOOK FORWARDED SUCCESSFULLY`);
+
+        // Возвращаем результат от правильного endpoint
+        return res.status(response.status).json(response.data);
+      } catch (error) {
+        console.error(`❌ ERROR FORWARDING WEBHOOK:`, error.message);
+        if (error.response) {
+          console.error(`📋 Response status:`, error.response.status);
+          console.error(
+            `📋 Response data:`,
+            JSON.stringify(error.response.data, null, 2),
+          );
+        }
+        return res.status(500).json({ error: 'Webhook forwarding failed' });
+      }
+    }
+    next();
+  });
+
+  // Логирование для правильного пути
+  app.use(
+    '/jira/process-webhook-before-after',
+    (req: any, res: any, next: any) => {
+      console.log(`📥 WEBHOOK PROCESSING: ${req.method} ${req.url}`);
+      console.log(`📋 Body received:`, !!req.body ? 'YES' : 'NO');
+      next();
+    },
+  );
 
   // Включаем глобальную валидацию
   app.useGlobalPipes(
