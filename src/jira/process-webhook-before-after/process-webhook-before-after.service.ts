@@ -184,15 +184,20 @@ export class ProcessWebhookBeforeAfterService {
         return { success: false, message: 'No attachments found' };
       }
 
-      // Ищем фото ДО (before, до, pre)
-      const beforeKeywords = ['before', 'до', 'pre', 'исходн', 'начальн'];
-      const beforePhoto = attachments.find((att: any) =>
-        beforeKeywords.some((keyword) =>
-          att.filename.toLowerCase().includes(keyword),
-        ),
+      // Фильтруем только изображения
+      const imageAttachments = attachments.filter(
+        (att: any) => att.mimeType && att.mimeType.startsWith('image/'),
       );
 
-      // Ищем фото ПОСЛЕ (after, после, post, result)
+      if (imageAttachments.length < 2) {
+        return {
+          success: false,
+          message: `Need at least 2 photos, found ${imageAttachments.length}`,
+        };
+      }
+
+      // Сначала пробуем найти по ключевым словам
+      const beforeKeywords = ['before', 'до', 'pre', 'исходн', 'начальн'];
       const afterKeywords = [
         'after',
         'после',
@@ -201,11 +206,38 @@ export class ProcessWebhookBeforeAfterService {
         'итог',
         'финальн',
       ];
-      const afterPhoto = attachments.find((att: any) =>
+
+      let beforePhoto = imageAttachments.find((att: any) =>
+        beforeKeywords.some((keyword) =>
+          att.filename.toLowerCase().includes(keyword),
+        ),
+      );
+
+      let afterPhoto = imageAttachments.find((att: any) =>
         afterKeywords.some((keyword) =>
           att.filename.toLowerCase().includes(keyword),
         ),
       );
+
+      // Если не нашли по ключевым словам, используем время создания
+      if (!beforePhoto || !afterPhoto) {
+        this.logger.log(
+          '🕒 Photos not found by keywords, using time-based detection',
+        );
+
+        // Сортируем по времени создания (самый ранний = ДО, самый поздний = ПОСЛЕ)
+        const sortedByTime = imageAttachments.sort(
+          (a: any, b: any) =>
+            new Date(a.created).getTime() - new Date(b.created).getTime(),
+        );
+
+        beforePhoto = sortedByTime[0]; // Самый ранний
+        afterPhoto = sortedByTime[sortedByTime.length - 1]; // Самый поздний
+
+        this.logger.log(
+          `📷 Auto-detected: Before="${beforePhoto.filename}" (${beforePhoto.created}), After="${afterPhoto.filename}" (${afterPhoto.created})`,
+        );
+      }
 
       if (!beforePhoto || !afterPhoto) {
         return {
