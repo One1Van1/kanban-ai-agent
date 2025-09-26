@@ -33,32 +33,11 @@ import { AddTaskCommentService } from './add-task-comment/add-task-comment.servi
 import { AttachFileController } from './attach-file/attach-file.controller';
 import { AttachFileService } from './attach-file/attach-file.service';
 
-// Jira Webhook Handler - ЗАКОММЕНТИРОВАНО (СЛОМАН)
-// import { JiraWebhookHandlerController } from './jira-webhook-handler/jira-webhook-handler.controller';
-// import { JiraWebhookHandlerService } from './jira-webhook-handler/jira-webhook-handler.service';
-
-// Haircut Report Webhook
-import { HaircutReportWebhookController } from './haircut-report-webhook/haircut-report-webhook.controller';
-import { HaircutReportWebhookService } from './haircut-report-webhook/haircut-report-webhook.service';
-
 // Time Validation Webhook
 import { TimeValidationWebhookModule } from './time-validation-webhook/time-validation-webhook.module';
 
-// Process Webhook Before/After - НОВЫЙ WEBHOOK ДЛЯ ФОТО АНАЛИЗА
-import { ProcessWebhookBeforeAfterModule } from './process-webhook-before-after/process-webhook-before-after.module';
-
-// AI Reporting Agent for integration
-import { AnalyzeCompletedHaircutTasksModule } from '../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.module';
-import { ProcessHaircutTaskModule } from '../ai-agent/process-haircut-task/process-haircut-task.module';
-
 @Module({
-  imports: [
-    ConfigModule,
-    AnalyzeCompletedHaircutTasksModule,
-    ProcessHaircutTaskModule,
-    TimeValidationWebhookModule,
-    ProcessWebhookBeforeAfterModule,
-  ],
+  imports: [ConfigModule, TimeValidationWebhookModule],
   controllers: [
     HealthCheckController,
     GetTaskController,
@@ -68,8 +47,6 @@ import { ProcessHaircutTaskModule } from '../ai-agent/process-haircut-task/proce
     SearchTasksController,
     AddTaskCommentController,
     AttachFileController,
-    // JiraWebhookHandlerController, // ЗАКОММЕНТИРОВАНО (СЛОМАН)
-    HaircutReportWebhookController,
   ],
   providers: [
     HealthCheckService,
@@ -80,8 +57,6 @@ import { ProcessHaircutTaskModule } from '../ai-agent/process-haircut-task/proce
     SearchTasksService,
     AddTaskCommentService,
     AttachFileService,
-    // JiraWebhookHandlerService, // ЗАКОММЕНТИРОВАНО (СЛОМАН)
-    HaircutReportWebhookService,
   ],
   exports: [
     HealthCheckService,
@@ -92,8 +67,6 @@ import { ProcessHaircutTaskModule } from '../ai-agent/process-haircut-task/proce
     SearchTasksService,
     AddTaskCommentService,
     AttachFileService,
-    // JiraWebhookHandlerService, // ЗАКОММЕНТИРОВАНО (СЛОМАН)
-    HaircutReportWebhookService,
   ],
 })
 export class JiraModule {}

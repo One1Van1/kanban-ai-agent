@@ -1,12 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AnalyzeHaircutPhotoModule } from './analyze-haircut-photo/analyze-haircut-photo.module';
+// Импортируем ТОЛЬКО Claude анализ фотографий
 import { AnalyzeBeforeAfterPhotosModule } from './analyze-before-after-photos/analyze-before-after-photos.module';
 
 @Module({
-  imports: [
-    AnalyzeHaircutPhotoModule,
-    AnalyzeBeforeAfterPhotosModule, // Новый изолированный эндпоинт
-  ],
-  exports: [AnalyzeHaircutPhotoModule, AnalyzeBeforeAfterPhotosModule],
+  imports: [AnalyzeBeforeAfterPhotosModule],
+  exports: [AnalyzeBeforeAfterPhotosModule],
 })
 export class PhotoAnalysisAgentModule {}

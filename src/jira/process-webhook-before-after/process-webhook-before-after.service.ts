@@ -1,754 +1,399 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
+import { Injectable, Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { firstValueFrom } from 'rxjs';
-import { timeout, retry, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
-import * as crypto from 'crypto';
+import axios from 'axios';
 import {
-  JiraWebhookPayload,
-  WebhookProcessingConfig,
-  WebhookProcessingResult,
-  ProcessingTriggerConditions,
-  WebhookProcessingState,
-  WebhookMetrics,
-  WebhookHealthCheck,
-  ProcessingAction,
-  WebhookEventType,
+  ProcessWebhookBeforeAfterDto,
+  ProcessWebhookBeforeAfterResponseDto,
+} from './process-webhook-before-after.dto';
+import {
+  IWebhookProcessingResult,
+  IPhotoExtractionResult,
+  IClaudeAnalysisResult,
 } from './process-webhook-before-after.interface';
 
 @Injectable()
 export class ProcessWebhookBeforeAfterService {
   private readonly logger = new Logger(ProcessWebhookBeforeAfterService.name);
+  private readonly baseUrl: string;
 
-  // Конфигурация обработки webhook'ов
-  private readonly config: WebhookProcessingConfig;
-
-  // Состояния активных обработок
-  private processingStates = new Map<string, WebhookProcessingState>();
-
-  // Метрики производительности
-  private metrics: WebhookMetrics = {
-    totalProcessed: 0,
-    successfulProcessed: 0,
-    failedProcessed: 0,
-    averageProcessingTimeMs: 0,
-    triggerConditions: {
-      haircutTasksDetected: 0,
-      statusTriggersMatched: 0,
-      photoRequirementsMet: 0,
-      skippedTasks: 0,
-    },
-    processingResults: {
-      photoAnalysisSuccess: 0,
-      timeTrackingSuccess: 0,
-      combinedAnalysisSuccess: 0,
-      jiraCommentsAdded: 0,
-    },
-    errors: {
-      validationErrors: 0,
-      processingErrors: 0,
-      externalServiceErrors: 0,
-      timeoutErrors: 0,
-    },
-  };
-
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-  ) {
-    // Инициализация конфигурации
-    this.config = {
-      enableBeforeAfterAnalysis: true,
-      enableTimeTracking: true,
-      enableAutoComments: true,
-
-      // Статусы для обработки - когда задача переходит в Review или Done
-      triggerStatuses: ['Review', 'Testing', 'Done'],
-      completionStatuses: ['Done', 'Closed'],
-
-      // Ключевые слова для определения задач стрижки
-      haircutKeywords: [
-        'стрижка',
-        'стрижку',
-        'стрижки',
-        'haircut',
-        'окрашивание',
-        'покраска',
-        'окраска',
-        'укладка',
-        'укладки',
-        'маникюр',
-        'педикюр',
-        'косметология',
-        'массаж',
-        'эпиляция',
-        'депиляция',
-        'брови',
-        'ресницы',
-        'мелирование',
-        'колорирование',
-      ],
-
-      processingDelayMs: 3000, // 3 секунды задержки
-      timeoutMs: 120000, // 2 минуты на обработку
-
-      photoAnalysis: {
-        minPhotos: 1, // Минимум 1 фото
-        maxPhotos: 10, // Максимум 10 фото
-        supportedFormats: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'],
-        maxFileSize: 10 * 1024 * 1024, // 10 MB
-      },
-    };
-
-    this.logger.log('ProcessWebhookBeforeAfterService инициализирован');
-    this.logger.log(
-      `Активные статусы: ${this.config.triggerStatuses.join(', ')}`,
-    );
-    this.logger.log(`Ключевых слов: ${this.config.haircutKeywords.length}`);
+  constructor(private readonly configService: ConfigService) {
+    this.baseUrl =
+      this.configService.get<string>('app.baseUrl') || 'http://localhost:3000';
   }
 
   /**
-   * Главный метод обработки webhook'а от Jira
+   * Главный метод обработки webhook'а для Claude анализа
+   * Автоматически анализирует задачи со статусом Review + фотографии
    */
-  async processWebhook(
-    payload: JiraWebhookPayload,
-  ): Promise<WebhookProcessingResult> {
-    const startTime = Date.now();
-    const webhookId = this.generateWebhookId(payload);
-    const taskKey = payload.issue?.key || 'UNKNOWN';
+  async processWebhookBeforeAfter(
+    dto: ProcessWebhookBeforeAfterDto,
+  ): Promise<ProcessWebhookBeforeAfterResponseDto> {
+    const { issue, webhookEvent } = dto;
+    const taskKey = issue?.key;
 
     this.logger.log(
-      `🔔 Получен webhook для задачи ${taskKey}, событие: ${payload.webhookEvent}`,
+      `🎯 Processing Claude webhook: ${webhookEvent} for task ${taskKey}`,
     );
-
-    // Создаем состояние обработки
-    const state: WebhookProcessingState = {
-      taskKey,
-      webhookId,
-      status: 'pending',
-      startedAt: new Date(),
-      steps: {
-        validation: 'pending',
-        photoAnalysis: 'pending',
-        timeTracking: 'pending',
-        combinedAnalysis: 'pending',
-        commentAdding: 'pending',
-      },
-      triggerConditions: {
-        hasHaircutKeywords: false,
-        hasRequiredStatus: false,
-        hasPhotos: false,
-        hasMinimumPhotos: false,
-        isValidTask: false,
-      },
-      errors: [],
-    };
-    this.processingStates.set(webhookId, state);
 
     try {
-      this.metrics.totalProcessed++;
-      state.status = 'processing';
-
-      // Шаг 1: Валидация и проверка условий
-      this.logger.log(`📋 ${taskKey}: Проверка условий обработки`);
-      state.steps.validation = 'processing';
-
-      const triggerConditions = await this.checkProcessingConditions(payload);
-      state.triggerConditions = triggerConditions;
-      state.steps.validation = 'completed';
-
-      // Обновляем метрики по условиям
-      if (triggerConditions.hasHaircutKeywords)
-        this.metrics.triggerConditions.haircutTasksDetected++;
-      if (triggerConditions.hasRequiredStatus)
-        this.metrics.triggerConditions.statusTriggersMatched++;
-      if (triggerConditions.hasMinimumPhotos)
-        this.metrics.triggerConditions.photoRequirementsMet++;
-
-      // Проверяем, нужно ли обрабатывать эту задачу
-      if (!triggerConditions.isValidTask) {
-        this.logger.log(
-          `⏭️ ${taskKey}: Пропускаем обработку - условия не выполнены`,
-        );
-        this.metrics.triggerConditions.skippedTasks++;
-
-        return this.createSkippedResult(taskKey, triggerConditions, startTime);
-      }
-
-      // Шаг 2: Задержка перед обработкой
-      this.logger.log(
-        `⏳ ${taskKey}: Ожидание ${this.config.processingDelayMs}ms перед обработкой`,
-      );
-      await this.delay(this.config.processingDelayMs);
-
-      // Шаг 3: Запуск полной обработки через process-before-after-task
-      this.logger.log(`🚀 ${taskKey}: Запуск полной обработки задачи`);
-      const processingResult = await this.triggerFullProcessing(taskKey, state);
-
-      // Обновляем состояние
-      state.status = 'completed';
-      state.completedAt = new Date();
-      state.result = processingResult;
-
-      // Обновляем метрики
-      this.metrics.successfulProcessed++;
-      this.updateProcessingMetrics(processingResult);
-      this.updateAverageProcessingTime(Date.now() - startTime);
-      this.metrics.lastProcessedAt = new Date();
-
-      this.logger.log(
-        `✅ ${taskKey}: Webhook успешно обработан за ${Date.now() - startTime}ms`,
-      );
-      return processingResult;
-    } catch (error) {
-      state.status = 'failed';
-      state.completedAt = new Date();
-      state.errors.push(`Критическая ошибка: ${error.message}`);
-
-      this.metrics.failedProcessed++;
-      this.metrics.errors.processingErrors++;
-
-      this.logger.error(
-        `❌ ${taskKey}: Ошибка обработки webhook: ${error.message}`,
-        error.stack,
-      );
-
-      return this.createErrorResult(taskKey, error.message, startTime);
-    }
-  }
-
-  /**
-   * Проверка условий для запуска обработки
-   */
-  private async checkProcessingConditions(
-    payload: JiraWebhookPayload,
-  ): Promise<ProcessingTriggerConditions> {
-    const issue = payload.issue;
-    if (!issue) {
-      return {
-        hasHaircutKeywords: false,
-        hasRequiredStatus: false,
-        hasPhotos: false,
-        hasMinimumPhotos: false,
-        isValidTask: false,
-      };
-    }
-
-    // Проверка ключевых слов
-    const summary = issue.fields.summary || '';
-    const description = issue.fields.description || '';
-    const textToCheck = `${summary} ${description}`.toLowerCase();
-
-    const hasHaircutKeywords = this.config.haircutKeywords.some((keyword) =>
-      textToCheck.includes(keyword.toLowerCase()),
-    );
-
-    // Проверка статуса
-    const currentStatus = issue.fields.status?.name;
-    const hasRequiredStatus =
-      this.config.triggerStatuses.includes(currentStatus);
-
-    // Проверка изменения статуса через changelog
-    let statusChanged = false;
-    if (payload.changelog?.items) {
-      statusChanged = payload.changelog.items.some(
-        (item) =>
-          item.field === 'status' &&
-          this.config.triggerStatuses.includes(item.toString || ''),
-      );
-    }
-
-    // Проверка фотографий
-    const attachments = issue.fields.attachment || [];
-    const photoAttachments = attachments.filter(
-      (att) =>
-        this.isImageAttachment(att.mimeType) &&
-        att.size <= this.config.photoAnalysis.maxFileSize,
-    );
-
-    const hasPhotos = photoAttachments.length > 0;
-    const hasMinimumPhotos =
-      photoAttachments.length >= this.config.photoAnalysis.minPhotos;
-
-    // Общая валидность задачи
-    const isValidTask =
-      hasHaircutKeywords &&
-      (hasRequiredStatus || statusChanged) &&
-      hasMinimumPhotos;
-
-    return {
-      hasHaircutKeywords,
-      hasRequiredStatus: hasRequiredStatus || statusChanged,
-      hasPhotos,
-      hasMinimumPhotos,
-      isValidTask,
-    };
-  }
-
-  /**
-   * Запуск полной обработки через process-before-after-task сервис
-   */
-  private async triggerFullProcessing(
-    taskKey: string,
-    state: WebhookProcessingState,
-  ): Promise<WebhookProcessingResult> {
-    try {
-      const baseUrl = this.configService.get<string>(
-        'app.baseUrl',
-        'http://localhost:3000',
-      );
-      const url = `${baseUrl}/ai-agent/process-before-after-task/${taskKey}`;
-
-      this.logger.log(
-        `📞 ${taskKey}: Вызываем process-before-after-task: ${url}`,
-      );
-
-      const response = await firstValueFrom(
-        this.httpService
-          .post(
-            url,
-            {},
-            {
-              params: {
-                addComment: true,
-                forcePhoto: false,
-                forceTime: false,
-              },
-              timeout: this.config.timeoutMs,
-            },
-          )
-          .pipe(
-            timeout(this.config.timeoutMs + 5000), // +5 секунд буферного времени
-            retry(2), // Попробовать 2 раза при ошибке
-            catchError((error) => {
-              this.logger.error(
-                `${taskKey}: Ошибка вызова process-before-after-task: ${error.message}`,
-              );
-              throw error;
-            }),
-          ),
-      );
-
-      const processResult = response.data;
-
-      // Обновляем состояние шагов на основе результата
-      this.updateStepsFromProcessResult(state, processResult);
-
-      // Формируем результат для webhook'а
-      return {
-        success: processResult.success,
-        message: `Webhook обработан для задачи ${taskKey}: ${processResult.success ? 'успешно' : 'с ошибками'}`,
-        taskKey,
-        triggeredActions: this.getTriggeredActions(processResult),
-        processingTimeMs: Date.now() - state.startedAt.getTime(),
-        timestamp: new Date().toISOString(),
-
-        photoAnalysis: processResult.photoAnalysis
-          ? {
-              processed: processResult.photoAnalysis.success,
-              photosFound: 0, // TODO: получить из результата
-              analysisResult: processResult.photoAnalysis.success
-                ? {
-                    category: processResult.photoAnalysis.category,
-                    qualityScore: processResult.photoAnalysis.qualityScore,
-                    description: processResult.photoAnalysis.description,
-                  }
-                : undefined,
-              error: processResult.photoAnalysis.error,
-            }
-          : undefined,
-
-        timeTracking: processResult.timeAnalysis
-          ? {
-              processed: processResult.timeAnalysis.success,
-              totalMinutes: processResult.timeAnalysis.totalMinutes,
-              efficiency: processResult.timeAnalysis.efficiency,
-              error: processResult.timeAnalysis.error,
-            }
-          : undefined,
-
-        combinedAnalysis: processResult.combinedAnalysis
-          ? {
-              processed: true,
-              overallScore: processResult.combinedAnalysis.overallScore,
-              summary: processResult.combinedAnalysis.summary,
-            }
-          : undefined,
-
-        jiraComment: processResult.commentId
-          ? {
-              added: true,
-              commentId: processResult.commentId,
-            }
-          : {
-              added: false,
-              error: 'Комментарий не был добавлен',
-            },
-
-        errors: processResult.errors || [],
-      };
-    } catch (error) {
-      this.metrics.errors.externalServiceErrors++;
-      throw new Error(
-        `Не удалось выполнить полную обработку: ${error.message}`,
-      );
-    }
-  }
-
-  /**
-   * Обновление состояния шагов на основе результата обработки
-   */
-  private updateStepsFromProcessResult(
-    state: WebhookProcessingState,
-    processResult: any,
-  ): void {
-    if (processResult.photoAnalysis) {
-      state.steps.photoAnalysis = processResult.photoAnalysis.success
-        ? 'completed'
-        : 'failed';
-    } else {
-      state.steps.photoAnalysis = 'skipped';
-    }
-
-    if (processResult.timeAnalysis) {
-      state.steps.timeTracking = processResult.timeAnalysis.success
-        ? 'completed'
-        : 'failed';
-    } else {
-      state.steps.timeTracking = 'skipped';
-    }
-
-    if (processResult.combinedAnalysis) {
-      state.steps.combinedAnalysis = 'completed';
-    } else {
-      state.steps.combinedAnalysis = 'skipped';
-    }
-
-    if (processResult.commentId) {
-      state.steps.commentAdding = 'completed';
-    } else {
-      state.steps.commentAdding = 'failed';
-    }
-  }
-
-  /**
-   * Извлечение списка выполненных действий
-   */
-  private getTriggeredActions(processResult: any): string[] {
-    const actions: string[] = [];
-
-    if (processResult.photoAnalysis?.success)
-      actions.push(ProcessingAction.ANALYZE_PHOTOS);
-    if (processResult.timeAnalysis?.success)
-      actions.push(ProcessingAction.TRACK_TIME);
-    if (processResult.combinedAnalysis)
-      actions.push(ProcessingAction.COMBINED_ANALYSIS);
-    if (processResult.commentId) actions.push(ProcessingAction.ADD_COMMENT);
-
-    return actions;
-  }
-
-  /**
-   * Проверка, является ли вложение изображением
-   */
-  private isImageAttachment(mimeType: string): boolean {
-    const imageMimeTypes = [
-      'image/jpeg',
-      'image/jpg',
-      'image/png',
-      'image/gif',
-      'image/bmp',
-      'image/webp',
-    ];
-    return imageMimeTypes.includes(mimeType.toLowerCase());
-  }
-
-  /**
-   * Создание результата для пропущенной задачи
-   */
-  private createSkippedResult(
-    taskKey: string,
-    conditions: ProcessingTriggerConditions,
-    startTime: number,
-  ): WebhookProcessingResult {
-    const reasons = [];
-    if (!conditions.hasHaircutKeywords)
-      reasons.push('не содержит ключевые слова стрижки');
-    if (!conditions.hasRequiredStatus) reasons.push('не в нужном статусе');
-    if (!conditions.hasMinimumPhotos) reasons.push('недостаточно фотографий');
-
-    return {
-      success: false,
-      message: `Задача ${taskKey} пропущена: ${reasons.join(', ')}`,
-      taskKey,
-      triggeredActions: [ProcessingAction.SKIP_PROCESSING],
-      processingTimeMs: Date.now() - startTime,
-      timestamp: new Date().toISOString(),
-      errors: [`Обработка пропущена: ${reasons.join(', ')}`],
-    };
-  }
-
-  /**
-   * Создание результата с ошибкой
-   */
-  private createErrorResult(
-    taskKey: string,
-    errorMessage: string,
-    startTime: number,
-  ): WebhookProcessingResult {
-    return {
-      success: false,
-      message: `Ошибка обработки задачи ${taskKey}: ${errorMessage}`,
-      taskKey,
-      triggeredActions: [],
-      processingTimeMs: Date.now() - startTime,
-      timestamp: new Date().toISOString(),
-      errors: [errorMessage],
-    };
-  }
-
-  /**
-   * Обновление метрик обработки
-   */
-  private updateProcessingMetrics(result: WebhookProcessingResult): void {
-    if (result.photoAnalysis?.processed) {
-      this.metrics.processingResults.photoAnalysisSuccess++;
-    }
-    if (result.timeTracking?.processed) {
-      this.metrics.processingResults.timeTrackingSuccess++;
-    }
-    if (result.combinedAnalysis?.processed) {
-      this.metrics.processingResults.combinedAnalysisSuccess++;
-    }
-    if (result.jiraComment?.added) {
-      this.metrics.processingResults.jiraCommentsAdded++;
-    }
-  }
-
-  /**
-   * Обновление среднего времени обработки
-   */
-  private updateAverageProcessingTime(processingTimeMs: number): void {
-    const totalSuccessful = this.metrics.successfulProcessed;
-    if (totalSuccessful === 1) {
-      this.metrics.averageProcessingTimeMs = processingTimeMs;
-    } else {
-      this.metrics.averageProcessingTimeMs =
-        (this.metrics.averageProcessingTimeMs * (totalSuccessful - 1) +
-          processingTimeMs) /
-        totalSuccessful;
-    }
-  }
-
-  /**
-   * Генерация уникального ID для webhook'а
-   */
-  private generateWebhookId(payload: JiraWebhookPayload): string {
-    const data = `${payload.webhookEvent}_${payload.issue?.key}_${payload.timestamp}`;
-    return crypto.createHash('md5').update(data).digest('hex').substring(0, 16);
-  }
-
-  /**
-   * Задержка выполнения
-   */
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  /**
-   * Получение состояний обработки
-   */
-  getProcessingStates(taskKeys?: string[]): WebhookProcessingState[] {
-    if (!taskKeys) {
-      return Array.from(this.processingStates.values());
-    }
-
-    return taskKeys.map((taskKey) => {
-      const state = Array.from(this.processingStates.values()).find(
-        (s) => s.taskKey === taskKey,
-      );
-      return (
-        state || {
+      // 1. Валидация условий для Claude анализа
+      const validationResult = this.validateClaudeConditions(dto);
+      if (!validationResult.shouldProcess) {
+        return {
+          success: true,
+          message: validationResult.reason,
+          processed: false,
           taskKey,
-          webhookId: 'not-found',
-          status: 'pending' as const,
-          startedAt: new Date(),
-          steps: {
-            validation: 'pending',
-            photoAnalysis: 'pending',
-            timeTracking: 'pending',
-            combinedAnalysis: 'pending',
-            commentAdding: 'pending',
-          },
-          triggerConditions: {
-            hasHaircutKeywords: false,
-            hasRequiredStatus: false,
-            hasPhotos: false,
-            hasMinimumPhotos: false,
-            isValidTask: false,
-          },
-          errors: ['Состояние обработки не найдено'],
-        }
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      // 2. Извлечение фотографий ДО/ПОСЛЕ из Jira
+      const photosResult = await this.extractBeforeAfterPhotos(taskKey!);
+      if (!photosResult.success) {
+        this.logger.warn(
+          `📷 No photos found for ${taskKey}: ${photosResult.message}`,
+        );
+        return {
+          success: true,
+          message: `Task processed but no photos found: ${photosResult.message}`,
+          processed: false,
+          taskKey,
+          timestamp: new Date().toISOString(),
+        };
+      }
+
+      // 3. Анализ фотографий через Claude
+      const claudeResult = await this.analyzeWithClaude(taskKey!, photosResult);
+
+      // 4. Обработка результатов и комментарий в Jira
+      await this.postResultsToJira(taskKey!, claudeResult);
+
+      this.logger.log(`✅ Claude webhook completed for ${taskKey}`);
+
+      return {
+        success: true,
+        message: 'Claude analysis completed successfully',
+        processed: true,
+        taskKey,
+        analysis: claudeResult.analysis || undefined,
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      this.logger.error(
+        `❌ Claude webhook failed for ${taskKey}:`,
+        error.message,
       );
-    });
+
+      return {
+        success: false,
+        message: 'Claude webhook processing failed',
+        processed: false,
+        taskKey,
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      };
+    }
   }
 
   /**
-   * Получение метрик производительности
+   * Проверяет условия для запуска Claude анализа
    */
-  getMetrics(): WebhookMetrics {
-    return { ...this.metrics };
-  }
+  private validateClaudeConditions(dto: ProcessWebhookBeforeAfterDto): {
+    shouldProcess: boolean;
+    reason: string;
+  } {
+    const { issue, webhookEvent } = dto;
 
-  /**
-   * Проверка здоровья webhook сервиса
-   */
-  async healthCheck(): Promise<WebhookHealthCheck> {
-    const timestamp = new Date();
+    // Проверяем тип события
+    if (!['jira:issue_updated'].includes(webhookEvent)) {
+      return {
+        shouldProcess: false,
+        reason: `Event type ${webhookEvent} not supported for Claude analysis`,
+      };
+    }
 
-    // Проверка доступности внешних сервисов
-    const services = {
-      jiraApi: await this.checkJiraHealth(),
-      photoAnalysis: await this.checkPhotoAnalysisHealth(),
-      timeTracking: await this.checkTimeTrackingHealth(),
-      processBeforeAfter: await this.checkProcessBeforeAfterHealth(),
-    };
+    // Проверяем наличие ключевых слов стрижки
+    const haircutKeywords = [
+      'стрижк',
+      'haircut',
+      'причёск',
+      'парикмахер',
+      'hair',
+      'волос',
+      'укладк',
+      'стиль',
+      'подстриг',
+      'окрашивание',
+      'маникюр',
+    ];
 
-    // Определение общего статуса
-    const healthyServices = Object.values(services).filter(Boolean).length;
-    const totalServices = Object.keys(services).length;
+    const summary = (issue?.fields?.summary || '').toLowerCase();
+    const description = (issue?.fields?.description || '').toLowerCase();
+    const hasHaircutKeywords = haircutKeywords.some(
+      (keyword) => summary.includes(keyword) || description.includes(keyword),
+    );
 
-    let status: 'healthy' | 'degraded' | 'unhealthy';
-    if (healthyServices === totalServices) {
-      status = 'healthy';
-    } else if (healthyServices >= totalServices * 0.5) {
-      status = 'degraded';
-    } else {
-      status = 'unhealthy';
+    if (!hasHaircutKeywords) {
+      return {
+        shouldProcess: false,
+        reason: 'Task does not contain haircut-related keywords',
+      };
+    }
+
+    // Проверяем статус (Review, Testing, Done)
+    const currentStatus = issue?.fields?.status?.name;
+    const triggerStatuses = ['Review', 'Testing', 'Done'];
+
+    if (!triggerStatuses.includes(currentStatus)) {
+      return {
+        shouldProcess: false,
+        reason: `Status ${currentStatus} not in trigger list [${triggerStatuses.join(', ')}]`,
+      };
     }
 
     return {
-      status,
-      timestamp,
-      services,
-      metrics: this.metrics,
-      configuration: {
-        triggerStatuses: this.config.triggerStatuses,
-        haircutKeywords: this.config.haircutKeywords.length,
-        photoRequirements: {
-          minPhotos: this.config.photoAnalysis.minPhotos,
-          maxFileSize: `${Math.round(this.config.photoAnalysis.maxFileSize / 1024 / 1024)}MB`,
-        },
-      },
-      recentActivity: {
-        lastWebhookReceived: this.getLastWebhookTime(),
-        lastSuccessfulProcessing: this.metrics.lastProcessedAt,
-        activeProcessingCount: this.getActiveProcessingCount(),
-        queuedWebhooksCount: 0, // Пока не реализовано
-      },
-      errors: [],
+      shouldProcess: true,
+      reason: 'All conditions met for Claude analysis',
     };
   }
 
   /**
-   * Очистка старых состояний обработки
+   * Извлекает фотографии ДО/ПОСЛЕ из задачи Jira
    */
-  cleanupOldStates(): void {
-    const cutoffTime = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 часа назад
-    let cleanedCount = 0;
+  private async extractBeforeAfterPhotos(
+    taskKey: string,
+  ): Promise<IPhotoExtractionResult> {
+    try {
+      // Получаем полные данные задачи включая attachments
+      const jiraConfig = {
+        baseURL: this.configService.get<string>('jira.baseUrl'),
+        auth: {
+          username: this.configService.get<string>('jira.email') || '',
+          password: this.configService.get<string>('jira.apiToken') || '',
+        },
+      };
 
-    for (const [webhookId, state] of this.processingStates.entries()) {
-      if (state.completedAt && state.completedAt < cutoffTime) {
-        this.processingStates.delete(webhookId);
-        cleanedCount++;
+      const response = await axios.get(
+        `/rest/api/3/issue/${taskKey}?expand=attachment`,
+        jiraConfig,
+      );
+
+      const attachments = response.data.fields.attachment || [];
+      if (attachments.length === 0) {
+        return { success: false, message: 'No attachments found' };
       }
-    }
 
-    this.logger.log(`🧹 Очищено ${cleanedCount} старых состояний webhook'ов`);
-  }
+      // Ищем фото ДО (before, до, pre)
+      const beforeKeywords = ['before', 'до', 'pre', 'исходн', 'начальн'];
+      const beforePhoto = attachments.find((att: any) =>
+        beforeKeywords.some((keyword) =>
+          att.filename.toLowerCase().includes(keyword),
+        ),
+      );
 
-  // Приватные методы для проверки здоровья сервисов
-  private async checkJiraHealth(): Promise<boolean> {
-    try {
-      const baseUrl = this.configService.get<string>('jira.baseUrl');
-      await firstValueFrom(
-        this.httpService
-          .get(`${baseUrl}/jira/health-check`)
-          .pipe(timeout(5000)),
+      // Ищем фото ПОСЛЕ (after, после, post, result)
+      const afterKeywords = [
+        'after',
+        'после',
+        'post',
+        'result',
+        'итог',
+        'финальн',
+      ];
+      const afterPhoto = attachments.find((att: any) =>
+        afterKeywords.some((keyword) =>
+          att.filename.toLowerCase().includes(keyword),
+        ),
       );
-      return true;
-    } catch {
-      return false;
-    }
-  }
 
-  private async checkPhotoAnalysisHealth(): Promise<boolean> {
-    try {
-      const baseUrl = this.configService.get<string>(
-        'app.baseUrl',
-        'http://localhost:3000',
-      );
-      await firstValueFrom(
-        this.httpService
-          .get(
-            `${baseUrl}/photo-analysis-agent/analyze-before-after-photos/health`,
-          )
-          .pipe(timeout(5000)),
-      );
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private async checkTimeTrackingHealth(): Promise<boolean> {
-    try {
-      const baseUrl = this.configService.get<string>(
-        'app.baseUrl',
-        'http://localhost:3000',
-      );
-      await firstValueFrom(
-        this.httpService
-          .get(`${baseUrl}/ai-agent/track-work-time/health`)
-          .pipe(timeout(5000)),
-      );
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private async checkProcessBeforeAfterHealth(): Promise<boolean> {
-    try {
-      const baseUrl = this.configService.get<string>(
-        'app.baseUrl',
-        'http://localhost:3000',
-      );
-      await firstValueFrom(
-        this.httpService
-          .get(`${baseUrl}/ai-agent/process-before-after-task/health`)
-          .pipe(timeout(5000)),
-      );
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  private getLastWebhookTime(): Date | undefined {
-    let lastTime: Date | undefined;
-    for (const state of this.processingStates.values()) {
-      if (!lastTime || state.startedAt > lastTime) {
-        lastTime = state.startedAt;
+      if (!beforePhoto || !afterPhoto) {
+        return {
+          success: false,
+          message: `Missing photos - Before: ${beforePhoto ? 'found' : 'missing'}, After: ${afterPhoto ? 'found' : 'missing'}`,
+        };
       }
+
+      // Загружаем содержимое фотографий
+      const beforeContent = await this.downloadPhotoAsBase64(
+        beforePhoto.content,
+        jiraConfig,
+      );
+      const afterContent = await this.downloadPhotoAsBase64(
+        afterPhoto.content,
+        jiraConfig,
+      );
+
+      return {
+        success: true,
+        message: 'Photos extracted successfully',
+        beforePhoto: {
+          filename: beforePhoto.filename,
+          content: beforeContent,
+          url: beforePhoto.content,
+        },
+        afterPhoto: {
+          filename: afterPhoto.filename,
+          content: afterContent,
+          url: afterPhoto.content,
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error extracting photos from ${taskKey}:`,
+        error.message,
+      );
+      return {
+        success: false,
+        message: `Photo extraction failed: ${error.message}`,
+      };
     }
-    return lastTime;
   }
 
-  private getActiveProcessingCount(): number {
-    return Array.from(this.processingStates.values()).filter(
-      (state) => state.status === 'processing',
-    ).length;
+  /**
+   * Загружает фото из Jira и конвертирует в base64
+   */
+  private async downloadPhotoAsBase64(
+    photoUrl: string,
+    jiraConfig: any,
+  ): Promise<string> {
+    try {
+      const response = await axios.get(photoUrl, {
+        ...jiraConfig,
+        responseType: 'arraybuffer',
+      });
+
+      const buffer = Buffer.from(response.data);
+      return buffer.toString('base64');
+    } catch (error) {
+      this.logger.error(
+        `Error downloading photo from ${photoUrl}:`,
+        error.message,
+      );
+      throw new Error(`Photo download failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Отправляет фотографии на анализ в Claude
+   */
+  private async analyzeWithClaude(
+    taskKey: string,
+    photosResult: IPhotoExtractionResult,
+  ): Promise<IClaudeAnalysisResult> {
+    try {
+      const claudeRequest = {
+        taskKey,
+        beforePhoto: photosResult.beforePhoto!.content,
+        afterPhoto: photosResult.afterPhoto!.content,
+        declaredCategory: 'Автоматический анализ через webhook',
+      };
+
+      this.logger.log(`📸 Sending photos to Claude for analysis: ${taskKey}`);
+
+      const response = await axios.post(
+        `${this.baseUrl}/photo-analysis-agent/analyze-before-after-photos`,
+        claudeRequest,
+        {
+          timeout: 60000, // 60 секунд для Claude анализа
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+
+      if (response.data.success) {
+        return {
+          success: true,
+          message: 'Claude analysis completed',
+          analysis: response.data.analysis,
+        };
+      } else {
+        throw new Error(response.data.message || 'Claude analysis failed');
+      }
+    } catch (error) {
+      this.logger.error(
+        `Claude analysis failed for ${taskKey}:`,
+        error.message,
+      );
+      return {
+        success: false,
+        message: `Claude analysis error: ${error.message}`,
+        analysis: null,
+      };
+    }
+  }
+
+  /**
+   * Публикует результаты Claude анализа в комментарий Jira
+   */
+  private async postResultsToJira(
+    taskKey: string,
+    claudeResult: IClaudeAnalysisResult,
+  ): Promise<void> {
+    if (!claudeResult.success || !claudeResult.analysis) {
+      this.logger.warn(
+        `Skipping Jira comment for ${taskKey}: no analysis results`,
+      );
+      return;
+    }
+
+    try {
+      const analysis = claudeResult.analysis;
+
+      const comment = `🤖 *АНАЛИЗ CLAUDE 3.5 SONNET* 🤖
+
+📊 *РЕЗУЛЬТАТ АНАЛИЗА СТРИЖКИ*
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 *Категория:* ${analysis.transformation.category}
+⭐ *Общая оценка:* ${analysis.quality.overallScore}/10
+📊 *Сложность:* ${analysis.transformation.difficultyLevel}/10
+
+🔍 *Детальная оценка:*
+• Ровность стрижки: ${analysis.quality.evenness}/10
+• Переходы: ${analysis.quality.transitions}/10  
+• Симметрия: ${analysis.quality.symmetry}/10
+• Чистота работы: ${analysis.quality.cleanliness}/10
+• Соответствие стилю: ${analysis.quality.styleCompliance}/10
+
+📝 *Визуальные изменения:*
+${analysis.transformation.visualChanges.map((change: string) => `• ${change}`).join('\n')}
+
+🛠️ *Техника выполнения:*
+${analysis.transformation.technique}
+
+💡 *Рекомендации для улучшения:*
+${analysis.recommendations.map((rec: string) => `• ${rec}`).join('\n')}
+
+🤖 *Анализ выполнен автоматически через Claude Vision API*`;
+
+      await axios.post(
+        `${this.baseUrl}/jira/tasks/${taskKey}/comment`,
+        { comment },
+        {
+          timeout: 10000,
+          headers: { 'Content-Type': 'application/json' },
+        },
+      );
+
+      this.logger.log(`💬 Claude results posted to ${taskKey}`);
+    } catch (error) {
+      this.logger.error(`Failed to post results to ${taskKey}:`, error.message);
+      throw error;
+    }
+  }
+
+  /**
+   * Проверка состояния сервиса
+   */
+  async getServiceHealth(): Promise<{
+    status: string;
+    claudeEndpoint: string;
+    timestamp: string;
+  }> {
+    return {
+      status: 'healthy',
+      claudeEndpoint: `${this.baseUrl}/photo-analysis-agent/analyze-before-after-photos`,
+      timestamp: new Date().toISOString(),
+    };
   }
 }

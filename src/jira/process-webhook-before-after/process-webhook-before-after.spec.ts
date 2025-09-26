@@ -1,109 +1,33 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { HttpService } from '@nestjs/axios';
 import { ConfigService } from '@nestjs/config';
 import { ProcessWebhookBeforeAfterService } from './process-webhook-before-after.service';
-import { of } from 'rxjs';
+import { ProcessWebhookBeforeAfterController } from './process-webhook-before-after.controller';
 
 describe('ProcessWebhookBeforeAfterService', () => {
   let service: ProcessWebhookBeforeAfterService;
-  let httpService: HttpService;
+  let controller: ProcessWebhookBeforeAfterController;
+  let configService: ConfigService;
 
-  // Mock данные для тестов
-  const mockValidPayload = {
-    webhookEvent: 'jira:issue_updated',
-    timestamp: Date.now(),
-    issue: {
-      id: '12345',
-      key: 'HAIR-123',
-      self: 'https://example.atlassian.net/rest/api/2/issue/12345',
-      fields: {
-        summary: 'Классическая мужская стрижка клиента',
-        description: 'Выполнить стрижку согласно пожеланиям клиента',
-        status: {
-          id: '3',
-          name: 'Review',
-          statusCategory: {
-            id: 4,
-            key: 'indeterminate',
-            name: 'In Progress',
-          },
-        },
-        issuetype: {
-          id: '10001',
-          name: 'Task',
-          iconUrl: 'https://example.atlassian.net/icon.png',
-        },
-        created: '2025-09-26T08:00:00.000Z',
-        updated: '2025-09-26T10:00:00.000Z',
-        attachment: [
-          {
-            id: '67890',
-            filename: 'before_haircut.jpg',
-            mimeType: 'image/jpeg',
-            size: 1024000,
-            content: 'https://example.atlassian.net/secure/attachment/67890/',
-            created: '2025-09-26T08:30:00.000Z',
-            author: {
-              accountId: 'user123',
-              displayName: 'Test User',
-              emailAddress: 'test@example.com',
-            },
-          },
-        ],
-      },
-    },
-  };
-
-  const mockProcessResult = {
-    success: true,
-    taskKey: 'HAIR-123',
-    processedAt: '2025-09-26T10:30:00.000Z',
-    photoAnalysis: {
-      success: true,
-      category: 'classic_male',
-      qualityScore: 8.5,
-      description: 'Отличная мужская стрижка',
-      recommendations: ['Хорошие переходы'],
-    },
-    timeAnalysis: {
-      success: true,
-      totalMinutes: 45,
-      efficiency: 'good',
-      efficiencyPercentage: 100,
-      expectedRange: '30-60 мин',
-      recommendations: ['Отличное время'],
-    },
-    combinedAnalysis: {
-      overallScore: 8.2,
-      summary: 'Отличная работа',
-      recommendations: ['Продолжайте работу'],
-    },
-    commentId: 'comment-123',
-    errors: [],
+  const mockConfigService = {
+    get: jest.fn((key: string) => {
+      const config = {
+        'app.baseUrl': 'http://localhost:3000',
+        'jira.baseUrl': 'https://test.atlassian.net',
+        'jira.email': 'test@example.com',
+        'jira.apiToken': 'test-token',
+      };
+      return config[key];
+    }),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      controllers: [ProcessWebhookBeforeAfterController],
       providers: [
         ProcessWebhookBeforeAfterService,
         {
-          provide: HttpService,
-          useValue: {
-            get: jest.fn(),
-            post: jest.fn(),
-          },
-        },
-        {
           provide: ConfigService,
-          useValue: {
-            get: jest.fn((key: string) => {
-              const config: Record<string, any> = {
-                'app.baseUrl': 'http://localhost:3000',
-                'jira.baseUrl': 'http://localhost:3000',
-              };
-              return config[key];
-            }),
-          },
+          useValue: mockConfigService,
         },
       ],
     }).compile();
@@ -111,48 +35,103 @@ describe('ProcessWebhookBeforeAfterService', () => {
     service = module.get<ProcessWebhookBeforeAfterService>(
       ProcessWebhookBeforeAfterService,
     );
-    httpService = module.get<HttpService>(HttpService);
+    controller = module.get<ProcessWebhookBeforeAfterController>(
+      ProcessWebhookBeforeAfterController,
+    );
+    configService = module.get<ConfigService>(ConfigService);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(controller).toBeDefined();
   });
 
-  it('should process valid haircut task webhook successfully', async () => {
-    // Mock successful response
-    jest
-      .spyOn(httpService, 'post')
-      .mockReturnValue(of({ data: mockProcessResult }) as any);
+  describe('validateClaudeConditions', () => {
+    it('should accept haircut-related tasks in Review status', () => {
+      const webhookDto = {
+        webhookEvent: 'jira:issue_updated',
+        issue: {
+          key: 'TEST-123',
+          id: '123',
+          fields: {
+            summary: 'Женская стрижка каскад',
+            description: 'Стрижка для клиентки',
+            status: { name: 'Review', id: '3' },
+            assignee: { displayName: 'Test User', accountId: 'acc-123' },
+          },
+        },
+      };
 
-    const result = await service.processWebhook(mockValidPayload as any);
+      const result = service['validateClaudeConditions'](webhookDto);
+      expect(result.shouldProcess).toBe(true);
+      expect(result.reason).toBe('All conditions met for Claude analysis');
+    });
 
-    expect(result.success).toBe(true);
-    expect(result.taskKey).toBe('HAIR-123');
-    expect(result.triggeredActions.length).toBeGreaterThan(0);
+    it('should reject non-haircut tasks', () => {
+      const webhookDto = {
+        webhookEvent: 'jira:issue_updated',
+        issue: {
+          key: 'TEST-123',
+          id: '123',
+          fields: {
+            summary: 'Fix bug in system',
+            description: 'Technical issue',
+            status: { name: 'Review', id: '3' },
+          },
+        },
+      };
+
+      const result = service['validateClaudeConditions'](webhookDto);
+      expect(result.shouldProcess).toBe(false);
+      expect(result.reason).toBe(
+        'Task does not contain haircut-related keywords',
+      );
+    });
+
+    it('should reject tasks not in trigger statuses', () => {
+      const webhookDto = {
+        webhookEvent: 'jira:issue_updated',
+        issue: {
+          key: 'TEST-123',
+          id: '123',
+          fields: {
+            summary: 'Женская стрижка',
+            status: { name: 'In Progress', id: '2' },
+          },
+        },
+      };
+
+      const result = service['validateClaudeConditions'](webhookDto);
+      expect(result.shouldProcess).toBe(false);
+      expect(result.reason).toBe(
+        'Status In Progress not in trigger list [Review, Testing, Done]',
+      );
+    });
   });
 
-  it('should return metrics', () => {
-    const metrics = service.getMetrics();
-    expect(metrics).toBeDefined();
-    expect(typeof metrics.totalProcessed).toBe('number');
+  describe('controller endpoints', () => {
+    it('should return health status', async () => {
+      const result = await controller.getHealth();
+      expect(result).toHaveProperty('status');
+      expect(result).toHaveProperty('timestamp');
+    });
+
+    it('should return webhook configuration', async () => {
+      const result = await controller.getConfig();
+      expect(result).toHaveProperty('triggerStatuses');
+      expect(result).toHaveProperty('haircutKeywords');
+      expect(result.triggerStatuses).toContain('Review');
+      expect(result.haircutKeywords).toContain('стрижк');
+    });
   });
 
-  it('should return processing states', () => {
-    const states = service.getProcessingStates(['HAIR-123']);
-    expect(Array.isArray(states)).toBe(true);
-  });
-
-  it('should perform health check', async () => {
-    // Mock health checks
-    jest
-      .spyOn(httpService, 'get')
-      .mockReturnValue(of({ data: { status: 'ok' } }) as any);
-
-    const health = await service.healthCheck();
-    expect(health.status).toBeDefined();
-  });
-
-  it('should cleanup old states', () => {
-    expect(() => service.cleanupOldStates()).not.toThrow();
+  describe('service health check', () => {
+    it('should return healthy status', async () => {
+      const result = await service.getServiceHealth();
+      expect(result.status).toBe('healthy');
+      expect(result.claudeEndpoint).toBe(
+        'http://localhost:3000/photo-analysis-agent/analyze-before-after-photos',
+      );
+    });
   });
 });

@@ -1,153 +1,83 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { ClaudeVisionService } from './claude-vision.service';
 import {
-  IAnalyzeBeforeAfterPhotosService,
+  ClaudeVisionService,
   IBeforeAfterAnalysis,
-} from './analyze-before-after-photos.interface';
+} from './claude-vision.service';
+import {
+  AnalyzeBeforeAfterPhotosDto,
+  AnalyzeBeforeAfterPhotosResponseDto,
+} from './analyze-before-after-photos.dto';
 
 @Injectable()
-export class AnalyzeBeforeAfterPhotosService
-  implements IAnalyzeBeforeAfterPhotosService
-{
+export class AnalyzeBeforeAfterPhotosService {
   private readonly logger = new Logger(AnalyzeBeforeAfterPhotosService.name);
 
   constructor(private readonly claudeVisionService: ClaudeVisionService) {}
 
-  /**
-   * Основной метод анализа фотографий ДО/ПОСЛЕ
-   */
-  async analyze(
-    taskKey: string,
-    beforePhoto: { filename: string; content: string; size?: number },
-    afterPhoto: { filename: string; content: string; size?: number },
-    timeInProgress?: number,
-  ): Promise<IBeforeAfterAnalysis> {
-    try {
-      this.logger.log(`🎯 Starting before/after analysis for task: ${taskKey}`);
+  async analyzeBeforeAfterPhotos(
+    dto: AnalyzeBeforeAfterPhotosDto,
+  ): Promise<AnalyzeBeforeAfterPhotosResponseDto> {
+    this.logger.log(`🔍 Starting Claude analysis for task: ${dto.taskKey}`);
 
+    try {
       // Валидация входных данных
-      await this.validatePhotos(beforePhoto, afterPhoto);
+      if (!dto.beforePhoto || !dto.afterPhoto) {
+        return {
+          success: false,
+          message: 'Both before and after photos are required',
+          error: 'Missing photo data',
+          analysis: null,
+        };
+      }
 
-      // Логирование размеров изображений
-      const beforeSize = beforePhoto.size
-        ? `${(beforePhoto.size / 1024).toFixed(1)}KB`
-        : 'unknown';
-      const afterSize = afterPhoto.size
-        ? `${(afterPhoto.size / 1024).toFixed(1)}KB`
-        : 'unknown';
-      this.logger.log(
-        `📷 Photos validated - Before: ${beforePhoto.filename} (${beforeSize}), After: ${afterPhoto.filename} (${afterSize})`,
-      );
-
-      // Анализ через Claude Vision
-      const analysis = await this.claudeVisionService.analyzeBeforeAfterPhotos(
-        beforePhoto.content,
-        afterPhoto.content,
-        taskKey,
-        timeInProgress,
-      );
+      // Анализ фотографий с помощью Claude
+      const analysis: IBeforeAfterAnalysis =
+        await this.claudeVisionService.analyzeBeforeAfterPhotos(
+          dto.beforePhoto,
+          dto.afterPhoto,
+        );
 
       this.logger.log(
-        `✅ Analysis completed for ${taskKey}: ${analysis.transformation.category}, Quality: ${analysis.quality.overallScore}/10`,
+        `✅ Claude analysis completed for ${dto.taskKey}. Score: ${analysis.quality.overallScore}/10`,
       );
-
-      return analysis;
-    } catch (error) {
-      this.logger.error(`❌ Analysis failed for ${taskKey}:`, error.message);
-      throw error;
-    }
-  }
-
-  /**
-   * Валидация входящих данных фотографий
-   */
-  async validatePhotos(
-    beforePhoto: { filename: string; content: string },
-    afterPhoto: { filename: string; content: string },
-  ): Promise<boolean> {
-    const errors: string[] = [];
-
-    // Проверка наличия данных
-    if (!beforePhoto.content || !afterPhoto.content) {
-      errors.push('Отсутствует содержимое изображений');
-    }
-
-    // Проверка base64 формата
-    if (!this.isValidBase64(beforePhoto.content)) {
-      errors.push(`Неверный формат изображения "ДО": ${beforePhoto.filename}`);
-    }
-
-    if (!this.isValidBase64(afterPhoto.content)) {
-      errors.push(
-        `Неверный формат изображения "ПОСЛЕ": ${afterPhoto.filename}`,
-      );
-    }
-
-    // Проверка размера base64 (приблизительный размер файла)
-    const beforeSize = beforePhoto.content.length * 0.75; // base64 добавляет ~33% размера
-    const afterSize = afterPhoto.content.length * 0.75;
-
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    if (beforeSize > maxSize) {
-      errors.push(
-        `Изображение "ДО" слишком большое: ${(beforeSize / 1024 / 1024).toFixed(1)}MB`,
-      );
-    }
-
-    if (afterSize > maxSize) {
-      errors.push(
-        `Изображение "ПОСЛЕ" слишком большое: ${(afterSize / 1024 / 1024).toFixed(1)}MB`,
-      );
-    }
-
-    // Минимальный размер (избегаем пустых изображений)
-    const minSize = 1024; // 1KB
-    if (beforeSize < minSize || afterSize < minSize) {
-      errors.push('Изображения слишком маленькие или повреждены');
-    }
-
-    if (errors.length > 0) {
-      const errorMessage = `Ошибки валидации фотографий: ${errors.join(', ')}`;
-      this.logger.error(`❌ ${errorMessage}`);
-      throw new Error(errorMessage);
-    }
-
-    this.logger.log('✅ Photos validation passed');
-    return true;
-  }
-
-  /**
-   * Проверка валидности base64 строки
-   */
-  private isValidBase64(base64String: string): boolean {
-    try {
-      // Убираем data URL префикс если есть
-      const base64 = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
-
-      // Проверяем что это валидный base64
-      return btoa(atob(base64)) === base64;
-    } catch {
-      return false;
-    }
-  }
-
-  /**
-   * Проверка доступности сервиса
-   */
-  async healthCheck(): Promise<{ status: string; claude: boolean }> {
-    try {
-      const claudeHealth = await this.claudeVisionService.healthCheck();
 
       return {
-        status: claudeHealth ? 'healthy' : 'degraded',
-        claude: claudeHealth,
+        success: true,
+        message: 'Before/after analysis completed successfully',
+        analysis,
       };
     } catch (error) {
-      this.logger.error('❌ Health check failed:', error.message);
+      this.logger.error(
+        `❌ Error analyzing photos for ${dto.taskKey}:`,
+        error.message,
+      );
+
       return {
-        status: 'unhealthy',
-        claude: false,
+        success: false,
+        message: 'Failed to analyze before/after photos',
+        error: error.message,
+        analysis: null,
       };
     }
+  }
+
+  // Вспомогательный метод для извлечения base64 данных из data URL
+  private extractBase64FromDataUrl(dataUrl: string): string {
+    const base64Index = dataUrl.indexOf('base64,');
+    if (base64Index !== -1) {
+      return dataUrl.substring(base64Index + 7);
+    }
+    return dataUrl; // Если уже в формате base64
+  }
+
+  // Метод для проверки статуса Claude сервиса
+  async getServiceStatus(): Promise<{
+    claudeConfigured: boolean;
+    serviceName: string;
+  }> {
+    return {
+      claudeConfigured: this.claudeVisionService['isConfigured'] || false,
+      serviceName: 'Claude 3.5 Sonnet Vision Analysis',
+    };
   }
 }

@@ -4,9 +4,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { appConfig, jiraConfig, claudeConfig } from './config';
 import { JiraModule } from './jira/jira-integration.module';
-import { AiAgentModule } from './ai-agent/ai-agent.module';
-import { AiReportingAgentModule } from './ai-reporting-agent/ai-reporting-agent.module';
-import { PhotoAnalysisAgentModule } from './photo-analysis-agent/photo-analysis-agent.module';
+// Подключаем ТОЛЬКО Claude агент и новый webhook
+import { AnalyzeBeforeAfterPhotosModule } from './photo-analysis-agent/analyze-before-after-photos/analyze-before-after-photos.module';
+import { ProcessWebhookBeforeAfterModule } from './jira/process-webhook-before-after/process-webhook-before-after.module';
 
 @Module({
   imports: [
@@ -16,9 +16,9 @@ import { PhotoAnalysisAgentModule } from './photo-analysis-agent/photo-analysis-
       envFilePath: '.env',
     }),
     JiraModule,
-    AiAgentModule,
-    AiReportingAgentModule,
-    PhotoAnalysisAgentModule,
+    // ТОЛЬКО Claude система
+    AnalyzeBeforeAfterPhotosModule, // Claude анализ фотографий
+    ProcessWebhookBeforeAfterModule, // Claude webhook
   ],
   controllers: [AppController],
   providers: [AppService],

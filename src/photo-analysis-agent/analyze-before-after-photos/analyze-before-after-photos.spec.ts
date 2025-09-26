@@ -7,73 +7,24 @@ describe('AnalyzeBeforeAfterPhotosService', () => {
   let service: AnalyzeBeforeAfterPhotosService;
   let claudeVisionService: ClaudeVisionService;
 
-  // Mock base64 изображений для тестов
-  const mockBeforePhoto = {
-    filename: 'before_test.jpg',
-    content:
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-    size: 1024,
-  };
-
-  const mockAfterPhoto = {
-    filename: 'after_test.jpg',
-    content:
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-    size: 1024,
-  };
-
-  const mockAnalysisResult = {
-    transformation: {
-      category: 'Обычная стрижка' as const,
-      difficultyLevel: 6,
-      visualChanges: ['Укорочены виски', 'Сделаны переходы'],
-      technique: 'Машинка + ножницы',
-    },
-    quality: {
-      overallScore: 8.5,
-      evenness: 8,
-      transitions: 9,
-      symmetry: 8,
-      cleanliness: 9,
-      styleCompliance: 8,
-    },
-    timeAnalysis: {
-      actualMinutes: 45,
-      expectedRange: '30-60 мин',
-      efficiency: 'good' as const,
-    },
-    report: {
-      summary: 'Качественная стрижка',
-      strengths: ['Отличные переходы'],
-      improvements: ['Больше внимания к симметрии'],
-      finalPrice: 800,
-    },
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AnalyzeBeforeAfterPhotosService,
-        {
-          provide: ClaudeVisionService,
-          useValue: {
-            analyzeBeforeAfterPhotos: jest
-              .fn()
-              .mockResolvedValue(mockAnalysisResult),
-            healthCheck: jest.fn().mockResolvedValue(true),
-          },
-        },
+        ClaudeVisionService,
         {
           provide: ConfigService,
           useValue: {
             get: jest.fn((key: string) => {
-              const config: Record<string, any> = {
-                'claude.apiKey': 'test-api-key',
-                'claude.model': 'claude-3-5-sonnet-20241022',
-                'claude.maxTokens': 2048,
-                'claude.temperature': 0.3,
-              };
-              return config[key];
+              if (key === 'claude') {
+                return {
+                  apiKey: 'test-key',
+                  model: 'claude-3-5-sonnet-20241022',
+                  maxTokens: 4000,
+                  temperature: 0.1,
+                };
+              }
+              return undefined;
             }),
           },
         },
@@ -88,83 +39,48 @@ describe('AnalyzeBeforeAfterPhotosService', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
+    expect(claudeVisionService).toBeDefined();
   });
 
-  describe('analyze', () => {
-    it('should successfully analyze before/after photos', async () => {
-      const result = await service.analyze(
-        'TEST-123',
-        mockBeforePhoto,
-        mockAfterPhoto,
-        45,
-      );
+  describe('analyzeBeforeAfterPhotos', () => {
+    it('should return error if photos are missing', async () => {
+      const dto = {
+        taskKey: 'TEST-123',
+        beforePhoto: '',
+        afterPhoto: 'some-data',
+      };
 
-      expect(result).toEqual(mockAnalysisResult);
-      expect(claudeVisionService.analyzeBeforeAfterPhotos).toHaveBeenCalledWith(
-        mockBeforePhoto.content,
-        mockAfterPhoto.content,
-        'TEST-123',
-        45,
+      const result = await service.analyzeBeforeAfterPhotos(dto);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toContain(
+        'Both before and after photos are required',
       );
     });
 
-    it('should handle analysis without time', async () => {
-      await service.analyze('TEST-123', mockBeforePhoto, mockAfterPhoto);
+    it('should return service status', async () => {
+      const status = await service.getServiceStatus();
 
-      expect(claudeVisionService.analyzeBeforeAfterPhotos).toHaveBeenCalledWith(
-        mockBeforePhoto.content,
-        mockAfterPhoto.content,
-        'TEST-123',
-        undefined,
-      );
+      expect(status).toHaveProperty('claudeConfigured');
+      expect(status).toHaveProperty('serviceName');
+      expect(status.serviceName).toBe('Claude 3.5 Sonnet Vision Analysis');
     });
   });
 
-  describe('validatePhotos', () => {
-    it('should validate correct photos', async () => {
-      const result = await service.validatePhotos(
-        mockBeforePhoto,
-        mockAfterPhoto,
+  describe('ClaudeVisionService', () => {
+    it('should create fallback result when Claude is not configured', () => {
+      const mockConfigService = {
+        get: jest.fn(() => ({ apiKey: '' })),
+      };
+
+      const service = new ClaudeVisionService(mockConfigService as any);
+      const result = service['createFallbackResult']('Test reason');
+
+      expect(result.transformation.category).toBe('Обычная стрижка');
+      expect(result.quality.overallScore).toBe(7);
+      expect(result.recommendations).toContain(
+        'Claude анализ недоступен: Test reason',
       );
-      expect(result).toBe(true);
-    });
-
-    it('should throw error for missing photo content', async () => {
-      const invalidPhoto = { ...mockBeforePhoto, content: '' };
-
-      await expect(
-        service.validatePhotos(invalidPhoto, mockAfterPhoto),
-      ).rejects.toThrow('Отсутствует содержимое изображений');
-    });
-
-    it('should throw error for invalid base64', async () => {
-      const invalidPhoto = { ...mockBeforePhoto, content: 'invalid-base64' };
-
-      await expect(
-        service.validatePhotos(invalidPhoto, mockAfterPhoto),
-      ).rejects.toThrow('Неверный формат изображения');
-    });
-  });
-
-  describe('healthCheck', () => {
-    it('should return healthy status when Claude is available', async () => {
-      const result = await service.healthCheck();
-
-      expect(result).toEqual({
-        status: 'healthy',
-        claude: true,
-      });
-    });
-
-    it('should return degraded status when Claude is unavailable', async () => {
-      jest.spyOn(claudeVisionService, 'healthCheck').mockResolvedValue(false);
-
-      const result = await service.healthCheck();
-
-      expect(result).toEqual({
-        status: 'degraded',
-        claude: false,
-      });
     });
   });
 });

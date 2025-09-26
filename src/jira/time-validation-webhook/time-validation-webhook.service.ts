@@ -10,7 +10,6 @@ import {
   NotificationData,
   NotificationLevel,
 } from './time-validation-webhook.interface';
-import { HaircutReportWebhookService } from '../haircut-report-webhook/haircut-report-webhook.service';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 
@@ -18,10 +17,7 @@ import { ConfigService } from '@nestjs/config';
 export class TimeValidationWebhookService {
   private readonly logger = new Logger(TimeValidationWebhookService.name);
 
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly haircutReportService: HaircutReportWebhookService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   /**
    * Основная логика валидации времени и обработки webhook'а
@@ -364,7 +360,9 @@ export class TimeValidationWebhookService {
     webhookData: TimeValidationWebhookDto,
   ): Promise<any> {
     try {
-      return await this.haircutReportService.processWebhook(webhookData as any);
+      // AI анализ отключен - только Claude система активна
+      this.logger.log('AI analysis bypassed - only Claude system active');
+      return null;
     } catch (error) {
       this.logger.error(`AI analysis failed: ${error.message}`);
       return null;
