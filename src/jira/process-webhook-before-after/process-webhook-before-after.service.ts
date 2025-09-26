@@ -15,6 +15,7 @@ import {
 export class ProcessWebhookBeforeAfterService {
   private readonly logger = new Logger(ProcessWebhookBeforeAfterService.name);
   private readonly baseUrl: string;
+  private readonly processingTasks = new Set<string>(); // 🔒 Защита от параллельной обработки
 
   constructor(private readonly configService: ConfigService) {
     this.baseUrl =
@@ -35,10 +36,28 @@ export class ProcessWebhookBeforeAfterService {
       `🎯 Processing Claude webhook: ${webhookEvent} for task ${taskKey}`,
     );
 
+    // 🔒 Проверка на параллельную обработку
+    if (this.processingTasks.has(taskKey!)) {
+      this.logger.warn(
+        `🔒 Task ${taskKey} is already being processed, skipping`,
+      );
+      return {
+        success: true,
+        message: 'Task is already being processed',
+        processed: false,
+        taskKey,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    // Добавляем задачу в обработку
+    this.processingTasks.add(taskKey!);
+
     try {
       // 1. Валидация условий для Claude анализа
-      const validationResult = this.validateClaudeConditions(dto);
+      const validationResult = await this.validateClaudeConditions(dto);
       if (!validationResult.shouldProcess) {
+        this.processingTasks.delete(taskKey!); // 🧹 Очистка перед выходом
         return {
           success: true,
           message: validationResult.reason,
@@ -54,6 +73,7 @@ export class ProcessWebhookBeforeAfterService {
         this.logger.warn(
           `📷 No photos found for ${taskKey}: ${photosResult.message}`,
         );
+        this.processingTasks.delete(taskKey!); // 🧹 Очистка перед выходом
         return {
           success: true,
           message: `Task processed but no photos found: ${photosResult.message}`,
@@ -93,17 +113,23 @@ export class ProcessWebhookBeforeAfterService {
         error: error.message,
         timestamp: new Date().toISOString(),
       };
+    } finally {
+      // 🧹 Убираем задачу из обработки
+      this.processingTasks.delete(taskKey!);
     }
   }
 
   /**
    * Проверяет условия для запуска Claude анализа
    */
-  private validateClaudeConditions(dto: ProcessWebhookBeforeAfterDto): {
+  private async validateClaudeConditions(
+    dto: ProcessWebhookBeforeAfterDto,
+  ): Promise<{
     shouldProcess: boolean;
     reason: string;
-  } {
+  }> {
     const { issue, webhookEvent } = dto;
+    const taskKey = issue?.key;
 
     // Проверяем тип события
     if (!['jira:issue_updated'].includes(webhookEvent)) {
@@ -152,10 +178,74 @@ export class ProcessWebhookBeforeAfterService {
       };
     }
 
+    // 🚫 НОВАЯ ПРОВЕРКА: Уже есть анализ Claude?
+    const hasExistingAnalysis = await this.checkExistingClaudeAnalysis(
+      taskKey!,
+    );
+    if (hasExistingAnalysis) {
+      return {
+        shouldProcess: false,
+        reason: 'Claude analysis already exists for this task',
+      };
+    }
+
     return {
       shouldProcess: true,
       reason: 'All conditions met for Claude analysis',
     };
+  }
+
+  /**
+   * Проверяет, есть ли уже анализ Claude в комментариях задачи
+   */
+  private async checkExistingClaudeAnalysis(taskKey: string): Promise<boolean> {
+    try {
+      const jiraConfig = {
+        baseURL: this.configService.get<string>('jira.baseUrl'),
+        auth: {
+          username: this.configService.get<string>('jira.email') || '',
+          password: this.configService.get<string>('jira.apiToken') || '',
+        },
+      };
+
+      const response = await axios.get(
+        `/rest/api/3/issue/${taskKey}/comment`,
+        jiraConfig,
+      );
+
+      const comments = response.data.comments || [];
+      const hasClaudeAnalysis = comments.some((comment: any) => {
+        const bodyText =
+          typeof comment.body === 'string'
+            ? comment.body
+            : comment.body?.content
+              ? comment.body.content
+                  .map(
+                    (c: any) =>
+                      c.content?.map((t: any) => t.text || '').join('') || '',
+                  )
+                  .join('')
+              : '';
+
+        return (
+          bodyText &&
+          (bodyText.includes('АНАЛИЗ CLAUDE') ||
+            bodyText.includes('Claude Vision API') ||
+            bodyText.includes('🤖'))
+        );
+      });
+
+      if (hasClaudeAnalysis) {
+        this.logger.log(`🔍 Found existing Claude analysis for ${taskKey}`);
+      }
+
+      return hasClaudeAnalysis;
+    } catch (error) {
+      this.logger.warn(
+        `Failed to check existing comments for ${taskKey}: ${error.message}`,
+      );
+      return false; // В случае ошибки разрешаем анализ
+    }
   }
 
   /**
@@ -364,6 +454,15 @@ export class ProcessWebhookBeforeAfterService {
     if (!claudeResult.success || !claudeResult.analysis) {
       this.logger.warn(
         `Skipping Jira comment for ${taskKey}: no analysis results`,
+      );
+      return;
+    }
+
+    // 🚫 Дополнительная проверка перед добавлением комментария
+    const hasExisting = await this.checkExistingClaudeAnalysis(taskKey);
+    if (hasExisting) {
+      this.logger.warn(
+        `🚫 Skipping comment for ${taskKey}: Claude analysis already exists`,
       );
       return;
     }
