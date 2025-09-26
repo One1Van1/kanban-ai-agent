@@ -6,6 +6,7 @@ import { appConfig, jiraConfig, claudeConfig } from './config';
 import { JiraModule } from './jira/jira-integration.module';
 import { AiAgentModule } from './ai-agent/ai-agent.module';
 import { AiReportingAgentModule } from './ai-reporting-agent/ai-reporting-agent.module';
+import { PhotoAnalysisAgentModule } from './photo-analysis-agent/photo-analysis-agent.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AiReportingAgentModule } from './ai-reporting-agent/ai-reporting-agent.
     JiraModule,
     AiAgentModule,
     AiReportingAgentModule,
+    PhotoAnalysisAgentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,6 +4,7 @@ import {
   IsString,
   IsNumber,
   IsArray,
+  IsUrl,
 } from 'class-validator';
 
 export class ProcessHaircutTaskDto {
@@ -58,6 +59,17 @@ export class ProcessHaircutTaskDto {
       displayName: string;
     };
     created?: string;
+  }>;
+
+  @IsOptional()
+  @IsArray()
+  attachments?: Array<{
+    id: string;
+    filename: string;
+    mimeType: string;
+    size: number;
+    content?: string; // base64 контент изображения
+    contentUrl?: string; // URL для скачивания
   }>;
 
   @IsOptional()
