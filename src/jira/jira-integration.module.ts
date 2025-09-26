@@ -44,6 +44,9 @@ import { HaircutReportWebhookService } from './haircut-report-webhook/haircut-re
 // Time Validation Webhook
 import { TimeValidationWebhookModule } from './time-validation-webhook/time-validation-webhook.module';
 
+// Process Webhook Before/After - НОВЫЙ WEBHOOK ДЛЯ ФОТО АНАЛИЗА
+import { ProcessWebhookBeforeAfterModule } from './process-webhook-before-after/process-webhook-before-after.module';
+
 // AI Reporting Agent for integration
 import { AnalyzeCompletedHaircutTasksModule } from '../ai-reporting-agent/analyze-completed-haircut-tasks/analyze-completed-haircut-tasks.module';
 import { ProcessHaircutTaskModule } from '../ai-agent/process-haircut-task/process-haircut-task.module';
@@ -54,6 +57,7 @@ import { ProcessHaircutTaskModule } from '../ai-agent/process-haircut-task/proce
     AnalyzeCompletedHaircutTasksModule,
     ProcessHaircutTaskModule,
     TimeValidationWebhookModule,
+    ProcessWebhookBeforeAfterModule,
   ],
   controllers: [
     HealthCheckController,

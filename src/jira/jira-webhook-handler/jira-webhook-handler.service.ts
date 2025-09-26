@@ -206,22 +206,22 @@
 //             // 2. Проверяем, нужно ли задать вопрос сотруднику
 //             if (analysisResult.requiresQuestion && payload.issue?.key) {
 //               this.logger.log(`❓ Step 2: Task requires clarification, moving to Questions`);
-              
+
 //               // Добавляем комментарий с вопросом
 //               if (analysisResult.agentComment) {
 //                 await this.addCommentToJiraTask(payload.issue.key, analysisResult.agentComment);
 //                 triggeredActions.push('question-comment-added');
 //               }
-              
+
 //               // Перемещаем в колонку Questions
 //               await this.moveTaskToQuestions(payload.issue.key);
 //               triggeredActions.push('moved-to-questions');
-              
+
 //               this.logger.log(`🤔 Task ${payload.issue.key} moved to Questions for clarification`);
 //             } else if (payload.issue?.key) {
 //               // 3. Если вопросов нет - создаём итоговый отчёт и завершаем задачу
 //               this.logger.log(`📝 Step 2: Creating final report for ${payload.issue.key}`);
-              
+
 //               if (analysisResult.finalReport) {
 //                 await this.addCommentToJiraTask(payload.issue.key, analysisResult.finalReport);
 //                 triggeredActions.push('final-report-added');
@@ -231,20 +231,20 @@
 //               this.logger.log(`✅ Step 3: Moving task ${payload.issue.key} to Done`);
 //               await this.moveTaskToDone(payload.issue.key);
 //               triggeredActions.push('moved-to-done');
-              
+
 //               this.logger.log(`🎉 Full analysis workflow completed for ${payload.issue.key}: Analysis → Report → Done`);
 //             } else {
 //               this.logger.warn('❌ Cannot process task: issue key is undefined');
 //               triggeredActions.push('processing-failed-no-key');
 //             }
-            
+
 //             triggeredActions.push('ai-haircut-analysis-completed');
 //           } catch (workflowError) {
 //             this.logger.error(
 //               `❌ AI haircut analysis workflow failed for ${payload.issue?.key}: ${workflowError.message}`,
 //             );
 //             triggeredActions.push('ai-workflow-failed');
-            
+
 //             // В случае ошибки всё равно пытаемся завершить задачу базовым способом
 //             try {
 //               if (payload.issue?.key) {
@@ -613,7 +613,7 @@
 //       this.logger.log(
 //         `✅ Haircut analysis completed for ${issue?.key}: ${response.data?.analysisResult?.success ? 'SUCCESS' : 'FAILED'}`,
 //       );
-      
+
 //       return response.data?.analysisResult || {
 //         success: true,
 //         summary: `AI анализ задачи ${issue?.key} завершён`,

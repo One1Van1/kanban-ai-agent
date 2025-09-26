@@ -12,20 +12,24 @@ import {
 @Injectable()
 export class ClaudeVisionService implements IClaudeVisionService {
   private readonly logger = new Logger(ClaudeVisionService.name);
-  private readonly anthropic: Anthropic;
+  private readonly anthropic: Anthropic | null;
+  private readonly isConfigured: boolean;
 
   constructor(private readonly configService: ConfigService) {
     const apiKey = this.configService.get<string>('claude.apiKey');
     if (!apiKey) {
-      this.logger.error('❌ CLAUDE_API_KEY not found in environment variables');
-      throw new Error('Claude API key is required');
+      this.logger.warn(
+        '⚠️ CLAUDE_API_KEY not found in environment variables - Claude Vision будет недоступен',
+      );
+      this.anthropic = null;
+      this.isConfigured = false;
+    } else {
+      this.anthropic = new Anthropic({
+        apiKey,
+      });
+      this.isConfigured = true;
+      this.logger.log('✅ Claude Vision Service initialized');
     }
-
-    this.anthropic = new Anthropic({
-      apiKey,
-    });
-
-    this.logger.log('✅ Claude Vision Service initialized');
   }
 
   /**
@@ -39,6 +43,16 @@ export class ClaudeVisionService implements IClaudeVisionService {
   ): Promise<IBeforeAfterAnalysis> {
     try {
       this.logger.log(`🔍 Starting before/after analysis for task: ${taskKey}`);
+
+      // Проверяем, настроен ли Claude API
+      if (!this.isConfigured || !this.anthropic) {
+        this.logger.error(
+          '❌ Claude API не настроен - возвращаем fallback результат',
+        );
+        return this.createFallbackResult(
+          'Claude API не настроен (отсутствует CLAUDE_API_KEY)',
+        );
+      }
 
       const beforeSize = ((beforeImageBase64.length * 0.75) / 1024).toFixed(1);
       const afterSize = ((afterImageBase64.length * 0.75) / 1024).toFixed(1);
@@ -276,10 +290,52 @@ ${timeInMinutes ? `ВРЕМЯ РАБОТЫ: ${timeInMinutes} минут` : 'ВР
   }
 
   /**
+   * Создание fallback результата когда Claude API недоступен
+   */
+  private createFallbackResult(error: string): IBeforeAfterAnalysis {
+    return {
+      transformation: {
+        category: 'Обычная стрижка',
+        difficultyLevel: 0,
+        visualChanges: ['Анализ недоступен - Claude API не настроен'],
+        technique: 'Неопределено',
+      },
+      quality: {
+        overallScore: 0,
+        evenness: 0,
+        transitions: 0,
+        symmetry: 0,
+        cleanliness: 0,
+        styleCompliance: 0,
+      },
+      timeAnalysis: {
+        actualMinutes: 0,
+        expectedRange: 'Неопределено',
+        efficiency: 'acceptable',
+      },
+      report: {
+        summary: `Анализ недоступен: ${error}`,
+        strengths: [],
+        improvements: [
+          'Настройте CLAUDE_API_KEY в переменных окружения',
+          'Обратитесь к администратору для получения API ключа',
+        ],
+        finalPrice: 0,
+      },
+    };
+  }
+
+  /**
    * Проверка доступности Claude API
    */
   async healthCheck(): Promise<boolean> {
     try {
+      // Проверяем, настроен ли Claude API
+      if (!this.isConfigured || !this.anthropic) {
+        this.logger.warn('⚠️ Claude API не настроен');
+        return false;
+      }
+
       // Простой тест-запрос к API
       await this.anthropic.messages.create({
         model:
