@@ -123,6 +123,9 @@ export class GenerateReportService {
         );
       }
 
+      // Parse date range for formatting
+      const parsedDateRange = this.parseDateRange(description);
+
       // Generate the report
       const report = await this.generateReport({
         taskKey,
@@ -131,7 +134,7 @@ export class GenerateReportService {
       });
 
       // Format and post the report as a comment
-      const formattedReport = this.formatReportComment(report);
+      const formattedReport = this.formatReportComment(report, parsedDateRange);
 
       this.logger.log(
         `📋 Report ready: ${formattedReport.substring(0, 100)}...`,
@@ -198,11 +201,17 @@ export class GenerateReportService {
     try {
       // Translate Russian phrases to English for Chrono
       let englishDescription = description
+        .replace(/сегодня/gi, 'today')
+        .replace(/завтра/gi, 'tomorrow')
+        .replace(/вчера/gi, 'yesterday')
+        .replace(/позавчера/gi, '2 days ago')
+        .replace(/послезавтра/gi, 'in 2 days')
+        .replace(/за\s*сегодня/gi, 'today')
+        .replace(/за\s*вчера/gi, 'yesterday')
+        .replace(/за\s*завтра/gi, 'tomorrow')
         .replace(/последни[ех]\s*(\d+)\s*дне[йи]/gi, 'last $1 days')
         .replace(/за\s*последни[ех]\s*(\d+)\s*дне[йи]/gi, 'last $1 days')
         .replace(/последний\s*день/gi, 'today')
-        .replace(/вчера/gi, 'yesterday')
-        .replace(/позавчера/gi, '2 days ago')
         .replace(/прошлую\s*неделю/gi, 'last week')
         .replace(/прошлый\s*месяц/gi, 'last month')
         .replace(/эту\s*неделю/gi, 'this week')
@@ -309,6 +318,20 @@ export class GenerateReportService {
     const normalizedDesc = description.toLowerCase().trim();
 
     this.logger.log(`🔍 Parsing date range from: "${description}"`);
+
+    // Parse "сегодня" or "today"
+    if (
+      normalizedDesc.includes('сегодня') ||
+      normalizedDesc.includes('today') ||
+      normalizedDesc.includes('за сегодня') ||
+      normalizedDesc.includes('for today')
+    ) {
+      this.logger.log(`📅 Found "сегодня" pattern`);
+      return {
+        startDate: today.toISOString().split('T')[0],
+        endDate: today.toISOString().split('T')[0],
+      };
+    }
 
     // Parse "последние X дней" or "last X days"
     const lastDaysRegex =
@@ -748,7 +771,17 @@ export class GenerateReportService {
     return recommendations;
   }
 
-  private formatReportComment(report: GeneratedReport): string {
+  private isSingleDayReport(dateRange: {
+    startDate: string;
+    endDate: string;
+  }): boolean {
+    return dateRange.startDate === dateRange.endDate;
+  }
+
+  private formatReportComment(
+    report: GeneratedReport,
+    dateRange: { startDate: string; endDate: string },
+  ): string {
     const stats = report.statistics;
     const dayNames = [
       'Воскресенье',
@@ -788,22 +821,25 @@ export class GenerateReportService {
     }
     reportText += `\n`;
 
-    // Анализ по дням недели
-    reportText += `📅 **АНАЛИЗ ПО ДНЯМ НЕДЕЛИ**\n`;
-    Object.entries(stats.dayOfWeekAnalysis).forEach(([day, data]) => {
-      const dayName = dayNames[parseInt(day)];
-      const emoji = data.isWeekend ? '🎉' : '💼';
-      reportText += `${emoji} ${dayName}: ${data.count} стрижек (оценка: ${data.averageScore}/10)\n`;
-    });
-    reportText += `\n`;
+    // Анализ по дням недели - только для многодневных отчётов
+    const isSingleDay = this.isSingleDayReport(dateRange);
+    if (!isSingleDay && stats.totalHaircuts > 0) {
+      reportText += `📅 **АНАЛИЗ ПО ДНЯМ НЕДЕЛИ**\n`;
+      Object.entries(stats.dayOfWeekAnalysis).forEach(([day, data]) => {
+        const dayName = dayNames[parseInt(day)];
+        const emoji = data.isWeekend ? '🎉' : '💼';
+        reportText += `${emoji} ${dayName}: ${data.count} стрижек (оценка: ${data.averageScore}/10)\n`;
+      });
+      reportText += `\n`;
 
-    // Анализ загрузки
-    reportText += `⚡ **АНАЛИЗ ЗАГРУЗКИ**\n`;
-    reportText += `🔥 Самый загруженный день: ${dayNames[parseInt(stats.workloadAnalysis.busiestDay)]}\n`;
-    reportText += `😴 Самый спокойный день: ${dayNames[parseInt(stats.workloadAnalysis.quietestDay)]}\n`;
-    reportText += `📊 Будни vs Выходные:\n`;
-    reportText += `   • Будни: ${stats.workloadAnalysis.weekdaysVsWeekends.weekdays.count} (${stats.workloadAnalysis.weekdaysVsWeekends.weekdays.percentage}%)\n`;
-    reportText += `   • Выходные: ${stats.workloadAnalysis.weekdaysVsWeekends.weekends.count} (${stats.workloadAnalysis.weekdaysVsWeekends.weekends.percentage}%)\n\n`;
+      // Анализ загрузки - только для многодневных отчётов
+      reportText += `⚡ **АНАЛИЗ ЗАГРУЗКИ**\n`;
+      reportText += `🔥 Самый загруженный день: ${dayNames[parseInt(stats.workloadAnalysis.busiestDay)]}\n`;
+      reportText += `😴 Самый спокойный день: ${dayNames[parseInt(stats.workloadAnalysis.quietestDay)]}\n`;
+      reportText += `📊 Будни vs Выходные:\n`;
+      reportText += `   • Будни: ${stats.workloadAnalysis.weekdaysVsWeekends.weekdays.count} (${stats.workloadAnalysis.weekdaysVsWeekends.weekdays.percentage}%)\n`;
+      reportText += `   • Выходные: ${stats.workloadAnalysis.weekdaysVsWeekends.weekends.count} (${stats.workloadAnalysis.weekdaysVsWeekends.weekends.percentage}%)\n\n`;
+    }
 
     // Рекомендации
     if (report.recommendations.length > 0) {
