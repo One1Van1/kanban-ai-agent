@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import * as chrono from 'chrono-node';
 import {
   GenerateReportDto,
   GeneratedReport,
@@ -168,6 +169,135 @@ export class GenerateReportService {
   }
 
   private parseDateRange(description: string): {
+    startDate: string;
+    endDate: string;
+  } {
+    this.logger.log(`🔍 Parsing date range from: "${description}"`);
+
+    // First try advanced natural language parsing with Chrono
+    const chronoResult = this.parseWithChrono(description);
+    if (chronoResult) {
+      this.logger.log(
+        `📅 Chrono parsed: ${chronoResult.startDate} to ${chronoResult.endDate}`,
+      );
+      return chronoResult;
+    }
+
+    // Fallback to manual parsing for specific patterns
+    return this.parseWithManualPatterns(description);
+  }
+
+  private parseWithChrono(description: string): {
+    startDate: string;
+    endDate: string;
+  } | null {
+    const today = new Date();
+
+    this.logger.log(`🔄 Chrono attempting to parse: "${description}"`);
+
+    try {
+      // Translate Russian phrases to English for Chrono
+      let englishDescription = description
+        .replace(/последни[ех]\s*(\d+)\s*дне[йи]/gi, 'last $1 days')
+        .replace(/за\s*последни[ех]\s*(\d+)\s*дне[йи]/gi, 'last $1 days')
+        .replace(/последний\s*день/gi, 'today')
+        .replace(/вчера/gi, 'yesterday')
+        .replace(/позавчера/gi, '2 days ago')
+        .replace(/прошлую\s*неделю/gi, 'last week')
+        .replace(/прошлый\s*месяц/gi, 'last month')
+        .replace(/эту\s*неделю/gi, 'this week')
+        .replace(/этот\s*месяц/gi, 'this month')
+        .replace(/неделю\s*назад/gi, '1 week ago')
+        .replace(/месяц\s*назад/gi, '1 month ago')
+        .replace(/(\d+)\s*недел[иь]\s*назад/gi, '$1 weeks ago')
+        .replace(/(\d+)\s*месяц[а-я]*\s*назад/gi, '$1 months ago');
+
+      this.logger.log(`🔄 Translated to English: "${englishDescription}"`);
+
+      // Special handling for "last week" - should be Monday to Sunday of previous week
+      if (
+        englishDescription.includes('last week') ||
+        description.includes('прошлую неделю')
+      ) {
+        const currentDate = new Date();
+        const currentDay = currentDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+
+        // Calculate Monday of current week
+        const mondayOfCurrentWeek = new Date(currentDate);
+        mondayOfCurrentWeek.setDate(
+          currentDate.getDate() - (currentDay === 0 ? 6 : currentDay - 1),
+        );
+
+        // Calculate Monday and Sunday of previous week
+        const mondayOfLastWeek = new Date(mondayOfCurrentWeek);
+        mondayOfLastWeek.setDate(mondayOfCurrentWeek.getDate() - 7);
+
+        const sundayOfLastWeek = new Date(mondayOfLastWeek);
+        sundayOfLastWeek.setDate(mondayOfLastWeek.getDate() + 6);
+
+        this.logger.log(
+          `📅 Chrono: Last week range calculated - Monday: ${mondayOfLastWeek.toISOString().split('T')[0]} to Sunday: ${sundayOfLastWeek.toISOString().split('T')[0]}`,
+        );
+
+        return {
+          startDate: mondayOfLastWeek.toISOString().split('T')[0],
+          endDate: sundayOfLastWeek.toISOString().split('T')[0],
+        };
+      }
+
+      // Try regular Chrono parsing for other patterns
+      const parsed = chrono.parse(englishDescription, today);
+
+      if (parsed.length > 0) {
+        const result = parsed[0];
+        this.logger.log(`📅 Chrono found result: ${result.text}`);
+
+        // Handle range
+        if (result.start && result.end) {
+          this.logger.log(
+            `📅 Chrono found range: ${result.start.date()} to ${result.end.date()}`,
+          );
+          return {
+            startDate: result.start.date().toISOString().split('T')[0],
+            endDate: result.end.date().toISOString().split('T')[0],
+          };
+        }
+
+        // Handle single date
+        if (result.start) {
+          const date = result.start.date();
+          this.logger.log(`📅 Chrono found single date: ${date}`);
+
+          // For "last X days", create a range
+          const lastDaysMatch = englishDescription.match(/last\s+(\d+)\s+days/);
+          if (lastDaysMatch) {
+            const days = parseInt(lastDaysMatch[1]);
+            const startDate = new Date(today);
+            startDate.setDate(today.getDate() - days);
+            return {
+              startDate: startDate.toISOString().split('T')[0],
+              endDate: today.toISOString().split('T')[0],
+            };
+          }
+
+          // Single day
+          const dateStr = date.toISOString().split('T')[0];
+          return {
+            startDate: dateStr,
+            endDate: dateStr,
+          };
+        }
+      } else {
+        this.logger.log(`❌ Chrono could not parse: "${englishDescription}"`);
+      }
+    } catch (error) {
+      this.logger.warn(`❌ Chrono parsing failed: ${error.message}`);
+    }
+
+    return null;
+  }
+
+  private parseWithManualPatterns(description: string): {
     startDate: string;
     endDate: string;
   } {
