@@ -30,10 +30,29 @@ async function bootstrap() {
         console.log(`📋 Webhook event:`, req.body.webhookEvent);
         console.log(`🎯 Task key:`, req.body.issue?.key);
         console.log(`📊 Status:`, req.body.issue?.fields?.status?.name);
+        console.log(
+          `👤 Assignee:`,
+          req.body.issue?.fields?.assignee?.displayName,
+          '|',
+          req.body.issue?.fields?.assignee?.accountId,
+        );
+
+        // Определяем тип webhook по assignee displayName
+        const assigneeDisplayName =
+          req.body.issue?.fields?.assignee?.displayName;
+        let targetEndpoint = '/jira/process-webhook-before-after'; // Default: Claude analysis
+
+        // Если назначено на AI-Report-maker, направляем на обработку отчетов
+        if (assigneeDisplayName === 'AI-Report-maker') {
+          targetEndpoint = '/ai-reporting-agent/process-report-webhook';
+          console.log(`🎯 Routing to REPORT webhook: ${targetEndpoint}`);
+        } else {
+          console.log(`🎯 Routing to CLAUDE webhook: ${targetEndpoint}`);
+        }
 
         // Делаем внутренний HTTP запрос к правильному endpoint
         const response = await axios.default.post(
-          'http://localhost:3000/jira/process-webhook-before-after',
+          `http://localhost:3000${targetEndpoint}`,
           req.body,
           {
             headers: {

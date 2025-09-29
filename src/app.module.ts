@@ -7,6 +7,8 @@ import { JiraModule } from './jira/jira-integration.module';
 // Подключаем ТОЛЬКО Claude агент и новый webhook
 import { AnalyzeBeforeAfterPhotosModule } from './photo-analysis-agent/analyze-before-after-photos/analyze-before-after-photos.module';
 import { ProcessWebhookBeforeAfterModule } from './jira/process-webhook-before-after/process-webhook-before-after.module';
+// Добавляем модуль отчетов
+import { AiReportingAgentModule } from './ai-reporting-agent/ai-reporting-agent.module';
 
 @Module({
   imports: [
@@ -19,6 +21,8 @@ import { ProcessWebhookBeforeAfterModule } from './jira/process-webhook-before-a
     // ТОЛЬКО Claude система
     AnalyzeBeforeAfterPhotosModule, // Claude анализ фотографий
     ProcessWebhookBeforeAfterModule, // Claude webhook
+    // AI отчеты
+    AiReportingAgentModule, // Генерация отчетов
   ],
   controllers: [AppController],
   providers: [AppService],

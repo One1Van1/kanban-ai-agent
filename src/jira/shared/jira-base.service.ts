@@ -153,6 +153,7 @@ export class JiraBaseService {
             'updated',
             'duedate',
             'labels',
+            'comment', // Добавляем поле comment для получения комментариев
           ],
         });
       return response.data;
