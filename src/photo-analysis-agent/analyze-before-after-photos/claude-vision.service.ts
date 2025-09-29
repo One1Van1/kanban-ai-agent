@@ -5,6 +5,10 @@ import axios from 'axios';
 import { ClaudeConfig } from '../../config/claude.config';
 
 export interface IBeforeAfterAnalysis {
+  clientInfo: {
+    gender: 'мужской' | 'женский';
+    haircutStyle: string;
+  };
   transformation: {
     category: 'Быстрая стрижка' | 'Обычная стрижка' | 'Сложная стрижка';
     difficultyLevel: number;
@@ -111,7 +115,9 @@ export class ClaudeVisionService {
                   type: 'text',
                   text: `Проанализируй фотографии стрижки ДО и ПОСЛЕ. Оцени:
 1. Категорию сложности (Быстрая/Обычная/Сложная стрижка)
-2. Качество выполнения по критериям (оценка 1-10):
+2. Определи пол клиента (мужской/женский) по фотографии
+3. Стиль стрижки (классическая, модная, спортивная, креативная и т.д.)
+4. Качество выполнения по критериям (оценка 1-10):
    - Общая оценка
    - Ровность стрижки
    - Плавность переходов
@@ -119,10 +125,14 @@ export class ClaudeVisionService {
    - Чистота работы
    - Соответствие стилю
 
-3. Дай конкретные рекомендации для улучшения.
+5. Дай конкретные рекомендации для улучшения.
 
 Ответь в формате JSON:
 {
+  "clientInfo": {
+    "gender": "мужской" или "женский",
+    "haircutStyle": "описание стиля стрижки"
+  },
   "transformation": {
     "category": "тип стрижки",
     "difficultyLevel": число,
@@ -204,7 +214,9 @@ export class ClaudeVisionService {
               type: 'text',
               text: `Проанализируй фотографии стрижки ДО и ПОСЛЕ. Оцени:
 1. Категорию сложности (Быстрая/Обычная/Сложная стрижка)
-2. Качество выполнения по критериям (оценка 1-10):
+2. Определи пол клиента (мужской/женский) по фотографии
+3. Стиль стрижки (классическая, модная, спортивная, креативная и т.д.)
+4. Качество выполнения по критериям (оценка 1-10):
    - Общая оценка
    - Ровность стрижки
    - Плавность переходов
@@ -212,10 +224,14 @@ export class ClaudeVisionService {
    - Чистота работы
    - Соответствие стилю
 
-3. Дай конкретные рекомендации для улучшения.
+5. Дай конкретные рекомендации для улучшения.
 
 Ответь в формате JSON:
 {
+  "clientInfo": {
+    "gender": "мужской" или "женский",
+    "haircutStyle": "описание стиля стрижки"
+  },
   "transformation": {
     "category": "тип стрижки",
     "difficultyLevel": число,
@@ -280,6 +296,10 @@ export class ClaudeVisionService {
 
   private createFallbackResult(reason: string): IBeforeAfterAnalysis {
     return {
+      clientInfo: {
+        gender: 'мужской',
+        haircutStyle: 'классическая стрижка',
+      },
       transformation: {
         category: 'Обычная стрижка',
         difficultyLevel: 5,

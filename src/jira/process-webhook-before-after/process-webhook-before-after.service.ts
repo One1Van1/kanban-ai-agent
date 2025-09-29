@@ -490,6 +490,10 @@ export class ProcessWebhookBeforeAfterService {
 📊 *РЕЗУЛЬТАТ АНАЛИЗА СТРИЖКИ*
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+👤 *Информация о клиенте:*
+• Пол: ${analysis.clientInfo?.gender || 'не определен'}
+• Стиль стрижки: ${analysis.clientInfo?.haircutStyle || 'стандартная'}
+
 🎯 *Категория:* ${analysis.transformation.category}
 ⭐ *Общая оценка:* ${analysis.quality.overallScore}/10
 📊 *Сложность:* ${analysis.transformation.difficultyLevel}/10

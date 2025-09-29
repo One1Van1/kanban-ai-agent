@@ -549,14 +549,28 @@ export class GenerateReportService {
             );
 
             if (score > 0) {
+              const taskDate = new Date(task.fields.created);
+              const dayOfWeek = taskDate.toLocaleDateString('ru-RU', {
+                weekday: 'long',
+              });
+
               analyses.push({
                 taskKey: task.key,
                 score,
                 summary: this.extractSummaryFromAnalysis(commentText),
                 date: task.fields.created,
+                dayOfWeek,
                 clientDescription:
                   task.fields.description?.content?.[0]?.content?.[0]?.text ||
                   '',
+                gender: this.extractGender(
+                  commentText,
+                  task.fields.summary || '',
+                ),
+                haircutStyle: this.extractHaircutStyle(
+                  commentText,
+                  task.fields.summary || '',
+                ),
               });
               this.logger.log(
                 `✅ Added analysis for ${task.key} with score ${score}`,
@@ -645,6 +659,45 @@ export class GenerateReportService {
     ).length;
     const poorCount = analyses.filter((a) => a.score < 5).length;
 
+    // Гендерный анализ
+    const maleAnalyses = analyses.filter((a) => a.gender === 'male');
+    const femaleAnalyses = analyses.filter((a) => a.gender === 'female');
+
+    const genderAnalysis = {
+      male: {
+        count: maleAnalyses.length,
+        averageScore:
+          maleAnalyses.length > 0
+            ? parseFloat(
+                (
+                  maleAnalyses.reduce((sum, a) => sum + a.score, 0) /
+                  maleAnalyses.length
+                ).toFixed(1),
+              )
+            : 0,
+        popularStyles: this.extractPopularStyles(maleAnalyses),
+      },
+      female: {
+        count: femaleAnalyses.length,
+        averageScore:
+          femaleAnalyses.length > 0
+            ? parseFloat(
+                (
+                  femaleAnalyses.reduce((sum, a) => sum + a.score, 0) /
+                  femaleAnalyses.length
+                ).toFixed(1),
+              )
+            : 0,
+        popularStyles: this.extractPopularStyles(femaleAnalyses),
+      },
+    };
+
+    // Анализ по дням недели
+    const dayOfWeekAnalysis = this.analyzeDaysOfWeek(analyses);
+
+    // Анализ загрузки
+    const workloadAnalysis = this.analyzeWorkload(dayOfWeekAnalysis);
+
     return {
       totalHaircuts,
       averageScore,
@@ -653,6 +706,9 @@ export class GenerateReportService {
       satisfactoryCount,
       poorCount,
       dateRange,
+      genderAnalysis,
+      dayOfWeekAnalysis,
+      workloadAnalysis,
     };
   }
 
@@ -693,6 +749,320 @@ export class GenerateReportService {
   }
 
   private formatReportComment(report: GeneratedReport): string {
-    return `Отчет готов. Всего стрижек: ${report.statistics.totalHaircuts}`;
+    const stats = report.statistics;
+    const dayNames = [
+      'Воскресенье',
+      'Понедельник',
+      'Вторник',
+      'Среда',
+      'Четверг',
+      'Пятница',
+      'Суббота',
+    ];
+
+    let reportText = `📊 **ОТЧЁТ О СТРИЖКАХ**\n`;
+    reportText += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+    // Основная статистика
+    reportText += `📈 **ОБЩАЯ СТАТИСТИКА**\n`;
+    reportText += `• Всего стрижек: **${stats.totalHaircuts}**\n`;
+    reportText += `• Средняя оценка: **${stats.averageScore}/10**\n`;
+    reportText += `• Отличные (9-10): ${stats.excellentCount}\n`;
+    reportText += `• Хорошие (7-8): ${stats.goodCount}\n`;
+    reportText += `• Удовлетворительные (5-6): ${stats.satisfactoryCount}\n`;
+    reportText += `• Требуют улучшения (1-4): ${stats.poorCount}\n\n`;
+
+    // Гендерная аналитика
+    reportText += `👥 **АНАЛИЗ ПО ПОЛУ**\n`;
+    if (stats.genderAnalysis.male.count > 0) {
+      reportText += `👨 Мужчины: ${stats.genderAnalysis.male.count} стрижек (оценка: ${stats.genderAnalysis.male.averageScore}/10)\n`;
+      if (stats.genderAnalysis.male.popularStyles.length > 0) {
+        reportText += `   Популярные стили: ${stats.genderAnalysis.male.popularStyles.join(', ')}\n`;
+      }
+    }
+    if (stats.genderAnalysis.female.count > 0) {
+      reportText += `👩 Женщины: ${stats.genderAnalysis.female.count} стрижек (оценка: ${stats.genderAnalysis.female.averageScore}/10)\n`;
+      if (stats.genderAnalysis.female.popularStyles.length > 0) {
+        reportText += `   Популярные стили: ${stats.genderAnalysis.female.popularStyles.join(', ')}\n`;
+      }
+    }
+    reportText += `\n`;
+
+    // Анализ по дням недели
+    reportText += `📅 **АНАЛИЗ ПО ДНЯМ НЕДЕЛИ**\n`;
+    Object.entries(stats.dayOfWeekAnalysis).forEach(([day, data]) => {
+      const dayName = dayNames[parseInt(day)];
+      const emoji = data.isWeekend ? '🎉' : '💼';
+      reportText += `${emoji} ${dayName}: ${data.count} стрижек (оценка: ${data.averageScore}/10)\n`;
+    });
+    reportText += `\n`;
+
+    // Анализ загрузки
+    reportText += `⚡ **АНАЛИЗ ЗАГРУЗКИ**\n`;
+    reportText += `🔥 Самый загруженный день: ${dayNames[parseInt(stats.workloadAnalysis.busiestDay)]}\n`;
+    reportText += `😴 Самый спокойный день: ${dayNames[parseInt(stats.workloadAnalysis.quietestDay)]}\n`;
+    reportText += `📊 Будни vs Выходные:\n`;
+    reportText += `   • Будни: ${stats.workloadAnalysis.weekdaysVsWeekends.weekdays.count} (${stats.workloadAnalysis.weekdaysVsWeekends.weekdays.percentage}%)\n`;
+    reportText += `   • Выходные: ${stats.workloadAnalysis.weekdaysVsWeekends.weekends.count} (${stats.workloadAnalysis.weekdaysVsWeekends.weekends.percentage}%)\n\n`;
+
+    // Рекомендации
+    if (report.recommendations.length > 0) {
+      reportText += `💡 **РЕКОМЕНДАЦИИ**\n`;
+      report.recommendations.forEach((rec, index) => {
+        reportText += `${index + 1}. ${rec}\n`;
+      });
+      reportText += `\n`;
+    }
+
+    reportText += `📅 Отчёт сформирован: ${new Date().toLocaleString('ru-RU')}`;
+
+    return reportText;
+  }
+
+  private extractPopularStyles(analyses: HaircutAnalysis[]): string[] {
+    if (analyses.length === 0) return [];
+
+    // Извлекаем стили стрижек из описаний
+    const styles = new Map<string, number>();
+
+    analyses.forEach((analysis) => {
+      if (analysis.haircutStyle) {
+        const style = analysis.haircutStyle.toLowerCase();
+        styles.set(style, (styles.get(style) || 0) + 1);
+      }
+    });
+
+    // Возвращаем топ 3 популярных стиля
+    return Array.from(styles.entries())
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([style]) => style);
+  }
+
+  private analyzeDaysOfWeek(analyses: HaircutAnalysis[]): {
+    [key: string]: {
+      count: number;
+      averageScore: number;
+      isWeekend: boolean;
+    };
+  } {
+    const dayAnalysis: {
+      [key: string]: { scores: number[]; count: number; isWeekend: boolean };
+    } = {};
+
+    // Инициализируем все дни недели
+    for (let i = 0; i < 7; i++) {
+      dayAnalysis[i.toString()] = {
+        scores: [],
+        count: 0,
+        isWeekend: i === 0 || i === 6, // воскресенье (0) и суббота (6)
+      };
+    }
+
+    // Группируем по дням недели
+    analyses.forEach((analysis) => {
+      const date = new Date(analysis.date);
+      const dayOfWeek = date.getDay().toString();
+
+      if (dayAnalysis[dayOfWeek]) {
+        dayAnalysis[dayOfWeek].scores.push(analysis.score);
+        dayAnalysis[dayOfWeek].count++;
+      }
+    });
+
+    // Вычисляем средние оценки
+    const result: {
+      [key: string]: {
+        count: number;
+        averageScore: number;
+        isWeekend: boolean;
+      };
+    } = {};
+
+    Object.entries(dayAnalysis).forEach(([day, data]) => {
+      result[day] = {
+        count: data.count,
+        averageScore:
+          data.scores.length > 0
+            ? parseFloat(
+                (
+                  data.scores.reduce((sum, score) => sum + score, 0) /
+                  data.scores.length
+                ).toFixed(1),
+              )
+            : 0,
+        isWeekend: data.isWeekend,
+      };
+    });
+
+    return result;
+  }
+
+  private analyzeWorkload(dayOfWeekAnalysis: {
+    [key: string]: { count: number; averageScore: number; isWeekend: boolean };
+  }): {
+    busiestDay: string;
+    quietestDay: string;
+    weekdaysVsWeekends: {
+      weekdays: { count: number; percentage: number };
+      weekends: { count: number; percentage: number };
+    };
+  } {
+    let busiestDay = '0';
+    let quietestDay = '0';
+    let maxCount = -1;
+    let minCount = Infinity;
+
+    let weekdaysCount = 0;
+    let weekendsCount = 0;
+    let totalCount = 0;
+
+    Object.entries(dayOfWeekAnalysis).forEach(([day, data]) => {
+      totalCount += data.count;
+
+      if (data.isWeekend) {
+        weekendsCount += data.count;
+      } else {
+        weekdaysCount += data.count;
+      }
+
+      if (data.count > maxCount) {
+        maxCount = data.count;
+        busiestDay = day;
+      }
+
+      if (data.count < minCount && data.count > 0) {
+        minCount = data.count;
+        quietestDay = day;
+      }
+    });
+
+    const weekdaysPercentage =
+      totalCount > 0 ? Math.round((weekdaysCount / totalCount) * 100) : 0;
+    const weekendsPercentage =
+      totalCount > 0 ? Math.round((weekendsCount / totalCount) * 100) : 0;
+
+    return {
+      busiestDay,
+      quietestDay,
+      weekdaysVsWeekends: {
+        weekdays: { count: weekdaysCount, percentage: weekdaysPercentage },
+        weekends: { count: weekendsCount, percentage: weekendsPercentage },
+      },
+    };
+  }
+
+  private extractGender(
+    commentText: string,
+    taskSummary: string,
+  ): 'male' | 'female' | 'unknown' {
+    // Сначала проверяем, есть ли в комментарии структурированные данные от Claude
+    try {
+      const jsonMatch = commentText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.clientInfo && parsed.clientInfo.gender) {
+          const gender = parsed.clientInfo.gender.toLowerCase();
+          if (gender.includes('мужской') || gender === 'male') return 'male';
+          if (gender.includes('женский') || gender === 'female')
+            return 'female';
+        }
+      }
+    } catch (error) {
+      // Если не удалось парсить JSON, продолжаем с текстовым анализом
+    }
+
+    const text = (commentText + ' ' + taskSummary).toLowerCase();
+
+    // Ключевые слова для определения пола
+    const maleKeywords = [
+      'мужчина',
+      'парень',
+      'мужик',
+      'клиент',
+      'он ',
+      'его ',
+      'мужской',
+      'бородка',
+      'усы',
+    ];
+    const femaleKeywords = [
+      'женщина',
+      'девушка',
+      'дама',
+      'клиентка',
+      'она ',
+      'её ',
+      'женский',
+      'подруга',
+    ];
+
+    let maleScore = 0;
+    let femaleScore = 0;
+
+    maleKeywords.forEach((keyword) => {
+      if (text.includes(keyword)) maleScore++;
+    });
+
+    femaleKeywords.forEach((keyword) => {
+      if (text.includes(keyword)) femaleScore++;
+    });
+
+    if (maleScore > femaleScore) return 'male';
+    if (femaleScore > maleScore) return 'female';
+    return 'unknown';
+  }
+
+  private extractHaircutStyle(
+    commentText: string,
+    taskSummary: string,
+  ): string {
+    // Сначала проверяем, есть ли в комментарии структурированные данные от Claude
+    try {
+      const jsonMatch = commentText.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.clientInfo && parsed.clientInfo.haircutStyle) {
+          return parsed.clientInfo.haircutStyle;
+        }
+      }
+    } catch (error) {
+      // Если не удалось парсить JSON, продолжаем с текстовым анализом
+    }
+
+    const text = (commentText + ' ' + taskSummary).toLowerCase();
+
+    // Популярные стили стрижек
+    const styles = [
+      'каре',
+      'боб',
+      'пикси',
+      'шегги',
+      'лесенка',
+      'каскад',
+      'андеркат',
+      'фейд',
+      'квифф',
+      'помпадур',
+      'crop',
+      'buzz cut',
+      'машинкой',
+      'ножницами',
+      'короткая',
+      'длинная',
+      'средняя',
+      'челка',
+      'без челки',
+      'асимметрия',
+      'градуировка',
+    ];
+
+    for (const style of styles) {
+      if (text.includes(style)) {
+        return style;
+      }
+    }
+
+    return 'стандартная';
   }
 }

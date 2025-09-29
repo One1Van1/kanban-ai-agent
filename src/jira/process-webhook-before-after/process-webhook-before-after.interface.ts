@@ -17,6 +17,10 @@ export interface IPhotoExtractionResult {
 }
 
 export interface IClaudeAnalysisData {
+  clientInfo: {
+    gender: 'мужской' | 'женский';
+    haircutStyle: string;
+  };
   transformation: {
     category: 'Быстрая стрижка' | 'Обычная стрижка' | 'Сложная стрижка';
     difficultyLevel: number; // 1-10

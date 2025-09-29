@@ -37,6 +37,34 @@ export interface ReportStatistics {
     startDate: string;
     endDate: string;
   };
+  // Новая аналитика
+  genderAnalysis: {
+    male: {
+      count: number;
+      averageScore: number;
+      popularStyles: string[];
+    };
+    female: {
+      count: number;
+      averageScore: number;
+      popularStyles: string[];
+    };
+  };
+  dayOfWeekAnalysis: {
+    [key: string]: {
+      count: number;
+      averageScore: number;
+      isWeekend: boolean;
+    };
+  };
+  workloadAnalysis: {
+    busiestDay: string;
+    quietestDay: string;
+    weekdaysVsWeekends: {
+      weekdays: { count: number; percentage: number };
+      weekends: { count: number; percentage: number };
+    };
+  };
 }
 
 export interface HaircutAnalysis {
@@ -44,7 +72,10 @@ export interface HaircutAnalysis {
   score: number;
   summary: string;
   date: string;
+  dayOfWeek: string;
   clientDescription?: string;
+  gender?: 'male' | 'female' | 'unknown';
+  haircutStyle?: string;
 }
 
 export interface GeneratedReport {
