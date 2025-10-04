@@ -7,7 +7,7 @@ import {
   ReportStatistics,
   HaircutAnalysis,
 } from './generate-report.response.dto';
-import { SearchTasksService } from '../../../jira/search-tasks/search-tasks.service';
+import { SearchTasksService } from '../../jira-integration/search-tasks/search-tasks.service';
 
 @Injectable()
 export class GenerateReportService {

@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProcessReportTaskRequestDto } from './process-report-task.request.dto';
 import { ProcessReportTaskResponseDto } from './process-report-task.response.dto';
-import { SearchTasksService } from '../../../jira/search-tasks/search-tasks.service';
-import { AddTaskCommentService } from '../../../jira/add-task-comment/add-task-comment.service';
-import { MoveTaskService } from '../../../jira/move-task/move-task.service';
+import { SearchTasksService } from '../../jira-integration/search-tasks/search-tasks.service';
+import { AddTaskCommentService } from '../../jira-integration/add-task-comment/add-task-comment.service';
+import { MoveTaskService } from '../../jira-integration/move-task/move-task.service';
 import { GenerateReportService } from '../generate-report/generate-report.service';
 
 @Injectable()
