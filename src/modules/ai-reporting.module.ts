@@ -4,9 +4,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 // Stable services (dependencies)
-import { SearchTasksModule } from '../features/jira-integration/search-tasks/search-tasks.module';
-import { AddTaskCommentModule } from '../features/jira-integration/add-task-comment/add-task-comment.module';
-import { MoveTaskModule } from '../features/jira-integration/move-task/move-task.module';
+import { SearchTasksService } from '../features/jira-integration/search-tasks-correct/search-tasks.service';
+import { AddTaskCommentService } from '../features/jira-integration/add-task-comment/add-task-comment.service';
+import { MoveTaskService } from '../features/jira-integration/move-task-correct/move-task.service';
 
 // Динамически загружаем контроллеры и сервисы
 const featuresDir = path.resolve(__dirname, '../features/ai-reporting');
@@ -82,14 +82,19 @@ console.log(
 );
 
 @Module({
-  imports: [
-    ConfigModule,
-    SearchTasksModule,
-    AddTaskCommentModule,
-    MoveTaskModule,
-  ],
+  imports: [ConfigModule],
   controllers: controllers,
-  providers: providers,
-  exports: providers,
+  providers: [
+    ...providers,
+    SearchTasksService,
+    AddTaskCommentService,
+    MoveTaskService,
+  ],
+  exports: [
+    ...providers,
+    SearchTasksService,
+    AddTaskCommentService,
+    MoveTaskService,
+  ],
 })
 export class AiReportingModule {}

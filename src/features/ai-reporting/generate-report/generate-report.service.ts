@@ -7,7 +7,7 @@ import {
   ReportStatistics,
   HaircutAnalysis,
 } from './generate-report.response.dto';
-import { SearchTasksService } from '../../jira-integration/search-tasks/search-tasks.service';
+import { SearchTasksService } from '../../jira-integration/search-tasks-correct/search-tasks.service';
 
 @Injectable()
 export class GenerateReportService {
@@ -119,7 +119,11 @@ export class GenerateReportService {
   }) {
     const jql = `created >= "${dateRange.startDate}" AND created <= "${dateRange.endDate}" AND summary ~ "стрижк*" OR summary ~ "haircut*" OR summary ~ "причёск*" OR summary ~ "hair*" OR summary ~ "волос*" OR summary ~ "маникюр*"`;
 
-    const searchResult = await this.searchTasksService.searchTasksByJql(jql);
+    const searchResult = await this.searchTasksService.execute({
+      jql,
+      startAt: 0,
+      maxResults: 100
+    });
     return searchResult.issues || [];
   }
 

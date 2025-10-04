@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ProcessReportTaskRequestDto } from './process-report-task.request.dto';
 import { ProcessReportTaskResponseDto } from './process-report-task.response.dto';
-import { SearchTasksService } from '../../jira-integration/search-tasks/search-tasks.service';
+import { SearchTasksService } from '../../jira-integration/search-tasks-correct/search-tasks.service';
 import { AddTaskCommentService } from '../../jira-integration/add-task-comment/add-task-comment.service';
-import { MoveTaskService } from '../../jira-integration/move-task/move-task.service';
+import { MoveTaskService } from '../../jira-integration/move-task-correct/move-task.service';
 import { GenerateReportService } from '../generate-report/generate-report.service';
 
 @Injectable()
@@ -24,10 +24,11 @@ export class ProcessReportTaskService {
 
     try {
       // Get task details to extract date range from description
-      const taskDetails = await this.searchTasksService.searchTasksByJql(
-        `key = ${dto.taskKey}`,
-        1,
-      );
+      const taskDetails = await this.searchTasksService.execute({
+        jql: `key = "${dto.taskKey}"`,
+        startAt: 0,
+        maxResults: 1
+      });
 
       if (!taskDetails.issues || taskDetails.issues.length === 0) {
         throw new Error(`Task ${dto.taskKey} not found`);
@@ -51,10 +52,11 @@ export class ProcessReportTaskService {
 
       // Check if report comment already exists to avoid duplicates
       try {
-        const taskWithComments = await this.searchTasksService.searchTasksByJql(
-          `key = ${dto.taskKey}`,
-          1,
-        );
+        const taskWithComments = await this.searchTasksService.execute({
+          jql: `key = "${dto.taskKey}"`,
+          startAt: 0,
+          maxResults: 1
+        });
         const existingComments =
           (taskWithComments.issues[0] as any).fields.comment?.comments || [];
         const hasReportComment = existingComments.some((comment: any) => {
@@ -106,7 +108,10 @@ export class ProcessReportTaskService {
       }
 
       // Move task to Done
-      await this.moveTaskService.moveTaskToColumn(dto.taskKey, 'Done');
+      await this.moveTaskService.execute(dto.taskKey, {
+        targetColumn: 'Done',
+        comment: 'Отчет обработан автоматически'
+      });
 
       const message = `Report task ${dto.taskKey} processed successfully`;
       this.logger.log(`✅ ${message}`);
