@@ -1,4 +1,4 @@
-# AI Agent Project Instructions
+<!-- # AI Agent Project Instructions
 
 ## 📦 Package Manager
 
@@ -147,4 +147,4 @@ yarn test
 
 # Build
 yarn build
-```
+``` -->
