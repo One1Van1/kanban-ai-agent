@@ -14,8 +14,27 @@ export class MoveTaskService extends JiraBaseService {
       const currentTask = await this.getTask(taskKey);
       const previousStatus = currentTask.fields.status.name;
 
-      // Логика перемещения задачи
-      // TODO: Реализовать интеграцию с Jira API
+      // Получаем доступные переходы для задачи
+      const transitionsResponse = await this.getTaskTransitions(taskKey);
+
+      // Ищем переход в целевой статус
+      const targetTransition = transitionsResponse.transitions.find(
+        (t: any) =>
+          t.to.name.toLowerCase() === requestDto.targetColumn.toLowerCase(),
+      );
+
+      if (!targetTransition) {
+        throw new Error(
+          `Transition to "${requestDto.targetColumn}" not available`,
+        );
+      }
+
+      // Выполняем переход в Jira
+      await this.transitionTask(taskKey, targetTransition.id);
+
+      this.logger.log(
+        `✅ Task ${taskKey} moved from "${previousStatus}" to "${requestDto.targetColumn}"`,
+      );
 
       // Добавляем комментарий если есть
       if (requestDto.comment) {

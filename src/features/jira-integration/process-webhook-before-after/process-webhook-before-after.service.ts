@@ -204,6 +204,22 @@ export class ProcessWebhookBeforeAfterService {
         };
       }
 
+      // ✅ НОВАЯ ЛОГИКА: Если есть успешный анализ, переносим в Done
+      const hasSuccessfulAnalysis = await this.hasSuccessfulClaudeAnalysis(
+        taskKey!,
+      );
+      if (hasSuccessfulAnalysis && currentStatus !== 'Done') {
+        this.logger.log(
+          `✅ Found successful Claude analysis for ${taskKey}, moving to Done`,
+        );
+        // Переносим в Done без повторного анализа
+        await this.moveTaskToDone(taskKey!);
+        return {
+          shouldProcess: false,
+          reason: 'Task moved to Done: successful analysis already exists',
+        };
+      }
+
       return {
         shouldProcess: false,
         reason: 'Claude analysis already exists for this task',
@@ -435,7 +451,7 @@ export class ProcessWebhookBeforeAfterService {
       this.logger.log(`📸 Sending photos to Claude for analysis: ${taskKey}`);
 
       const response = await axios.post(
-        `${this.baseUrl}/photo-analysis-agent/analyze-before-after-photos`,
+        `${this.baseUrl}/photo-analysis/analyze-before-after`,
         claudeRequest,
         {
           timeout: 60000, // 60 секунд для Claude анализа
@@ -581,7 +597,7 @@ ${analysis.recommendations.map((rec: string) => `• ${rec}`).join('\n')}
     try {
       await axios.post(
         `${this.baseUrl}/jira/tasks/${taskKey}/move`,
-        { targetStatus: 'Done' },
+        { targetColumn: 'Done' },
         {
           timeout: 10000,
           headers: { 'Content-Type': 'application/json' },
@@ -668,6 +684,63 @@ ${analysis.recommendations.map((rec: string) => `• ${rec}`).join('\n')}
         error.message,
       );
       return false;
+    }
+  }
+
+  /**
+   * Проверяет, есть ли успешный анализ Claude (не "НЕТ РЕЗУЛЬТАТА")
+   */
+  private async hasSuccessfulClaudeAnalysis(taskKey: string): Promise<boolean> {
+    try {
+      const jiraConfig = {
+        baseURL: this.configService.get<string>('jira.baseUrl'),
+        auth: {
+          username: this.configService.get<string>('jira.email') || '',
+          password: this.configService.get<string>('jira.apiToken') || '',
+        },
+      };
+
+      const response = await axios.get(
+        `/rest/api/3/issue/${taskKey}/comment`,
+        jiraConfig,
+      );
+
+      const comments = response.data.comments || [];
+
+      // Ищем комментарий с анализом Claude
+      const hasClaudeAnalysis = comments.some((comment: any) => {
+        const bodyText =
+          typeof comment.body === 'string'
+            ? comment.body
+            : comment.body?.content
+              ? comment.body.content
+                  .map(
+                    (c: any) =>
+                      c.content?.map((t: any) => t.text || '').join('') || '',
+                  )
+                  .join('')
+              : '';
+
+        // Есть анализ Claude И это НЕ "нет результата"
+        return (
+          bodyText &&
+          (bodyText.includes('АНАЛИЗ CLAUDE') ||
+            bodyText.includes('Claude Vision API') ||
+            bodyText.includes('🤖')) &&
+          !bodyText.includes('НЕТ РЕЗУЛЬТАТА ВЫПОЛНЕНИЯ РАБОТЫ')
+        );
+      });
+
+      if (hasClaudeAnalysis) {
+        this.logger.log(`✅ Found successful Claude analysis for ${taskKey}`);
+      }
+
+      return hasClaudeAnalysis;
+    } catch (error) {
+      this.logger.warn(
+        `Failed to check successful analysis for ${taskKey}: ${error.message}`,
+      );
+      return false; // В случае ошибки не перемещаем
     }
   }
 

@@ -129,7 +129,7 @@ export class ProcessWebhookBeforeAfterController {
       example: {
         status: 'healthy',
         claudeEndpoint:
-          'http://localhost:3000/photo-analysis-agent/analyze-before-after-photos',
+          'http://localhost:3000/photo-analysis/analyze-before-after',
         timestamp: '2025-09-26T17:30:00.000Z',
       },
     },

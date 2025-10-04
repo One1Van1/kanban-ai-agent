@@ -1,8 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 interface AnalysisResult {
-  detectedCategory: string;
-  qualityScore: number;
+  clientInfo: {
+    gender: string;
+    haircutStyle: string;
+  };
+  transformation: {
+    category: string;
+    difficultyLevel: number;
+  };
+  quality: {
+    overallScore: number;
+    technicalExecution: number;
+    creativity: number;
+    clientSatisfaction: number;
+  };
   improvements: string[];
   compliance: boolean;
   notes: string;
