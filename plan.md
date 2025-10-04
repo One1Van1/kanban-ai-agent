@@ -44,25 +44,32 @@
 
 **Файлы для создания:**
 
-- [ ] `src/features/ai-agent/create-agent/`
-  - [ ] `create-agent.controller.ts`
-  - [ ] `create-agent.service.ts`
-  - [ ] `create-agent.request.dto.ts`
-  - [ ] `create-agent.response.dto.ts`
-  - [ ] `create-agent.spec.ts`
-- [ ] `src/features/ai-agent/configure-agent/`
-  - [ ] `configure-agent.controller.ts`
-  - [ ] `configure-agent.service.ts`
-  - [ ] `configure-agent.dto.ts`
-- [ ] `src/features/ai-agent/track-agent-in-task/`
-  - [ ] `track-agent-in-task.controller.ts`
-  - [ ] `track-agent-in-task.service.ts`
-  - [ ] `track-agent-in-task.dto.ts`
-- [ ] `src/modules/ai-agent.module.ts`
-- [ ] `src/config/ai-agent.config.ts`
-- [ ] `src/types/ai-agent.interface.ts`
+- [x] `src/features/ai-agent/create-agent/`
+  - [x] `create-agent.controller.ts`
+  - [x] `create-agent.service.ts`
+  - [x] `create-agent.request.dto.ts`
+  - [x] `create-agent.response.dto.ts`
+  - [x] `create-agent.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/ai-agent/configure-agent/`
+  - [x] `configure-agent.controller.ts`
+  - [x] `configure-agent.service.ts`
+  - [x] `configure-agent.request.dto.ts`
+  - [x] `configure-agent.response.dto.ts`
+  - [x] `configure-agent.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/ai-agent/track-agent-in-task/`
+  - [x] `track-agent-in-task.controller.ts`
+  - [x] `track-agent-in-task.service.ts`
+  - [x] `track-agent-in-task.request.dto.ts`
+  - [x] `track-agent-in-task.response.dto.ts`
+  - [x] `track-agent-in-task.spec.ts`
+  - [x] `track-agent-in-task.openapi.decorator.ts`
+- [x] `src/features/ai-agent/ai-agent.module.ts`
+- [x] `src/config/ai-agent.config.ts`
+- [x] `src/types/ai-agent.interface.ts`
 
-**Результат:** Можно создавать и настраивать AI агентов
+**Результат:** Можно создавать и настраивать AI агентов ✅ ЗАВЕРШЕНО
 
 ### 1.3 Basic Notifications
 

@@ -2,22 +2,30 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { appConfig, jiraConfig, claudeConfig, queueConfig } from './config';
+import {
+  appConfig,
+  jiraConfig,
+  claudeConfig,
+  queueConfig,
+  aiAgentConfig,
+} from './config';
 // Новые модули с автозагрузкой
 import { JiraIntegrationModule } from './modules/jira-integration.module';
 import { PhotoAnalysisModule } from './modules/photo-analysis.module';
 import { AiReportingModule } from './modules/ai-reporting.module';
 import { QueueManagementModule } from './modules/queue-management.module';
+import { AiAgentModule } from './modules/ai-agent.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, jiraConfig, claudeConfig, queueConfig],
+      load: [appConfig, jiraConfig, claudeConfig, queueConfig, aiAgentConfig],
       envFilePath: '.env',
     }),
     // Новые модули с автозагрузкой features
     QueueManagementModule, // Bull Queue система очередей
+    AiAgentModule, // AI Agent управление агентами
     JiraIntegrationModule, // Все Jira интеграции
     PhotoAnalysisModule, // Claude анализ фотографий
     AiReportingModule, // AI отчеты
