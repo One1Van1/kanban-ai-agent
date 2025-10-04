@@ -20,19 +20,21 @@
 
 **Файлы для создания:**
 
-- [ ] `yarn add @nestjs/bull bull redis`
-- [ ] `src/features/queue-management/create-task-queue/`
-  - [ ] `create-task-queue.controller.ts`
-  - [ ] `create-task-queue.service.ts`
-  - [ ] `create-task-queue.dto.ts`
-- [ ] `src/features/queue-management/process-task-queue/`
-  - [ ] `process-task-queue.service.ts`
-  - [ ] `process-task-queue.processor.ts`
-- [ ] `src/features/queue-management/get-queue-status/`
-  - [ ] `get-queue-status.controller.ts`
-  - [ ] `get-queue-status.service.ts`
-- [ ] `src/modules/queue-management.module.ts`
-- [ ] `src/config/queue.config.ts`
+- [x] `yarn add @nestjs/bull bull redis`
+- [x] `src/features/queue-management/create-task-queue/`
+  - [x] `create-task-queue.controller.ts`
+  - [x] `create-task-queue.service.ts`
+  - [x] `create-task-queue.dto.ts`
+- [x] `src/features/queue-management/process-task-queue/`
+  - [x] `process-task-queue.processor.ts`
+- [x] `src/features/queue-management/get-queue-status/`
+  - [x] `get-queue-status.controller.ts`
+  - [x] `get-queue-status.service.ts`
+- [x] `src/features/queue-management/get-job-details/`
+  - [x] `get-job-details.controller.ts`
+  - [x] `get-job-details.service.ts`
+- [x] `src/modules/queue-management.module.ts`
+- [x] `src/config/queue.config.ts`
 
 **Результат:** Система может ставить задачи в очередь и обрабатывать их фоново
 
