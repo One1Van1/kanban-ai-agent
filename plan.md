@@ -107,10 +107,13 @@
 
 **Файлы для создания:**
 
-- [ ] `src/features/context-management/configure-context-sources/`
-  - [ ] `configure-context-sources.controller.ts`
-  - [ ] `configure-context-sources.service.ts`
-  - [ ] `configure-context-sources.dto.ts`
+- [x] `src/features/context-management/configure-context-sources/`
+  - [x] `configure-context-sources.controller.ts`
+  - [x] `configure-context-sources.service.ts`
+  - [x] `configure-context-sources.request.dto.ts`
+  - [x] `configure-context-sources.response.dto.ts`
+  - [x] `configure-context-sources.spec.ts`
+  - [x] `openapi.decorator.ts`
 - [ ] `src/features/context-management/fetch-task-context/`
   - [ ] `fetch-task-context.service.ts`
   - [ ] `fetch-task-context.dto.ts`
@@ -120,8 +123,8 @@
 - [ ] `src/features/context-management/fetch-external-context/`
   - [ ] `fetch-external-context.service.ts`
   - [ ] `fetch-external-context.dto.ts`
-- [ ] `src/modules/context-management.module.ts`
-- [ ] `src/types/context.interface.ts`
+- [x] `src/modules/context-management.module.ts`
+- [x] `src/types/context.interface.ts`
 
 **Результат:** AI агент может собирать контекст из разных источников
 
@@ -131,20 +134,29 @@
 
 **Файлы для создания:**
 
-- [ ] `src/features/ai-agent/configure-column-instructions/`
-  - [ ] `configure-column-instructions.controller.ts`
-  - [ ] `configure-column-instructions.service.ts`
-  - [ ] `configure-column-instructions.dto.ts`
-- [ ] `src/features/ai-agent/execute-agent-action/`
-  - [ ] `execute-agent-action.controller.ts`
-  - [ ] `execute-agent-action.service.ts`
-  - [ ] `execute-agent-action.dto.ts`
-- [ ] `src/features/ai-agent/get-agent-activity/`
-  - [ ] `get-agent-activity.controller.ts`
-  - [ ] `get-agent-activity.service.ts`
-  - [ ] `get-agent-activity.dto.ts`
+- [x] `src/features/ai-agent/configure-column-instructions/`
+  - [x] `configure-column-instructions.controller.ts`
+  - [x] `configure-column-instructions.service.ts`
+  - [x] `configure-column-instructions.request.dto.ts`
+  - [x] `configure-column-instructions.response.dto.ts`
+  - [x] `configure-column-instructions.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/ai-agent/execute-agent-action/`
+  - [x] `execute-agent-action.controller.ts`
+  - [x] `execute-agent-action.service.ts`
+  - [x] `execute-agent-action.request.dto.ts`
+  - [x] `execute-agent-action.response.dto.ts`
+  - [x] `execute-agent-action.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/ai-agent/get-agent-activity/`
+  - [x] `get-agent-activity.controller.ts`
+  - [x] `get-agent-activity.service.ts`
+  - [x] `get-agent-activity.request.dto.ts`
+  - [x] `get-agent-activity.response.dto.ts`
+  - [x] `get-agent-activity.spec.ts`
+  - [x] `openapi.decorator.ts`
 
-**Результат:** Агент выполняет настроенные инструкции при перемещении карточек
+**Результат:** Агент выполняет настроенные инструкции при перемещении карточек ✅ ЗАВЕРШЕНО
 
 ### 2.3 Enhanced Testing
 

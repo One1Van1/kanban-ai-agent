@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import { ConfigureContextSourcesRequestDto } from './configure-context-sources.request.dto';
 import {
   ConfigureContextSourcesResponseDto,
@@ -26,7 +26,7 @@ export class ConfigureContextSourcesService {
 
       // Create context source
       const contextSource: ContextSource = {
-        id: uuidv4(),
+        id: randomUUID(),
         type: request.type,
         name: request.name,
         description: request.description,

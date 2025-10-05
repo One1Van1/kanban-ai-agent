@@ -32,7 +32,6 @@
     "@types/body-parser": "^1.19.6",
     "@types/form-data": "^2.5.2",
     "@types/nodemailer": "^7.0.2",
-    "@types/uuid": "^11.0.0",
     "axios": "^1.12.2",
     "body-parser": "^2.2.0",
     "bull": "^4.16.5",
@@ -46,8 +45,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "swagger-ui-express": "^5.0.1",
-    "telegraf": "^4.16.3",
-    "uuid": "^13.0.0"
+    "telegraf": "^4.16.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -91,6 +89,18 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "transformIgnorePatterns": [
+      "node_modules/(?!(uuid)/)"
+    ],
+    "preset": "ts-jest/presets/default-esm",
+    "extensionsToTreatAsEsm": [
+      ".ts"
+    ],
+    "globals": {
+      "ts-jest": {
+        "useESM": true
+      }
+    }
   }
 }
