@@ -231,14 +231,31 @@
 
 **Файлы для создания:**
 
-- [ ] `yarn add @nestjs/cache-manager cache-manager-redis-store`
-- [ ] `src/features/cache-management/cache-context/`
-  - [ ] `cache-context.service.ts`
-- [ ] `src/features/cache-management/cache-agent-configs/`
-  - [ ] `cache-agent-configs.service.ts`
-- [ ] `src/config/cache.config.ts`
+- [x] `yarn add @nestjs/cache-manager cache-manager cache-manager-redis-store redis`
+- [x] `src/features/cache-management/cache-context/`
+  - [x] `cache-context.controller.ts`
+  - [x] `cache-context.service.ts`
+  - [x] `cache-context.request.dto.ts`
+  - [x] `cache-context.response.dto.ts`
+  - [x] `cache-context.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/cache-management/get-cached-context/`
+  - [x] `get-cached-context.controller.ts`
+  - [x] `get-cached-context.service.ts`
+  - [x] `get-cached-context.response.dto.ts`
+  - [x] `get-cached-context.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/cache-management/cache-agent-configs/`
+  - [x] `cache-agent-configs.controller.ts`
+  - [x] `cache-agent-configs.service.ts`
+  - [x] `cache-agent-configs.request.dto.ts`
+  - [x] `cache-agent-configs.response.dto.ts`
+  - [x] `cache-agent-configs.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/config/cache.config.ts`
+- [x] `src/modules/cache-management.module.ts`
 
-**Результат:** Система работает быстро даже с большим количеством агентов
+**Результат:** Система работает быстро даже с большим количеством агентов ✅ ЗАВЕРШЕНО
 
 ### 3.3 Admin Panel API
 

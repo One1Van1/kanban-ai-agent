@@ -10,6 +10,7 @@ import {
   aiAgentConfig,
   notificationsConfig,
   databaseConfig,
+  cacheConfig,
 } from './config';
 // Новые модули с автозагрузкой
 import { JiraIntegrationModule } from './modules/jira-integration.module';
@@ -21,6 +22,7 @@ import { NotificationsModule } from './modules/notifications.module';
 import { ContextManagementModule } from './modules/context-management.module';
 import { DatabaseModule } from './modules/database.module';
 import { DatabaseManagementModule } from './modules/database-management.module';
+import { CacheManagementModule } from './modules/cache-management.module';
 
 @Module({
   imports: [
@@ -34,12 +36,14 @@ import { DatabaseManagementModule } from './modules/database-management.module';
         aiAgentConfig,
         notificationsConfig,
         databaseConfig,
+        cacheConfig,
       ],
       envFilePath: '.env',
     }),
     // Новые модули с автозагрузкой features
     DatabaseModule, // TypeORM конфигурация базы данных
     DatabaseManagementModule, // Управление данными агентов и истории
+    CacheManagementModule, // Redis кеширование для оптимизации производительности
     QueueManagementModule, // Bull Queue система очередей
     AiAgentModule, // AI Agent управление агентами
     NotificationsModule, // Email и Telegram уведомления

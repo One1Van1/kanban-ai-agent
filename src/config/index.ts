@@ -5,6 +5,7 @@ export { default as queueConfig } from './queue.config';
 export { default as aiAgentConfig } from './ai-agent.config';
 export { default as notificationsConfig } from './notifications.config';
 export { default as databaseConfig } from './database.config';
+export { default as cacheConfig } from './cache.config';
 
 export * from './app.config';
 export * from './jira.config';
@@ -13,3 +14,4 @@ export * from './queue.config';
 export * from './ai-agent.config';
 export * from './notifications.config';
 export * from './database.config';
+export * from './cache.config';
