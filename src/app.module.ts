@@ -17,6 +17,7 @@ import { AiReportingModule } from './modules/ai-reporting.module';
 import { QueueManagementModule } from './modules/queue-management.module';
 import { AiAgentModule } from './modules/ai-agent.module';
 import { NotificationsModule } from './modules/notifications.module';
+import { ContextManagementModule } from './modules/context-management.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { NotificationsModule } from './modules/notifications.module';
     QueueManagementModule, // Bull Queue система очередей
     AiAgentModule, // AI Agent управление агентами
     NotificationsModule, // Email и Telegram уведомления
+    ContextManagementModule, // Управление контекстом для AI агентов
     JiraIntegrationModule, // Все Jira интеграции
     PhotoAnalysisModule, // Claude анализ фотографий
     AiReportingModule, // AI отчеты
