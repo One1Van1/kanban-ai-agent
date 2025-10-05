@@ -194,20 +194,36 @@
 
 **Файлы для создания:**
 
-- [ ] `yarn add @nestjs/typeorm typeorm pg @types/pg`
-- [ ] `src/entities/agent.entity.ts`
-- [ ] `src/entities/agent-instruction.entity.ts`
-- [ ] `src/entities/task-history.entity.ts`
-- [ ] `src/entities/notification-log.entity.ts`
-- [ ] `src/features/database-management/store-agent-config/`
-  - [ ] `store-agent-config.service.ts`
-  - [ ] `store-agent-config.repository.ts`
-- [ ] `src/features/database-management/store-task-history/`
-  - [ ] `store-task-history.service.ts`
-  - [ ] `store-task-history.repository.ts`
-- [ ] `src/config/database.config.ts`
+- [x] `yarn add @nestjs/typeorm typeorm pg @types/pg`
+- [x] `src/entities/agent.entity.ts`
+- [x] `src/entities/agent-instruction.entity.ts`
+- [x] `src/entities/task-history.entity.ts`
+- [x] `src/entities/notification-log.entity.ts`
+- [x] `src/features/database-management/store-agent-config/`
+  - [x] `store-agent-config.controller.ts`
+  - [x] `store-agent-config.service.ts`
+  - [x] `store-agent-config.request.dto.ts`
+  - [x] `store-agent-config.response.dto.ts`
+  - [x] `store-agent-config.repository.ts`
+  - [x] `store-agent-config.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/database-management/store-task-history/`
+  - [x] `store-task-history.controller.ts`
+  - [x] `store-task-history.service.ts`
+  - [x] `store-task-history.request.dto.ts`
+  - [x] `store-task-history.response.dto.ts`
+  - [x] `store-task-history.repository.ts`
+  - [x] `store-task-history.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/config/database.config.ts`
+- [x] `src/modules/database.module.ts`
+- [x] `src/modules/database-management.module.ts`
+- [x] `docker-compose.dev.yml` (PostgreSQL + Redis)
+- [x] `docs/database-setup.md`
+- [x] Database scripts в `package.json`
+- [x] Интеграция с основным приложением
 
-**Результат:** Все данные агентов сохраняются в БД
+**Результат:** Все данные агентов сохраняются в БД ✅ ЗАВЕРШЕНО
 
 ### 3.2 Performance Optimization
 

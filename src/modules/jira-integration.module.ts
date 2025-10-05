@@ -1,73 +1,72 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import * as fs from 'fs';
-import * as path from 'path';
 
-// Динамически загружаем контроллеры и сервисы
-const featuresDir = path.resolve(__dirname, '../features/jira-integration');
-const controllers: any[] = [];
-const providers: any[] = [];
+// Controllers
+import { AddTaskCommentController } from '../features/jira-integration/add-task-comment/add-task-comment.controller';
+import { AttachFileController } from '../features/jira-integration/attach-file-correct/attach-file.controller';
+import { GetColumnTasksController } from '../features/jira-integration/get-column-tasks-correct/get-column-tasks.controller';
+import { GetTaskController } from '../features/jira-integration/get-task-correct/get-task.controller';
+import { GetTaskTransitionsController } from '../features/jira-integration/get-task-transitions-correct/get-task-transitions.controller';
+import { HealthCheckController } from '../features/jira-integration/health-check-correct/health-check.controller';
+import { JiraWebhookHandlerController } from '../features/jira-integration/jira-webhook-handler-correct/jira-webhook-handler.controller';
+import { MoveTaskController } from '../features/jira-integration/move-task-correct/move-task.controller';
+import { ProcessWebhookBeforeAfterController } from '../features/jira-integration/process-webhook-before-after/process-webhook-before-after.controller';
+import { SearchTasksController } from '../features/jira-integration/search-tasks-correct/search-tasks.controller';
+import { TimeValidationWebhookController } from '../features/jira-integration/time-validation-webhook-correct/time-validation-webhook.controller';
 
-if (fs.existsSync(featuresDir)) {
-    fs.readdirSync(featuresDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .forEach(dirent => {
-            try {
-                const subDir = path.join(featuresDir, dirent.name);
-                const files = fs.readdirSync(subDir);
-
-                files.forEach(file => {
-
-                    // Загружаем контроллеры (.js и .ts, исключая .d.ts)
-                    if (
-                        file.endsWith('.controller.js') ||
-                        (file.endsWith('.controller.ts') && !file.endsWith('.d.ts'))
-                    ) {
-                        const controllerPath = path.resolve(subDir, file);
-                        const controllerModule = require(controllerPath);
-                        Object.values(controllerModule).forEach((exportedClass: any) => {
-                            if (exportedClass && typeof exportedClass === 'function' &&
-                                Reflect.getMetadata('path', exportedClass)) {
-                                controllers.push(exportedClass);
-                            }
-                        });
-                    }
-
-                    // Загружаем сервисы (.js и .ts, исключая .d.ts)
-                    if (
-                        file.endsWith('.service.js') ||
-                        (file.endsWith('.service.ts') && !file.endsWith('.d.ts'))
-                    ) {
-                        const servicePath = path.resolve(subDir, file);
-                        const serviceModule = require(servicePath);
-                        Object.values(serviceModule).forEach((exportedClass: any) => {
-                            if (exportedClass && typeof exportedClass === 'function' &&
-                                (Reflect.getMetadata('design:paramtypes', exportedClass) !== undefined ||
-                                 exportedClass.name.endsWith('Service'))) {
-                                providers.push(exportedClass);
-                            }
-                        });
-                    }
-                });
-            } catch (error) {
-                console.warn(`Could not load files from ${dirent.name}:`, error.message);
-            }
-        });
-}
-
-console.log('🔗 Jira Integration - Loaded controllers:', controllers);
-console.log('🔗 Jira Integration - Controllers count:', controllers.length);
-console.log('🔗 Jira Integration - Controllers names:', controllers.map(ctrl => ctrl.name));
-console.log('🔗 Jira Integration - Providers count:', providers.length);
-console.log('🔗 Jira Integration - Providers names:', providers.map(prov => prov.name));
+// Services
+import { AddTaskCommentService } from '../features/jira-integration/add-task-comment/add-task-comment.service';
+import { AttachFileService } from '../features/jira-integration/attach-file-correct/attach-file.service';
+import { GetColumnTasksService } from '../features/jira-integration/get-column-tasks-correct/get-column-tasks.service';
+import { GetTaskService } from '../features/jira-integration/get-task-correct/get-task.service';
+import { GetTaskTransitionsService } from '../features/jira-integration/get-task-transitions-correct/get-task-transitions.service';
+import { HealthCheckService } from '../features/jira-integration/health-check-correct/health-check.service';
+import { JiraWebhookHandlerService } from '../features/jira-integration/jira-webhook-handler-correct/jira-webhook-handler.service';
+import { MoveTaskService } from '../features/jira-integration/move-task-correct/move-task.service';
+import { ProcessWebhookBeforeAfterService } from '../features/jira-integration/process-webhook-before-after/process-webhook-before-after.service';
+import { SearchTasksService } from '../features/jira-integration/search-tasks-correct/search-tasks.service';
+import { TimeValidationWebhookService } from '../features/jira-integration/time-validation-webhook-correct/time-validation-webhook.service';
 
 @Module({
-    imports: [
-        ConfigModule,
-        // Добавить другие необходимые модули здесь
-    ],
-    controllers: controllers,
-    providers: providers,
-    exports: providers
+  imports: [ConfigModule],
+  controllers: [
+    AddTaskCommentController,
+    AttachFileController,
+    GetColumnTasksController,
+    GetTaskController,
+    GetTaskTransitionsController,
+    HealthCheckController,
+    JiraWebhookHandlerController,
+    MoveTaskController,
+    ProcessWebhookBeforeAfterController,
+    SearchTasksController,
+    TimeValidationWebhookController,
+  ],
+  providers: [
+    AddTaskCommentService,
+    AttachFileService,
+    GetColumnTasksService,
+    GetTaskService,
+    GetTaskTransitionsService,
+    HealthCheckService,
+    JiraWebhookHandlerService,
+    MoveTaskService,
+    ProcessWebhookBeforeAfterService,
+    SearchTasksService,
+    TimeValidationWebhookService,
+  ],
+  exports: [
+    AddTaskCommentService,
+    AttachFileService,
+    GetColumnTasksService,
+    GetTaskService,
+    GetTaskTransitionsService,
+    HealthCheckService,
+    JiraWebhookHandlerService,
+    MoveTaskService,
+    ProcessWebhookBeforeAfterService,
+    SearchTasksService,
+    TimeValidationWebhookService,
+  ],
 })
-export class JiraIntegrationModule { }
+export class JiraIntegrationModule {}

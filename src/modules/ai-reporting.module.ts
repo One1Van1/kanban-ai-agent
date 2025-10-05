@@ -1,97 +1,50 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import * as fs from 'fs';
-import * as path from 'path';
+import { BullModule } from '@nestjs/bull';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Agent } from '../entities/agent.entity';
+import { AgentInstruction } from '../entities/agent-instruction.entity';
+import { TaskHistory } from '../entities/task-history.entity';
 
 // Stable services (dependencies)
 import { SearchTasksService } from '../features/jira-integration/search-tasks-correct/search-tasks.service';
 import { AddTaskCommentService } from '../features/jira-integration/add-task-comment/add-task-comment.service';
 import { MoveTaskService } from '../features/jira-integration/move-task-correct/move-task.service';
 
-// Динамически загружаем контроллеры и сервисы
-const featuresDir = path.resolve(__dirname, '../features/ai-reporting');
-const controllers: any[] = [];
-const providers: any[] = [];
+// Controllers
+import { GenerateReportController } from '../features/ai-reporting/generate-report/generate-report.controller';
+import { GetReportConfigController } from '../features/ai-reporting/get-report-config/get-report-config.controller';
+import { GetReportHealthController } from '../features/ai-reporting/get-report-health/get-report-health.controller';
+import { ProcessReportTaskController } from '../features/ai-reporting/process-report-task/process-report-task.controller';
 
-if (fs.existsSync(featuresDir)) {
-  fs.readdirSync(featuresDir, { withFileTypes: true })
-    .filter((dirent) => dirent.isDirectory())
-    .forEach((dirent) => {
-      try {
-        const subDir = path.join(featuresDir, dirent.name);
-        const files = fs.readdirSync(subDir);
-
-        files.forEach((file) => {
-          // Загружаем контроллеры (.js и .ts, исключая .d.ts)
-          if (
-            file.endsWith('.controller.js') ||
-            (file.endsWith('.controller.ts') && !file.endsWith('.d.ts'))
-          ) {
-            const controllerPath = path.resolve(subDir, file);
-            const controllerModule = require(controllerPath);
-            Object.values(controllerModule).forEach((exportedClass: any) => {
-              if (
-                exportedClass &&
-                typeof exportedClass === 'function' &&
-                Reflect.getMetadata('path', exportedClass)
-              ) {
-                controllers.push(exportedClass);
-              }
-            });
-          }
-
-          // Загружаем сервисы (.js и .ts, исключая .d.ts)
-          if (
-            file.endsWith('.service.js') ||
-            (file.endsWith('.service.ts') && !file.endsWith('.d.ts'))
-          ) {
-            const servicePath = path.resolve(subDir, file);
-            const serviceModule = require(servicePath);
-            Object.values(serviceModule).forEach((exportedClass: any) => {
-              if (
-                exportedClass &&
-                typeof exportedClass === 'function' &&
-                (Reflect.getMetadata('design:paramtypes', exportedClass) !==
-                  undefined ||
-                  exportedClass.name.endsWith('Service'))
-              ) {
-                providers.push(exportedClass);
-              }
-            });
-          }
-        });
-      } catch (error) {
-        console.warn(
-          `Could not load files from ${dirent.name}:`,
-          error.message,
-        );
-      }
-    });
-}
-
-console.log('🤖 AI Reporting - Loaded controllers:', controllers);
-console.log('🤖 AI Reporting - Controllers count:', controllers.length);
-console.log(
-  '🤖 AI Reporting - Controllers names:',
-  controllers.map((ctrl) => ctrl.name),
-);
-console.log('🤖 AI Reporting - Providers count:', providers.length);
-console.log(
-  '🤖 AI Reporting - Providers names:',
-  providers.map((prov) => prov.name),
-);
+// Services
+import { GenerateReportService } from '../features/ai-reporting/generate-report/generate-report.service';
+import { GetReportConfigService } from '../features/ai-reporting/get-report-config/get-report-config.service';
+import { GetReportHealthService } from '../features/ai-reporting/get-report-health/get-report-health.service';
+import { ProcessReportTaskService } from '../features/ai-reporting/process-report-task/process-report-task.service';
 
 @Module({
   imports: [ConfigModule],
-  controllers: controllers,
+  controllers: [
+    GenerateReportController,
+    GetReportConfigController,
+    GetReportHealthController,
+    ProcessReportTaskController,
+  ],
   providers: [
-    ...providers,
+    GenerateReportService,
+    GetReportConfigService,
+    GetReportHealthService,
+    ProcessReportTaskService,
     SearchTasksService,
     AddTaskCommentService,
     MoveTaskService,
   ],
   exports: [
-    ...providers,
+    GenerateReportService,
+    GetReportConfigService,
+    GetReportHealthService,
+    ProcessReportTaskService,
     SearchTasksService,
     AddTaskCommentService,
     MoveTaskService,

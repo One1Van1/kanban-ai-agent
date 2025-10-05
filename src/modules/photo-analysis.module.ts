@@ -1,73 +1,16 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import * as fs from 'fs';
-import * as path from 'path';
 
-// Динамически загружаем контроллеры и сервисы
-const featuresDir = path.resolve(__dirname, '../features/photo-analysis');
-const controllers: any[] = [];
-const providers: any[] = [];
+// Controllers
+import { AnalyzeBeforeAfterPhotosController } from '../features/photo-analysis/analyze-before-after-photos/analyze-before-after-photos.controller';
 
-if (fs.existsSync(featuresDir)) {
-    fs.readdirSync(featuresDir, { withFileTypes: true })
-        .filter(dirent => dirent.isDirectory())
-        .forEach(dirent => {
-            try {
-                const subDir = path.join(featuresDir, dirent.name);
-                const files = fs.readdirSync(subDir);
-
-                files.forEach(file => {
-
-                    // Загружаем контроллеры (.js и .ts, исключая .d.ts)
-                    if (
-                        file.endsWith('.controller.js') ||
-                        (file.endsWith('.controller.ts') && !file.endsWith('.d.ts'))
-                    ) {
-                        const controllerPath = path.resolve(subDir, file);
-                        const controllerModule = require(controllerPath);
-                        Object.values(controllerModule).forEach((exportedClass: any) => {
-                            if (exportedClass && typeof exportedClass === 'function' &&
-                                Reflect.getMetadata('path', exportedClass)) {
-                                controllers.push(exportedClass);
-                            }
-                        });
-                    }
-
-                    // Загружаем сервисы (.js и .ts, исключая .d.ts)
-                    if (
-                        file.endsWith('.service.js') ||
-                        (file.endsWith('.service.ts') && !file.endsWith('.d.ts'))
-                    ) {
-                        const servicePath = path.resolve(subDir, file);
-                        const serviceModule = require(servicePath);
-                        Object.values(serviceModule).forEach((exportedClass: any) => {
-                            if (exportedClass && typeof exportedClass === 'function' &&
-                                (Reflect.getMetadata('design:paramtypes', exportedClass) !== undefined ||
-                                 exportedClass.name.endsWith('Service'))) {
-                                providers.push(exportedClass);
-                            }
-                        });
-                    }
-                });
-            } catch (error) {
-                console.warn(`Could not load files from ${dirent.name}:`, error.message);
-            }
-        });
-}
-
-console.log('📸 Photo Analysis - Loaded controllers:', controllers);
-console.log('📸 Photo Analysis - Controllers count:', controllers.length);
-console.log('📸 Photo Analysis - Controllers names:', controllers.map(ctrl => ctrl.name));
-console.log('📸 Photo Analysis - Providers count:', providers.length);
-console.log('📸 Photo Analysis - Providers names:', providers.map(prov => prov.name));
+// Services
+import { AnalyzeBeforeAfterPhotosService } from '../features/photo-analysis/analyze-before-after-photos/analyze-before-after-photos.service';
 
 @Module({
-    imports: [
-        ConfigModule,
-        // Добавить другие необходимые модули здесь
-    ],
-    controllers: controllers,
-    providers: providers,
-    exports: providers
+  imports: [ConfigModule],
+  controllers: [AnalyzeBeforeAfterPhotosController],
+  providers: [AnalyzeBeforeAfterPhotosService],
+  exports: [AnalyzeBeforeAfterPhotosService],
 })
-export class PhotoAnalysisModule { }
+export class PhotoAnalysisModule {}
