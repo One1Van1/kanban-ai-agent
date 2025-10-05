@@ -77,19 +77,25 @@
 
 **Файлы для создания:**
 
-- [ ] `yarn add nodemailer telegraf @types/nodemailer`
-- [ ] `src/features/notifications/send-email/`
-  - [ ] `send-email.controller.ts`
-  - [ ] `send-email.service.ts`
-  - [ ] `send-email.dto.ts`
-- [ ] `src/features/notifications/send-telegram/`
-  - [ ] `send-telegram.controller.ts`
-  - [ ] `send-telegram.service.ts`
-  - [ ] `send-telegram.dto.ts`
-- [ ] `src/modules/notifications.module.ts`
-- [ ] `src/config/notifications.config.ts`
+- [x] `yarn add nodemailer telegraf @types/nodemailer`
+- [x] `src/features/notifications/send-email/`
+  - [x] `send-email.controller.ts`
+  - [x] `send-email.service.ts`
+  - [x] `send-email.request.dto.ts`
+  - [x] `send-email.response.dto.ts`
+  - [x] `send-email.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/features/notifications/send-telegram/`
+  - [x] `send-telegram.controller.ts`
+  - [x] `send-telegram.service.ts`
+  - [x] `send-telegram.request.dto.ts`
+  - [x] `send-telegram.response.dto.ts`
+  - [x] `send-telegram.spec.ts`
+  - [x] `openapi.decorator.ts`
+- [x] `src/modules/notifications.module.ts`
+- [x] `src/config/notifications.config.ts`
 
-**Результат:** Система может отправлять уведомления по email и в Telegram
+**Результат:** Система может отправлять уведомления по email и в Telegram ✅ ЗАВЕРШЕНО
 
 ---
 
