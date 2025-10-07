@@ -1,16 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateAgentRequestDto } from './create-agent.request.dto';
 import { CreateAgentResponseDto } from './create-agent.response.dto';
-import { AIAgent } from '../../../types/ai-agent.interface';
-import { randomUUID } from 'crypto';
+import { Agent } from '../../../entities/agent.entity';
 
 @Injectable()
 export class CreateAgentService {
   private readonly logger = new Logger(CreateAgentService.name);
-  private readonly agents = new Map<string, AIAgent>(); // Temporary in-memory storage
 
-  constructor(private readonly configService: ConfigService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    @InjectRepository(Agent)
+    private readonly agentRepository: Repository<Agent>,
+  ) {}
 
   async execute(
     requestDto: CreateAgentRequestDto,
@@ -18,52 +22,52 @@ export class CreateAgentService {
     try {
       this.logger.log(`Creating new AI agent: ${requestDto.name}`);
 
-      const agentId = randomUUID();
-      const now = new Date();
-
-      const agent: AIAgent = {
-        id: agentId,
+      // Создаем агента в базе данных
+      const agent = this.agentRepository.create({
         name: requestDto.name,
         description: requestDto.description,
-        instructions: requestDto.instructions,
-        model:
-          requestDto.model ||
-          this.configService.get('ai-agent.defaultModel') ||
-          'claude-3-haiku-20240307',
-        temperature:
-          requestDto.temperature ??
-          this.configService.get('ai-agent.temperature') ??
-          0.3,
-        maxTokens:
-          requestDto.maxTokens ||
-          this.configService.get('ai-agent.maxTokens') ||
-          4000,
-        isActive: requestDto.isActive ?? true,
-        userId: requestDto.userId,
-        createdAt: now,
-        updatedAt: now,
-      };
+        status: 'active',
+        config: {
+          instructions: requestDto.instructions,
+          model:
+            requestDto.model ||
+            this.configService.get('ai-agent.defaultModel') ||
+            'claude-3-haiku-20240307',
+          temperature:
+            requestDto.temperature ??
+            this.configService.get('ai-agent.temperature') ??
+            0.3,
+          maxTokens:
+            requestDto.maxTokens ||
+            this.configService.get('ai-agent.maxTokens') ||
+            4000,
+          isActive: requestDto.isActive ?? true,
+        },
+        createdBy: requestDto.userId,
+      });
 
-      // Store agent (temporary in-memory, will be replaced with database in Sprint 3)
-      this.agents.set(agentId, agent);
+      // Сохраняем в базу данных
+      const savedAgent = await this.agentRepository.save(agent);
 
-      this.logger.log(`AI agent created successfully with ID: ${agentId}`);
+      this.logger.log(
+        `AI agent created successfully with ID: ${savedAgent.id}`,
+      );
 
       return {
         success: true,
-        agentId,
-        name: agent.name,
-        message: `AI agent "${agent.name}" created successfully`,
+        agentId: savedAgent.id,
+        name: savedAgent.name,
+        message: `AI agent "${savedAgent.name}" created successfully`,
         agent: {
-          id: agent.id,
-          name: agent.name,
-          description: agent.description,
-          instructions: agent.instructions,
-          model: agent.model,
-          temperature: agent.temperature,
-          maxTokens: agent.maxTokens,
-          isActive: agent.isActive,
-          createdAt: agent.createdAt.toISOString(),
+          id: savedAgent.id,
+          name: savedAgent.name,
+          description: savedAgent.description,
+          instructions: savedAgent.config?.instructions,
+          model: savedAgent.config?.model,
+          temperature: savedAgent.config?.temperature,
+          maxTokens: savedAgent.config?.maxTokens,
+          isActive: savedAgent.config?.isActive,
+          createdAt: savedAgent.createdAt.toISOString(),
         },
       };
     } catch (error) {
@@ -72,11 +76,11 @@ export class CreateAgentService {
     }
   }
 
-  async findById(agentId: string): Promise<AIAgent | null> {
-    return this.agents.get(agentId) || null;
+  async findById(agentId: string): Promise<Agent | null> {
+    return await this.agentRepository.findOne({ where: { id: agentId } });
   }
 
-  async findAll(): Promise<AIAgent[]> {
-    return Array.from(this.agents.values());
+  async findAll(): Promise<Agent[]> {
+    return await this.agentRepository.find();
   }
 }

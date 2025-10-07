@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Agent } from '../entities/agent.entity';
+import { AgentInstruction } from '../entities/agent-instruction.entity';
 
 // Controllers
 import { AddTaskCommentController } from '../features/jira-integration/add-task-comment/add-task-comment.controller';
@@ -28,7 +31,7 @@ import { SearchTasksService } from '../features/jira-integration/search-tasks-co
 import { TimeValidationWebhookService } from '../features/jira-integration/time-validation-webhook-correct/time-validation-webhook.service';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, TypeOrmModule.forFeature([Agent, AgentInstruction])],
   controllers: [
     AddTaskCommentController,
     AttachFileController,

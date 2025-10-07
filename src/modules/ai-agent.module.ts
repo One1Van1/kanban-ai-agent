@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { aiAgentConfig } from '../config';
+import { Agent } from '../entities/agent.entity';
+import { AgentInstruction } from '../entities/agent-instruction.entity';
 
 // Controllers
 import { ConfigureAgentController } from '../features/ai-agent/configure-agent/configure-agent.controller';
@@ -19,7 +22,10 @@ import { GetAgentActivityService } from '../features/ai-agent/get-agent-activity
 import { TrackAgentInTaskService } from '../features/ai-agent/track-agent-in-task/track-agent-in-task.service';
 
 @Module({
-  imports: [ConfigModule.forFeature(aiAgentConfig)],
+  imports: [
+    ConfigModule.forFeature(aiAgentConfig),
+    TypeOrmModule.forFeature([Agent, AgentInstruction]),
+  ],
   controllers: [
     ConfigureAgentController,
     ConfigureColumnInstructionsController,

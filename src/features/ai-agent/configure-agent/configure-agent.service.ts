@@ -31,11 +31,16 @@ export class ConfigureAgentService {
         ...existingAgent,
         name: requestDto.name ?? existingAgent.name,
         description: requestDto.description ?? existingAgent.description,
-        instructions: requestDto.instructions ?? existingAgent.instructions,
-        model: requestDto.model ?? existingAgent.model,
-        temperature: requestDto.temperature ?? existingAgent.temperature,
-        maxTokens: requestDto.maxTokens ?? existingAgent.maxTokens,
-        isActive: requestDto.isActive ?? existingAgent.isActive,
+        config: {
+          ...existingAgent.config,
+          instructions:
+            requestDto.instructions ?? existingAgent.config?.instructions,
+          model: requestDto.model ?? existingAgent.config?.model,
+          temperature:
+            requestDto.temperature ?? existingAgent.config?.temperature,
+          maxTokens: requestDto.maxTokens ?? existingAgent.config?.maxTokens,
+          isActive: requestDto.isActive ?? existingAgent.config?.isActive,
+        },
         updatedAt: new Date(),
       };
 
@@ -53,11 +58,11 @@ export class ConfigureAgentService {
           id: updatedAgent.id,
           name: updatedAgent.name,
           description: updatedAgent.description,
-          instructions: updatedAgent.instructions,
-          model: updatedAgent.model,
-          temperature: updatedAgent.temperature,
-          maxTokens: updatedAgent.maxTokens,
-          isActive: updatedAgent.isActive,
+          instructions: updatedAgent.config?.instructions,
+          model: updatedAgent.config?.model,
+          temperature: updatedAgent.config?.temperature,
+          maxTokens: updatedAgent.config?.maxTokens,
+          isActive: updatedAgent.config?.isActive,
           updatedAt: updatedAgent.updatedAt.toISOString(),
         },
       };

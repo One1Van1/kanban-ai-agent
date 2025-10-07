@@ -4,6 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import {
   ConfigureColumnInstructionsRequestDto,
@@ -16,14 +18,16 @@ import {
   AgentTriggerConditionResponseDto,
 } from './configure-column-instructions.response.dto';
 import { AgentColumnInstruction } from '../../../types/ai-agent.interface';
+import { AgentInstruction } from '../../../entities/agent-instruction.entity';
 
 @Injectable()
 export class ConfigureColumnInstructionsService {
   private readonly logger = new Logger(ConfigureColumnInstructionsService.name);
-  private readonly columnInstructions = new Map<
-    string,
-    AgentColumnInstruction
-  >();
+
+  constructor(
+    @InjectRepository(AgentInstruction)
+    private readonly agentInstructionRepository: Repository<AgentInstruction>,
+  ) {}
 
   async execute(
     request: ConfigureColumnInstructionsRequestDto,
@@ -42,52 +46,77 @@ export class ConfigureColumnInstructionsService {
       // Create or update column instruction
       const instructionKey = `${request.agentId}:${request.boardId}:${request.columnId}`;
 
-      const columnInstruction: AgentColumnInstruction = {
-        id: randomUUID(),
-        agentId: request.agentId,
-        boardId: request.boardId,
-        columnId: request.columnId,
-        columnName: request.columnName,
-        instructions: request.instructions,
-        triggerConditions: request.triggerConditions?.map((condition) => ({
-          type: condition.type as any,
-          value: condition.value,
-          operator: condition.operator as any,
-        })),
-        isActive: request.isActive,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      // 💾 Сохраняем в PostgreSQL с явной транзакцией
+      this.logger.log(
+        `🔍 Creating instruction for agent: ${request.agentId}, column: ${request.columnName}`,
+      );
 
-      // Store column instruction (in real implementation this would go to database)
-      this.columnInstructions.set(instructionKey, columnInstruction);
+      let savedInstruction: any;
+
+      try {
+        const agentInstruction = this.agentInstructionRepository.create({
+          agentId: request.agentId,
+          columnId: request.columnId,
+          columnName: request.columnName,
+          instruction: request.instructions,
+          triggerEvent: 'on_enter',
+          conditions: request.triggerConditions || [],
+          actions: {
+            type: 'send_telegram_notification',
+            template: 'Новая задача назначена на вас: {summary}',
+          },
+          isActive: request.isActive,
+          priority: 0,
+        });
+
+        this.logger.log(`💾 Saving to database...`);
+        savedInstruction =
+          await this.agentInstructionRepository.save(agentInstruction);
+        this.logger.log(`✅ Saved! ID: ${savedInstruction.id}`);
+
+        // 🔍 Проверяем, что реально сохранилось
+        const verifyInstruction = await this.agentInstructionRepository.findOne(
+          {
+            where: { id: savedInstruction.id },
+          },
+        );
+        this.logger.log(
+          `🔍 Verification: ${verifyInstruction ? 'FOUND' : 'NOT FOUND'} in DB`,
+        );
+
+        if (!verifyInstruction) {
+          throw new Error('Instruction was not saved to database!');
+        }
+      } catch (saveError) {
+        this.logger.error(`💥 Database save error:`, saveError);
+        throw saveError;
+      }
 
       this.logger.log(
-        `Column instructions configured successfully: ${columnInstruction.id}`,
+        `✅ Column instructions saved to PostgreSQL: ${savedInstruction.id}`,
       );
 
       // Prepare response
-      const triggerConditionsResponse =
-        columnInstruction.triggerConditions?.map(
-          (condition) =>
-            new AgentTriggerConditionResponseDto({
-              type: condition.type as TriggerConditionType,
-              value: condition.value,
-              operator: condition.operator as TriggerOperator,
-            }),
-        );
+      const triggerConditionsResponse = request.triggerConditions?.map(
+        (condition) =>
+          new AgentTriggerConditionResponseDto({
+            type: condition.type as TriggerConditionType,
+            value: condition.value,
+            operator: condition.operator as TriggerOperator,
+          }),
+      );
 
       const responseDto = new AgentColumnInstructionResponseDto({
-        id: columnInstruction.id,
-        agentId: columnInstruction.agentId,
-        boardId: columnInstruction.boardId,
-        columnId: columnInstruction.columnId,
-        columnName: columnInstruction.columnName,
-        instructions: columnInstruction.instructions,
+        id: savedInstruction.id,
+        agentId: savedInstruction.agentId,
+        boardId: request.boardId,
+        columnId: savedInstruction.columnId,
+        columnName: savedInstruction.columnName,
+        instructions: savedInstruction.instruction,
         triggerConditions: triggerConditionsResponse,
-        isActive: columnInstruction.isActive,
-        createdAt: columnInstruction.createdAt,
-        updatedAt: columnInstruction.updatedAt,
+        isActive: savedInstruction.isActive,
+        createdAt: savedInstruction.createdAt,
+        updatedAt: savedInstruction.updatedAt,
       });
 
       return new ConfigureColumnInstructionsResponseDto(
@@ -146,13 +175,22 @@ export class ConfigureColumnInstructionsService {
   async getColumnInstructionsByAgent(
     agentId: string,
   ): Promise<AgentColumnInstruction[]> {
-    const instructions: AgentColumnInstruction[] = [];
-    for (const [key, instruction] of this.columnInstructions) {
-      if (key.startsWith(`${agentId}:`)) {
-        instructions.push(instruction);
-      }
-    }
-    return instructions;
+    const instructions = await this.agentInstructionRepository.find({
+      where: { agentId, isActive: true },
+    });
+
+    return instructions.map((instruction) => ({
+      id: instruction.id,
+      agentId: instruction.agentId,
+      boardId: 'main-kanban-board', // TODO: добавить boardId в entity
+      columnId: instruction.columnId,
+      columnName: instruction.columnName,
+      instructions: instruction.instruction,
+      triggerConditions: instruction.conditions as any,
+      isActive: instruction.isActive,
+      createdAt: instruction.createdAt,
+      updatedAt: instruction.updatedAt,
+    }));
   }
 
   async getColumnInstruction(
@@ -160,7 +198,27 @@ export class ConfigureColumnInstructionsService {
     boardId: string,
     columnId: string,
   ): Promise<AgentColumnInstruction | null> {
-    const key = `${agentId}:${boardId}:${columnId}`;
-    return this.columnInstructions.get(key) || null;
+    const instruction = await this.agentInstructionRepository.findOne({
+      where: {
+        agentId,
+        columnId,
+        isActive: true,
+      },
+    });
+
+    if (!instruction) return null;
+
+    return {
+      id: instruction.id,
+      agentId: instruction.agentId,
+      boardId: boardId,
+      columnId: instruction.columnId,
+      columnName: instruction.columnName,
+      instructions: instruction.instruction,
+      triggerConditions: instruction.conditions as any,
+      isActive: instruction.isActive,
+      createdAt: instruction.createdAt,
+      updatedAt: instruction.updatedAt,
+    };
   }
 }

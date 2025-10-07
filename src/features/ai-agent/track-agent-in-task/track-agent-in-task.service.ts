@@ -37,7 +37,7 @@ export class TrackAgentInTaskService {
         throw new NotFoundException(`Agent with ID ${agentId} not found`);
       }
 
-      if (!agent.isActive) {
+      if (!agent.config?.isActive && agent.status !== 'active') {
         throw new Error(
           `Agent ${agentId} is not active and cannot track tasks`,
         );
