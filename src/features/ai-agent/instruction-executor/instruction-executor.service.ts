@@ -142,26 +142,34 @@ export class InstructionExecutorService {
 - Задача: ${request.taskData.key}
 - Название: ${request.taskData.summary || 'Не указано'}
 - Исполнитель: ${request.taskData.assignee || 'Не назначен'}
+- Email исполнителя: ${request.taskData.assigneeEmail || 'Не указан'}
 - Колонка: ${request.columnName}
 - Триггер: ${request.triggerType}
 - Telegram поле: ${request.taskData.telegramField || 'Не указано'}
 
+ПРИМЕРЫ ИНСТРУКЦИЙ НА БИЗНЕС-ЯЗЫКЕ И ИХ РЕАЛИЗАЦИЯ:
+- "Отправь email исполнителю" → POST /notifications/email {"to": assigneeEmail, "subject": "...", "text": "..."}
+- "Отправь email с сообщением X" → POST /notifications/email {"to": assigneeEmail, "subject": "Уведомление", "text": "X"}
+- "Уведоми исполнителя о назначении" → POST /notifications/email {"to": assigneeEmail, "subject": "Назначена задача [key]", "text": "На вас назначена задача"}
+- "Добавь комментарий X" → POST /rest/api/3/issue/{key}/comment с форматом ADF
+- "Уведоми в Telegram" → POST /notifications/telegram с данными из telegramField
+
 ДОСТУПНЫЕ API:
-1. JIRA API - для работы с задачами:
+1. EMAIL API (ОСНОВНОЙ ДЛЯ EMAIL УВЕДОМЛЕНИЙ):
+   - POST /notifications/email - отправить email исполнителю
+     Обязательные поля: {"to": "email@example.com", "subject": "Тема", "text": "Текст сообщения"}
+     ВАЖНО: email исполнителя всегда берется из поля assigneeEmail!
+   
+2. JIRA API - для работы с задачами:
    - POST /rest/api/3/issue/{issueKey}/comment - добавить комментарий
      Формат: {"body": {"type": "doc", "version": 1, "content": [{"type": "paragraph", "content": [{"type": "text", "text": "твой текст"}]}]}}
    - PUT /rest/api/3/issue/{issueKey} - обновить задачу
    - POST /rest/api/3/issue/{issueKey}/transitions - изменить статус
    
-2. TELEGRAM API - для уведомлений:
-   - POST /bot{token}/sendMessage - отправить сообщение
-   
-3. EMAIL API - для email уведомлений:
-   - POST /send-email - отправить email
-   
-4. INTERNAL API - внутренние эндпойнты системы:
-   - POST /jira/add-comment - добавить комментарий
+3. TELEGRAM API:
    - POST /notifications/telegram - отправить в Telegram
+     Формат: {"chatId": "chatId", "message": "Текст сообщения"}
+   - POST /bot{token}/sendMessage - прямой Telegram API
 
 Проанализируй инструкцию и верни КОНКРЕТНЫЕ API вызовы для выполнения.
 

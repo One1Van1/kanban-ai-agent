@@ -179,6 +179,7 @@ export class JiraWebhookHandlerService extends JiraBaseService {
           summary: issue?.fields?.summary,
 
           assignee: issue?.fields?.assignee?.displayName,
+          assigneeEmail: issue?.fields?.assignee?.emailAddress,
           telegramField: issue?.fields?.customfield_10100,
           status: issue?.fields?.status?.name,
         },
