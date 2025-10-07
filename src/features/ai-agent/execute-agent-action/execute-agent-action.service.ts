@@ -4,6 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { randomUUID } from 'crypto';
 import {
   ExecuteAgentActionRequestDto,
@@ -15,11 +17,22 @@ import {
   AgentActionOutputDto,
 } from './execute-agent-action.response.dto';
 import { AgentActivity } from '../../../types/ai-agent.interface';
+import { Agent } from '../../../entities/agent.entity';
+import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+import { InstructionExecutorService } from '../instruction-executor/instruction-executor.service';
 
 @Injectable()
 export class ExecuteAgentActionService {
   private readonly logger = new Logger(ExecuteAgentActionService.name);
   private readonly agentActivities = new Map<string, AgentActivity>();
+
+  constructor(
+    @InjectRepository(Agent)
+    private readonly agentRepository: Repository<Agent>,
+    @InjectRepository(AgentInstruction)
+    private readonly agentInstructionRepository: Repository<AgentInstruction>,
+    private readonly instructionExecutorService: InstructionExecutorService,
+  ) {}
 
   async execute(
     request: ExecuteAgentActionRequestDto,
@@ -49,7 +62,7 @@ export class ExecuteAgentActionService {
         columnInstructions,
       );
 
-      if (!shouldExecute) {
+      if (!shouldExecute || !columnInstructions) {
         return this.createSkippedResponse(executionId, request, startTime);
       }
 
@@ -158,112 +171,102 @@ export class ExecuteAgentActionService {
     }
   }
 
-  private async getAgentConfig(agentId: string): Promise<any> {
-    // In real implementation, this would fetch from database
-    return {
-      id: agentId,
-      name: 'Test Agent',
-      model: 'gpt-4',
-      temperature: 0.7,
-      isActive: true,
-    };
+  private async getAgentConfig(agentId: string): Promise<Agent> {
+    const agent = await this.agentRepository.findOne({
+      where: { id: agentId },
+    });
+
+    if (!agent) {
+      throw new NotFoundException(`Agent with ID ${agentId} not found`);
+    }
+
+    if (agent.status !== 'active') {
+      throw new BadRequestException(
+        `Agent ${agentId} is not active (status: ${agent.status})`,
+      );
+    }
+
+    return agent;
   }
 
   private async getColumnInstructions(
     agentId: string,
     boardId: string,
     columnId: string,
-  ): Promise<any> {
-    // In real implementation, this would fetch from database
-    return {
-      agentId,
-      boardId,
-      columnId,
-      instructions:
-        'Analyze task and take appropriate actions based on priority and assignment',
-      triggerConditions: [{ type: 'task_moved_to_column' }],
-      isActive: true,
-    };
+  ): Promise<AgentInstruction | null> {
+    this.logger.log(
+      `🔍 Searching for instructions: agentId=${agentId}, columnId=${columnId}`,
+    );
+
+    const instruction = await this.agentInstructionRepository.findOne({
+      where: {
+        agentId,
+        columnId,
+      },
+    });
+
+    if (instruction) {
+      this.logger.log(
+        `✅ Found instruction: ${instruction.id} - ${instruction.instruction} (triggerEvent: ${instruction.triggerEvent}, isActive: ${instruction.isActive})`,
+      );
+    } else {
+      this.logger.warn(
+        `❌ No instructions found for agent ${agentId} in column ${columnId}`,
+      );
+
+      // Попробуем найти все инструкции для этого агента для отладки
+      const allInstructions = await this.agentInstructionRepository.find({
+        where: { agentId },
+      });
+
+      this.logger.warn(
+        `📋 All instructions for agent ${agentId}:`,
+        allInstructions.map(
+          (i) =>
+            `columnId=${i.columnId}, triggerEvent=${i.triggerEvent}, isActive=${i.isActive}`,
+        ),
+      );
+    }
+
+    return instruction;
   }
 
   private shouldExecuteAgent(
     request: ExecuteAgentActionRequestDto,
-    columnInstructions: any,
+    columnInstructions: AgentInstruction | null,
   ): boolean {
     if (!columnInstructions || !columnInstructions.isActive) {
+      this.logger.log('Agent execution skipped: no active instructions found');
       return false;
     }
 
-    // Check if trigger type matches any condition
-    const triggerConditions = columnInstructions.triggerConditions || [];
-    return triggerConditions.some(
-      (condition: any) => condition.type === request.triggerType,
+    // Check if trigger type matches the instruction's trigger event
+    const shouldExecute =
+      columnInstructions.triggerEvent === 'on_enter' &&
+      request.triggerType === AgentActionTrigger.TASK_MOVED_TO_COLUMN;
+
+    this.logger.log(
+      `Trigger check: ${request.triggerType} matches ${columnInstructions.triggerEvent} = ${shouldExecute}`,
     );
+
+    return shouldExecute;
   }
 
   private async performAgentActions(
     request: ExecuteAgentActionRequestDto,
-    columnInstructions: any,
-    agentConfig: any,
+    columnInstructions: AgentInstruction,
+    agentConfig: Agent,
   ): Promise<AgentActionOutputDto[]> {
-    const actions: AgentActionOutputDto[] = [];
+    this.logger.log(
+      `🤖 AI Agent executing instruction: "${columnInstructions.instruction}"`,
+    );
 
-    // Simulate different actions based on task data and trigger
-    if (request.triggerType === AgentActionTrigger.TASK_MOVED_TO_COLUMN) {
-      // Check priority and send notification if needed
-      if (
-        request.taskData.priority === 'high' ||
-        request.taskData.priority === 'urgent'
-      ) {
-        actions.push(
-          new AgentActionOutputDto({
-            actionType: 'priority_notification',
-            description: `High priority task notification sent to assignee`,
-            data: {
-              priority: request.taskData.priority,
-              assignee: request.taskData.assignee,
-              notificationSent: true,
-            },
-          }),
-        );
-      }
-
-      // Check if task has all required fields
-      const requiredFields = ['title', 'description', 'assignee'];
-      const missingFields = requiredFields.filter(
-        (field) => !request.taskData[field],
-      );
-
-      if (missingFields.length > 0) {
-        actions.push(
-          new AgentActionOutputDto({
-            actionType: 'validation_warning',
-            description: `Task is missing required fields: ${missingFields.join(', ')}`,
-            data: {
-              missingFields,
-              taskId: request.taskId,
-              warningIssued: true,
-            },
-          }),
-        );
-      }
-    }
-
-    if (request.triggerType === AgentActionTrigger.TASK_ASSIGNED) {
-      actions.push(
-        new AgentActionOutputDto({
-          actionType: 'assignment_notification',
-          description: `Task assignment notification sent`,
-          data: {
-            assignee: request.taskData.assignee,
-            taskTitle: request.taskData.title,
-            notificationSent: true,
-          },
-        }),
-      );
-    }
-
-    return actions;
+    // 🚀 Используем универсальный AI-движок для выполнения инструкций!
+    return await this.instructionExecutorService.executeInstruction(
+      columnInstructions,
+      agentConfig,
+      request,
+    );
   }
 
   private createSkippedResponse(

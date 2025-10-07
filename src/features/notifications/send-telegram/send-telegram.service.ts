@@ -37,6 +37,9 @@ export class SendTelegramService implements OnModuleInit {
         throw new Error('Telegram bot is not configured');
       }
 
+      // 🔄 Auto-resolve username to chat ID if needed
+      const chatId = await this.resolveChatId(request.chatId);
+
       const options: any = {
         parse_mode: request.parseMode,
         disable_web_page_preview: request.disableWebPagePreview,
@@ -51,20 +54,20 @@ export class SendTelegramService implements OnModuleInit {
       });
 
       const result = await this.bot.telegram.sendMessage(
-        request.chatId,
+        chatId,
         request.text,
         options,
       );
 
       this.logger.log(
-        `Telegram message sent successfully to chat ${request.chatId}. MessageId: ${result.message_id}`,
+        `Telegram message sent successfully to chat ${chatId}. MessageId: ${result.message_id}`,
       );
 
       return new SendTelegramResponseDto(
         true,
         'Telegram message sent successfully',
         result.message_id,
-        request.chatId,
+        chatId,
       );
     } catch (error) {
       this.logger.error(
@@ -77,5 +80,24 @@ export class SendTelegramService implements OnModuleInit {
         `Failed to send Telegram message: ${error.message}`,
       );
     }
+  }
+
+  /**
+   * 🔄 Автоматически преобразует username в chat ID
+   */
+  private async resolveChatId(input: string): Promise<string> {
+    // Если это уже число (chat ID), возвращаем как есть
+    if (/^\d+$/.test(input) || /^-\d+$/.test(input)) {
+      return input;
+    }
+
+    // Если это username, пробуем отправить напрямую
+    if (input.startsWith('@') || /^[a-zA-Z0-9_]+$/.test(input)) {
+      const usernameWithAt = input.startsWith('@') ? input : `@${input}`;
+      this.logger.log(`📱 Sending to username: ${usernameWithAt}`);
+      return usernameWithAt;
+    }
+
+    return input;
   }
 }

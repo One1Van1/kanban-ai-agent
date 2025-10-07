@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { aiAgentConfig } from '../config';
+import { aiAgentConfig, claudeConfig } from '../config';
 import { Agent } from '../entities/agent.entity';
 import { AgentInstruction } from '../entities/agent-instruction.entity';
+
+// Import notifications module for Telegram service
+import { NotificationsModule } from './notifications.module';
 
 // Controllers
 import { ConfigureAgentController } from '../features/ai-agent/configure-agent/configure-agent.controller';
@@ -20,11 +23,14 @@ import { CreateAgentService } from '../features/ai-agent/create-agent/create-age
 import { ExecuteAgentActionService } from '../features/ai-agent/execute-agent-action/execute-agent-action.service';
 import { GetAgentActivityService } from '../features/ai-agent/get-agent-activity/get-agent-activity.service';
 import { TrackAgentInTaskService } from '../features/ai-agent/track-agent-in-task/track-agent-in-task.service';
+import { InstructionExecutorService } from '../features/ai-agent/instruction-executor/instruction-executor.service';
 
 @Module({
   imports: [
     ConfigModule.forFeature(aiAgentConfig),
+    ConfigModule.forFeature(claudeConfig), // Claude AI config
     TypeOrmModule.forFeature([Agent, AgentInstruction]),
+    NotificationsModule, // For Telegram service
   ],
   controllers: [
     ConfigureAgentController,
@@ -41,6 +47,7 @@ import { TrackAgentInTaskService } from '../features/ai-agent/track-agent-in-tas
     ExecuteAgentActionService,
     GetAgentActivityService,
     TrackAgentInTaskService,
+    InstructionExecutorService, // 🚀 New AI-powered instruction executor
   ],
   exports: [
     ConfigureAgentService,
@@ -49,6 +56,7 @@ import { TrackAgentInTaskService } from '../features/ai-agent/track-agent-in-tas
     ExecuteAgentActionService,
     GetAgentActivityService,
     TrackAgentInTaskService,
+    InstructionExecutorService,
   ],
 })
 export class AiAgentModule {}

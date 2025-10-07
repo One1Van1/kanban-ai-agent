@@ -10,6 +10,19 @@ export class JiraWebhookHandlerRequestDto {
   webhookEvent: string;
 
   @ApiProperty({
+    description: 'Название типа события',
+    example: 'issue_updated',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  issue_event_type_name?: string;
+
+  @IsOptional()
+  @IsString()
+  eventType?: string;
+
+  @ApiProperty({
     description: 'Данные о задаче',
     example: {
       key: 'KAN-5',
@@ -50,11 +63,19 @@ export class JiraWebhookHandlerRequestDto {
   @IsObject()
   changelog?: any;
 
-  @ApiProperty({
-    description: 'Временная метка события',
-    example: 1640995200000,
-    required: false,
-  })
+  // Добавляем все возможные поля от Jira
   @IsOptional()
-  timestamp?: number;
+  timestamp?: any;
+
+  @IsOptional()
+  comment?: any;
+
+  @IsOptional()
+  matchedConditions?: any;
+
+  @IsOptional()
+  project?: any;
+
+  @IsOptional()
+  transition?: any;
 }

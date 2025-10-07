@@ -37,18 +37,12 @@ async function bootstrap() {
           req.body.issue?.fields?.assignee?.accountId,
         );
 
-        // Определяем тип webhook по assignee displayName
-        const assigneeDisplayName =
-          req.body.issue?.fields?.assignee?.displayName;
-        let targetEndpoint = '/jira/process-webhook-before-after'; // Default: Claude analysis
-
-        // Если назначено на AI-Report-maker, направляем на обработку отчетов
-        if (assigneeDisplayName === 'AI-Report-maker') {
-          targetEndpoint = '/ai-reporting-agent/process-report-webhook';
-          console.log(`🎯 Routing to REPORT webhook: ${targetEndpoint}`);
-        } else {
-          console.log(`🎯 Routing to CLAUDE webhook: ${targetEndpoint}`);
-        }
+        // 🚀 УНИВЕРСАЛЬНЫЙ РОУТИНГ - направляем ВСЕ webhook'и на общий обработчик
+        // Он сам найдёт нужных агентов для конкретной колонки
+        const targetEndpoint = '/jira/webhook';
+        console.log(
+          `🎯 Routing to UNIVERSAL webhook handler: ${targetEndpoint}`,
+        );
 
         // Делаем внутренний HTTP запрос к правильному endpoint
         const response = await axios.default.post(
