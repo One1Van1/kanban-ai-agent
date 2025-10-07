@@ -166,6 +166,92 @@ export class JiraWebhookHandlerService extends JiraBaseService {
         `🤖 Activating agent: ${agent.name} for task: ${issue?.key}`,
       );
 
+      // Получаем email адреса через Jira API
+      let creatorEmail = issue?.fields?.creator?.emailAddress;
+      let assigneeEmail = issue?.fields?.assignee?.emailAddress;
+
+      // Если email не в webhook, получаем через API
+      if (!creatorEmail && issue?.fields?.creator?.accountId) {
+        try {
+          const config = this.getConfig();
+          const response = await axios.get(
+            `${config.baseUrl}/rest/api/3/user`,
+            {
+              params: { accountId: issue.fields.creator.accountId },
+              auth: {
+                username: config.username,
+                password: config.apiToken,
+              },
+            },
+          );
+          creatorEmail = response.data?.emailAddress;
+          console.log(`Creator email obtained via API: ${creatorEmail}`);
+        } catch (error) {
+          console.log(`Failed to get creator email: ${error.message}`);
+        }
+      }
+
+      if (!assigneeEmail && issue?.fields?.assignee?.accountId) {
+        try {
+          const config = this.getConfig();
+
+          console.log(
+            `🔍 Trying multiple API endpoints for assignee: ${issue.fields.assignee.accountId}`,
+          );
+
+          // 1. Стандартный user endpoint
+          let response = await axios.get(`${config.baseUrl}/rest/api/3/user`, {
+            params: {
+              accountId: issue.fields.assignee.accountId,
+              expand: 'groups,applicationRoles',
+            },
+            auth: {
+              username: config.username,
+              password: config.apiToken,
+            },
+          });
+          assigneeEmail = response.data?.emailAddress;
+          console.log(`📧 Standard user API email: ${assigneeEmail}`);
+
+          // 2. Если не получилось, пробуем search API
+          if (!assigneeEmail) {
+            response = await axios.get(
+              `${config.baseUrl}/rest/api/3/user/search`,
+              {
+                params: {
+                  accountId: issue.fields.assignee.accountId,
+                },
+                auth: {
+                  username: config.username,
+                  password: config.apiToken,
+                },
+              },
+            );
+            assigneeEmail = response.data?.[0]?.emailAddress;
+            console.log(`🔍 Search API email: ${assigneeEmail}`);
+          }
+
+          console.log(`✅ Final assignee email: ${assigneeEmail}`);
+          console.log(
+            `📋 Full assignee API response:`,
+            JSON.stringify(response.data, null, 2),
+          );
+        } catch (error) {
+          console.log(`❌ Failed to get assignee email: ${error.message}`);
+        }
+      }
+
+      // 🔍 Логируем данные для отладки
+      this.logger.log('📋 Webhook issue data:');
+      this.logger.log(
+        `        - Creator: ${issue?.fields?.creator?.displayName}`,
+      );
+      this.logger.log(`        - Creator Email: ${creatorEmail}`);
+      this.logger.log(
+        `        - Assignee: ${issue?.fields?.assignee?.displayName}`,
+      );
+      this.logger.log(`        - Assignee Email: ${assigneeEmail}`);
+
       // Подготовить данные для агента
       const agentRequest = {
         agentId: agent.id,
@@ -177,9 +263,10 @@ export class JiraWebhookHandlerService extends JiraBaseService {
         taskData: {
           key: issue?.key,
           summary: issue?.fields?.summary,
-
           assignee: issue?.fields?.assignee?.displayName,
-          assigneeEmail: issue?.fields?.assignee?.emailAddress,
+          assigneeEmail: assigneeEmail,
+          creator: issue?.fields?.creator?.displayName,
+          creatorEmail: creatorEmail,
           telegramField: issue?.fields?.customfield_10100,
           status: issue?.fields?.status?.name,
         },

@@ -8,6 +8,12 @@ import { AgentActionOutputDto } from '../execute-agent-action/execute-agent-acti
 import { SendTelegramService } from '../../notifications/send-telegram/send-telegram.service';
 import { SendEmailService } from '../../notifications/send-email/send-email.service';
 
+// 🧠 Импортируем новые интеллектуальные сервисы
+import { IntelligentAgentService } from '../intelligent-agent/intelligent-agent.service';
+import { KanbanKnowledgeBaseService } from '../kanban-knowledge-base/kanban-knowledge-base.service';
+import { AgentLearningService } from '../agent-learning/agent-learning.service';
+import { AgentRoleService, AgentRole } from '../agent-role/agent-role.service';
+
 interface AIInstructionAnalysis {
   shouldExecute: boolean;
   actions: Array<{
@@ -37,6 +43,11 @@ export class InstructionExecutorService {
     private readonly configService: ConfigService,
     private readonly sendTelegramService: SendTelegramService,
     private readonly sendEmailService: SendEmailService,
+    // 🧠 Инжектируем новые интеллектуальные сервисы
+    private readonly intelligentAgentService: IntelligentAgentService,
+    private readonly knowledgeBaseService: KanbanKnowledgeBaseService,
+    private readonly learningService: AgentLearningService,
+    private readonly roleService: AgentRoleService,
   ) {}
 
   /**
@@ -143,22 +154,28 @@ export class InstructionExecutorService {
 - Название: ${request.taskData.summary || 'Не указано'}
 - Исполнитель: ${request.taskData.assignee || 'Не назначен'}
 - Email исполнителя: ${request.taskData.assigneeEmail || 'Не указан'}
+- Создатель: ${request.taskData.creator || 'Не указан'}
+- Email создателя: ${request.taskData.creatorEmail || 'Не указан'}
 - Колонка: ${request.columnName}
 - Триггер: ${request.triggerType}
 - Telegram поле: ${request.taskData.telegramField || 'Не указано'}
 
 ПРИМЕРЫ ИНСТРУКЦИЙ НА БИЗНЕС-ЯЗЫКЕ И ИХ РЕАЛИЗАЦИЯ:
 - "Отправь email исполнителю" → POST /notifications/email {"to": assigneeEmail, "subject": "...", "text": "..."}
+- "Отправь email создателю задачи" → POST /notifications/email {"to": creatorEmail, "subject": "...", "text": "..."}
 - "Отправь email с сообщением X" → POST /notifications/email {"to": assigneeEmail, "subject": "Уведомление", "text": "X"}
+- "Уведоми создателя о начале работы" → POST /notifications/email {"to": creatorEmail, "subject": "Работа началась", "text": "Работа над задачей началась"}
 - "Уведоми исполнителя о назначении" → POST /notifications/email {"to": assigneeEmail, "subject": "Назначена задача [key]", "text": "На вас назначена задача"}
 - "Добавь комментарий X" → POST /rest/api/3/issue/{key}/comment с форматом ADF
 - "Уведоми в Telegram" → POST /notifications/telegram с данными из telegramField
 
 ДОСТУПНЫЕ API:
 1. EMAIL API (ОСНОВНОЙ ДЛЯ EMAIL УВЕДОМЛЕНИЙ):
-   - POST /notifications/email - отправить email исполнителю
+   - POST /notifications/email - отправить email
      Обязательные поля: {"to": "email@example.com", "subject": "Тема", "text": "Текст сообщения"}
-     ВАЖНО: email исполнителя всегда берется из поля assigneeEmail!
+     ВАЖНО: 
+     * Для исполнителя используй assigneeEmail
+     * Для создателя задачи используй creatorEmail
    
 2. JIRA API - для работы с задачами:
    - POST /rest/api/3/issue/{issueKey}/comment - добавить комментарий
@@ -561,5 +578,241 @@ export class InstructionExecutorService {
         taskId: request.taskId,
       },
     });
+  }
+
+  // 🧠 Новые вспомогательные методы для интеллектуальной системы
+
+  /**
+   * 🎯 Fallback логика при ошибке интеллектуального выполнения
+   */
+  private async executeFallbackLogic(
+    instruction: AgentInstruction,
+    agent: Agent,
+    request: ExecuteAgentActionRequestDto,
+  ): Promise<AgentActionOutputDto[]> {
+    this.logger.log('🔄 Executing fallback logic...');
+
+    try {
+      // Используем старую логику как fallback
+      const aiAnalysis = await this.analyzeInstructionWithAI(
+        instruction,
+        request,
+      );
+
+      if (!aiAnalysis.shouldExecute) {
+        return [];
+      }
+
+      const executedActions: AgentActionOutputDto[] = [];
+
+      for (const action of aiAnalysis.actions) {
+        try {
+          const executedAction = await this.executeAction(action, request);
+          if (executedAction) {
+            executedActions.push(executedAction);
+          }
+        } catch (actionError) {
+          executedActions.push(
+            new AgentActionOutputDto({
+              actionType: 'action_error',
+              description: `Fallback execution failed: ${actionError.message}`,
+              data: { error: actionError.message },
+            }),
+          );
+        }
+      }
+
+      return executedActions;
+    } catch (error) {
+      return [
+        new AgentActionOutputDto({
+          actionType: 'fallback_error',
+          description: `Fallback execution failed: ${error.message}`,
+          data: { error: error.message },
+        }),
+      ];
+    }
+  }
+
+  /**
+   * 🏷️ Извлечь тип задачи из запроса
+   */
+  private extractTaskType(request: ExecuteAgentActionRequestDto): string {
+    const summary = request.taskData.summary?.toLowerCase() || '';
+    const description = request.taskData.description?.toLowerCase() || '';
+
+    if (summary.includes('bug') || description.includes('bug')) {
+      return 'bug';
+    }
+    if (summary.includes('feature') || description.includes('feature')) {
+      return 'feature';
+    }
+    if (
+      summary.includes('improvement') ||
+      description.includes('improvement')
+    ) {
+      return 'improvement';
+    }
+    if (summary.includes('epic') || description.includes('epic')) {
+      return 'epic';
+    }
+
+    return 'task';
+  }
+
+  /**
+   * ⚡ Извлечь уровень срочности
+   */
+  private extractUrgency(request: ExecuteAgentActionRequestDto): string {
+    const priority = request.taskData.priority?.toLowerCase() || '';
+    const summary = request.taskData.summary?.toLowerCase() || '';
+
+    if (
+      priority.includes('critical') ||
+      priority.includes('blocker') ||
+      summary.includes('urgent') ||
+      summary.includes('critical')
+    ) {
+      return 'critical';
+    }
+    if (priority.includes('high') || summary.includes('high')) {
+      return 'high';
+    }
+    if (priority.includes('low') || summary.includes('low')) {
+      return 'low';
+    }
+
+    return 'medium';
+  }
+
+  /**
+   * 🧩 Извлечь уровень сложности
+   */
+  private extractComplexity(request: ExecuteAgentActionRequestDto): string {
+    const description = request.taskData.description?.toLowerCase() || '';
+    const summary = request.taskData.summary?.toLowerCase() || '';
+
+    const complexKeywords = [
+      'complex',
+      'difficult',
+      'challenging',
+      'integration',
+      'architecture',
+    ];
+    const simpleKeywords = ['simple', 'easy', 'quick', 'minor', 'small'];
+
+    const text = `${description} ${summary}`;
+
+    if (complexKeywords.some((keyword) => text.includes(keyword))) {
+      return 'complex';
+    }
+    if (simpleKeywords.some((keyword) => text.includes(keyword))) {
+      return 'simple';
+    }
+
+    return 'medium';
+  }
+
+  /**
+   * 🔑 Извлечь ключевые слова из инструкции
+   */
+  private extractKeywords(instruction: string): string[] {
+    const keywords: string[] = [];
+    const text = instruction.toLowerCase();
+
+    // Ключевые слова для анализа
+    const importantWords = [
+      'bug',
+      'feature',
+      'urgent',
+      'critical',
+      'test',
+      'review',
+      'notification',
+      'email',
+      'telegram',
+      'comment',
+      'move',
+      'assign',
+      'priority',
+      'blocked',
+      'complete',
+      'deploy',
+    ];
+
+    for (const word of importantWords) {
+      if (text.includes(word)) {
+        keywords.push(word);
+      }
+    }
+
+    return keywords;
+  }
+
+  /**
+   * 📝 Извлечь тип инструкции
+   */
+  private extractInstructionType(instruction: string): string {
+    const lowerInstruction = instruction.toLowerCase();
+
+    if (
+      lowerInstruction.includes('уведом') ||
+      lowerInstruction.includes('notif')
+    ) {
+      return 'notification';
+    }
+    if (
+      lowerInstruction.includes('коммент') ||
+      lowerInstruction.includes('comment')
+    ) {
+      return 'comment';
+    }
+    if (
+      lowerInstruction.includes('перенес') ||
+      lowerInstruction.includes('move')
+    ) {
+      return 'move_task';
+    }
+    if (
+      lowerInstruction.includes('анализ') ||
+      lowerInstruction.includes('analyz')
+    ) {
+      return 'analysis';
+    }
+    if (
+      lowerInstruction.includes('назнач') ||
+      lowerInstruction.includes('assign')
+    ) {
+      return 'assignment';
+    }
+
+    return 'general';
+  }
+
+  /**
+   * 📊 Вычислить impact score для результатов
+   */
+  private calculateImpactScore(
+    results: AgentActionOutputDto[],
+    role: AgentRole,
+  ): number {
+    let score = 5; // Базовый score
+
+    // Увеличиваем score за успешные действия
+    const successfulActions = results.filter(
+      (r) => !r.actionType.includes('error'),
+    );
+    score += successfulActions.length * 2;
+
+    // Бонус за специализированные роли
+    if (role !== AgentRole.UNIVERSAL) {
+      score += 1;
+    }
+
+    // Штраф за ошибки
+    const errorActions = results.filter((r) => r.actionType.includes('error'));
+    score -= errorActions.length;
+
+    return Math.max(1, Math.min(10, score));
   }
 }
