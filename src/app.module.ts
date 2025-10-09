@@ -23,6 +23,7 @@ import { ContextManagementModule } from './modules/context-management.module';
 import { DatabaseModule } from './modules/database.module';
 import { DatabaseManagementModule } from './modules/database-management.module';
 import { CacheManagementModule } from './modules/cache-management.module';
+import { KanbanManagementModule } from './features/kanban-management/kanban-management.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CacheManagementModule } from './modules/cache-management.module';
     JiraIntegrationModule, // Все Jira интеграции
     PhotoAnalysisModule, // Claude анализ фотографий
     AiReportingModule, // AI отчеты
+    KanbanManagementModule, // Kanban управление задачами
   ],
   controllers: [AppController],
   providers: [AppService],
