@@ -1,0 +1,101 @@
+# 🔧 Dependabot Configuration
+version: 2
+
+updates:
+  # 🏗️ Backend Dependencies
+  - package-ecosystem: 'npm'
+    directory: '/kan-back'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    assignees:
+      - 'One1Van1'
+    reviewers:
+      - 'One1Van1'
+    commit-message:
+      prefix: 'chore(backend)'
+      include: 'scope'
+    open-pull-requests-limit: 5
+    target-branch: 'dev'
+
+  # 🎨 Frontend Dependencies
+  - package-ecosystem: 'npm'
+    directory: '/kan-front'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    assignees:
+      - 'One1Van1'
+    reviewers:
+      - 'One1Van1'
+    commit-message:
+      prefix: 'chore(frontend)'
+      include: 'scope'
+    open-pull-requests-limit: 5
+    target-branch: 'dev'
+
+  # 🔄 Root Dependencies
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+    assignees:
+      - 'One1Van1'
+    reviewers:
+      - 'One1Van1'
+    commit-message:
+      prefix: 'chore(root)'
+      include: 'scope'
+    open-pull-requests-limit: 3
+    target-branch: 'dev'
+
+  # 🐳 Docker Dependencies
+  - package-ecosystem: 'docker'
+    directory: '/kan-back'
+    schedule:
+      interval: 'weekly'
+      day: 'tuesday'
+      time: '09:00'
+    assignees:
+      - 'One1Van1'
+    reviewers:
+      - 'One1Van1'
+    commit-message:
+      prefix: 'chore(docker)'
+      include: 'scope'
+    target-branch: 'dev'
+
+  - package-ecosystem: 'docker'
+    directory: '/kan-front'
+    schedule:
+      interval: 'weekly'
+      day: 'tuesday'
+      time: '09:00'
+    assignees:
+      - 'One1Van1'
+    reviewers:
+      - 'One1Van1'
+    commit-message:
+      prefix: 'chore(docker)'
+      include: 'scope'
+    target-branch: 'dev'
+
+  # 🔧 GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'wednesday'
+      time: '09:00'
+    assignees:
+      - 'One1Van1'
+    reviewers:
+      - 'One1Van1'
+    commit-message:
+      prefix: 'chore(ci)'
+      include: 'scope'
+    target-branch: 'dev'

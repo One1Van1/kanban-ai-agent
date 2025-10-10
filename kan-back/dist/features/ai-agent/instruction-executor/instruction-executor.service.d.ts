@@ -1,0 +1,38 @@
+import { ConfigService } from '@nestjs/config';
+import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+import { Agent } from '../../../entities/agent.entity';
+import { ExecuteAgentActionRequestDto } from '../execute-agent-action/execute-agent-action.request.dto';
+import { AgentActionOutputDto } from '../execute-agent-action/execute-agent-action.response.dto';
+import { SendTelegramService } from '../../notifications/send-telegram/send-telegram.service';
+import { SendEmailService } from '../../notifications/send-email/send-email.service';
+import { IntelligentAgentService } from '../intelligent-agent/intelligent-agent.service';
+import { KanbanKnowledgeBaseService } from '../kanban-knowledge-base/kanban-knowledge-base.service';
+import { AgentLearningService } from '../agent-learning/agent-learning.service';
+import { AgentRoleService } from '../agent-role/agent-role.service';
+export declare class InstructionExecutorService {
+    private readonly configService;
+    private readonly sendTelegramService;
+    private readonly sendEmailService;
+    private readonly intelligentAgentService;
+    private readonly knowledgeBaseService;
+    private readonly learningService;
+    private readonly roleService;
+    private readonly logger;
+    constructor(configService: ConfigService, sendTelegramService: SendTelegramService, sendEmailService: SendEmailService, intelligentAgentService: IntelligentAgentService, knowledgeBaseService: KanbanKnowledgeBaseService, learningService: AgentLearningService, roleService: AgentRoleService);
+    executeInstruction(instruction: AgentInstruction, agent: Agent, request: ExecuteAgentActionRequestDto): Promise<AgentActionOutputDto[]>;
+    private analyzeInstructionWithAI;
+    private executeAction;
+    private executeApiCall;
+    private executeTelegramNotification;
+    private executeValidationCheck;
+    private executeEmailNotification;
+    private executeTaskUpdate;
+    private executeCustomAction;
+    private executeFallbackLogic;
+    private extractTaskType;
+    private extractUrgency;
+    private extractComplexity;
+    private extractKeywords;
+    private extractInstructionType;
+    private calculateImpactScore;
+}

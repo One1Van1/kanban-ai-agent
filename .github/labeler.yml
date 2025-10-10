@@ -1,0 +1,45 @@
+# .github/labeler.yml
+'🏗️ backend':
+  - kan-back/**/*
+
+'🎨 frontend':
+  - kan-front/**/*
+
+'🔄 fullstack':
+  - kan-back/**/*
+  - kan-front/**/*
+
+'🐳 devops':
+  - .github/**/*
+  - docker-compose*.yml
+  - scripts/**/*
+  - Dockerfile*
+
+'📚 docs':
+  - '**/*.md'
+  - docs/**/*
+
+'🧪 tests':
+  - '**/*.test.*'
+  - '**/*.spec.*'
+  - '**/test/**/*'
+  - '**/tests/**/*'
+  - 'e2e/**/*'
+
+'🔧 config':
+  - '**/*.config.*'
+  - '**/*.json'
+  - '**/*.yml'
+  - '**/*.yaml'
+  - '.env*'
+
+'🎨 ui':
+  - '**/components/**/*'
+  - '**/styles/**/*'
+  - '**/public/**/*'
+
+'🏗️ api':
+  - '**/src/modules/**/*'
+  - '**/src/features/**/*'
+  - '**/controllers/**/*'
+  - '**/services/**/*'

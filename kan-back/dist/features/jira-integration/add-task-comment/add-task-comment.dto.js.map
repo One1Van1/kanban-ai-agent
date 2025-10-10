@@ -1,0 +1,1 @@
+{"version":3,"file":"add-task-comment.dto.js","sourceRoot":"","sources":["../../../../src/features/jira-integration/add-task-comment/add-task-comment.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,qDAA2C;AAC3C,6CAA8C;AAE9C,MAAa,iBAAiB;IAM5B,OAAO,CAAS;CACjB;AAPD,8CAOC;AADC;IALC,IAAA,qBAAW,EAAC;QACX,WAAW,EAAE,mBAAmB;QAChC,OAAO,EAAE,gDAAgD;KAC1D,CAAC;IACD,IAAA,0BAAQ,GAAE;;kDACK"}
