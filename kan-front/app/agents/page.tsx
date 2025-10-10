@@ -95,12 +95,20 @@ export default function AgentsPage() {
               Manage your intelligent automation agents
             </p>
           </div>
-          <Link href="/agents/create">
-            <Button className="flex items-center">
-              <Plus className="h-4 w-4 mr-2" />
-              Create Agent
-            </Button>
-          </Link>
+          <div className="flex gap-3">
+            <Link href="/agents/flow-builder">
+              <Button variant="outline" className="flex items-center">
+                <Activity className="h-4 w-4 mr-2" />
+                Flow Builder
+              </Button>
+            </Link>
+            <Link href="/agents/create">
+              <Button className="flex items-center">
+                <Plus className="h-4 w-4 mr-2" />
+                Create Agent
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Stats */}
