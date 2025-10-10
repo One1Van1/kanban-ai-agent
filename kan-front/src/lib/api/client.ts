@@ -6,6 +6,7 @@ export class APIClient {
   constructor() {
     this.baseURL =
       process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000';
+    console.log('API Client initialized with baseURL:', this.baseURL);
   }
 
   // Generic HTTP methods
@@ -14,18 +15,33 @@ export class APIClient {
     endpoint: string,
     data?: any,
   ): Promise<T> {
+    const fullURL = `${this.baseURL}${endpoint}`;
+    console.log(`Making ${method} request to:`, fullURL);
+    console.log('Request data:', data);
+
     try {
       const response = await axios({
         method,
-        url: `${this.baseURL}${endpoint}`,
+        url: fullURL,
         data,
         headers: {
           'Content-Type': 'application/json',
         },
+        timeout: 10000, // 10 секунд таймаут
       });
+      console.log('Response received:', response.data);
       return response.data;
     } catch (error) {
-      console.error(`API Error (${method} ${endpoint}):`, error);
+      console.error(`API Error (${method} ${fullURL}):`, error);
+      if (axios.isAxiosError(error)) {
+        const message = error.response?.data?.message || error.message;
+        console.error('Error details:', {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+        });
+        throw new Error(message);
+      }
       throw error;
     }
   }
@@ -42,20 +58,22 @@ export class APIClient {
     return this.request<T>('PATCH', endpoint, data);
   }
 
+  private put<T>(endpoint: string, data?: any): Promise<T> {
+    return this.request<T>('PUT', endpoint, data);
+  }
+
   private delete<T>(endpoint: string): Promise<T> {
     return this.request<T>('DELETE', endpoint);
   }
 
   // AI Agents API
   agents = {
-    list: () => this.get('/ai-agent/get-agents'),
-    getById: (id: string) => this.get(`/ai-agent/get-agent/${id}`),
-    create: (data: any) => this.post('/ai-agent/create-agent', data),
+    getById: (id: string) => this.get(`/ai-agent/${id}`),
+    create: (data: any) => this.post('/ai-agent', data),
     configure: (id: string, data: any) =>
-      this.post(`/ai-agent/configure-agent`, { agentId: id, ...data }),
-    execute: (data: any) => this.post('/ai-agent/execute-agent-action', data),
-    getActivity: (agentId: string) =>
-      this.get(`/ai-agent/get-agent-activity?agentId=${agentId}`),
+      this.put(`/ai-agent/${id}/configure`, data),
+    execute: (data: any) => this.post('/ai-agent/execute-action', data),
+    getActivity: (agentId: string) => this.get(`/ai-agent/${agentId}/activity`),
   };
 
   // Kanban API

@@ -9,6 +9,14 @@ import * as axios from 'axios';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  // ✅ Включаем CORS для фронтенда
+  app.enableCors({
+    origin: ['http://localhost:3001', 'http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+  });
+
   // 🔥 КРИТИЧНО: body-parser должен быть ПЕРВЫМ для парсинга webhook данных
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));

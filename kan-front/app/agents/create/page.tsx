@@ -32,8 +32,11 @@ export default function CreateAgentPage() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    role: '',
-    specialization: '',
+    instructions: '',
+    model: 'claude-3-haiku-20240307',
+    temperature: 0.7,
+    maxTokens: 1000,
+    isActive: true,
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -53,12 +56,8 @@ export default function CreateAgentPage() {
       newErrors.name = 'Agent name is required';
     }
 
-    if (!formData.role.trim()) {
-      newErrors.role = 'Role is required';
-    }
-
-    if (!formData.specialization.trim()) {
-      newErrors.specialization = 'Specialization is required';
+    if (!formData.instructions.trim()) {
+      newErrors.instructions = 'Instructions are required';
     }
 
     setErrors(newErrors);
@@ -73,10 +72,16 @@ export default function CreateAgentPage() {
     }
 
     try {
-      await createAgent(formData);
+      const agentData = {
+        ...formData,
+        userId: 'system', // Временно используем system как userId
+      };
+      console.log('Sending agent data:', agentData); // Для отладки
+      await createAgent(agentData);
       toast.success('Agent created successfully!');
       router.push('/agents');
     } catch (error: any) {
+      console.error('Failed to create agent:', error); // Для отладки
       toast.error(error.message || 'Failed to create agent');
     }
   };
@@ -163,84 +168,27 @@ export default function CreateAgentPage() {
                 />
               </div>
 
-              {/* Role */}
+              {/* Instructions */}
               <div className="space-y-2">
-                <Label htmlFor="role">Role *</Label>
-                <Select
-                  onValueChange={(value) => handleInputChange('role', value)}
-                >
-                  <SelectTrigger
-                    className={errors.role ? 'border-red-500' : ''}
-                  >
-                    <SelectValue placeholder="Select agent role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="task_manager">Task Manager</SelectItem>
-                    <SelectItem value="qa_specialist">QA Specialist</SelectItem>
-                    <SelectItem value="notification_handler">
-                      Notification Handler
-                    </SelectItem>
-                    <SelectItem value="workflow_optimizer">
-                      Workflow Optimizer
-                    </SelectItem>
-                    <SelectItem value="analytics_reporter">
-                      Analytics Reporter
-                    </SelectItem>
-                    <SelectItem value="integration_manager">
-                      Integration Manager
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.role && (
-                  <p className="text-sm text-red-600">{errors.role}</p>
-                )}
-              </div>
-
-              {/* Specialization */}
-              <div className="space-y-2">
-                <Label htmlFor="specialization">Specialization *</Label>
-                <Select
-                  onValueChange={(value) =>
-                    handleInputChange('specialization', value)
+                <Label htmlFor="instructions">Instructions *</Label>
+                <Textarea
+                  id="instructions"
+                  value={formData.instructions}
+                  onChange={(e) =>
+                    handleInputChange('instructions', e.target.value)
                   }
-                >
-                  <SelectTrigger
-                    className={errors.specialization ? 'border-red-500' : ''}
-                  >
-                    <SelectValue placeholder="Select specialization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="automated_testing">
-                      Automated Testing
-                    </SelectItem>
-                    <SelectItem value="task_assignment">
-                      Task Assignment
-                    </SelectItem>
-                    <SelectItem value="status_tracking">
-                      Status Tracking
-                    </SelectItem>
-                    <SelectItem value="notification_alerts">
-                      Notification & Alerts
-                    </SelectItem>
-                    <SelectItem value="performance_monitoring">
-                      Performance Monitoring
-                    </SelectItem>
-                    <SelectItem value="jira_integration">
-                      Jira Integration
-                    </SelectItem>
-                    <SelectItem value="telegram_bot">Telegram Bot</SelectItem>
-                    <SelectItem value="email_automation">
-                      Email Automation
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-                {errors.specialization && (
-                  <p className="text-sm text-red-600">
-                    {errors.specialization}
-                  </p>
+                  placeholder="Provide detailed instructions for this agent..."
+                  rows={5}
+                  className={errors.instructions ? 'border-red-500' : ''}
+                />
+                {errors.instructions && (
+                  <p className="text-sm text-red-600">{errors.instructions}</p>
                 )}
+                <p className="text-sm text-gray-500">
+                  Example: "When a task moves to 'In Progress', write a comment
+                  encouraging the team and asking if they need any help."
+                </p>
               </div>
-
               {/* Submit Buttons */}
               <div className="flex justify-end space-x-4 pt-4">
                 <Link href="/agents">

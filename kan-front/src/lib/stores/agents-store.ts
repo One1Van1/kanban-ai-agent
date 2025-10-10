@@ -11,7 +11,6 @@ interface AgentsStore {
   error: string | null;
 
   // Actions
-  fetchAgents: () => Promise<void>;
   createAgent: (data: any) => Promise<void>;
   configureAgent: (agentId: string, data: any) => Promise<void>;
   executeAgent: (data: any) => Promise<any>;
@@ -29,35 +28,24 @@ export const useAgentsStore = create<AgentsStore>((set, get) => ({
   error: null,
 
   // Actions
-  fetchAgents: async () => {
-    set({ isLoading: true, error: null });
-    try {
-      const response = (await apiClient.agents.list()) as any;
-      set({
-        agents: response.data || response,
-        isLoading: false,
-      });
-    } catch (error: any) {
-      set({
-        error: error.message || 'Failed to fetch agents',
-        isLoading: false,
-      });
-    }
-  },
-
   createAgent: async (data) => {
     set({ isLoading: true, error: null });
     try {
       const response = (await apiClient.agents.create(data)) as any;
-      const newAgent = response.data || response;
+      // API возвращает { success, agentId, name, message, agent }
+      const newAgent = response.agent || response.data || response;
 
       set((state) => ({
         agents: [...state.agents, newAgent],
         isLoading: false,
       }));
     } catch (error: any) {
+      console.error('Create agent error:', error);
       set({
-        error: error.message || 'Failed to create agent',
+        error:
+          error.response?.data?.message ||
+          error.message ||
+          'Failed to create agent',
         isLoading: false,
       });
       throw error;
