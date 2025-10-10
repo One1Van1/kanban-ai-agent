@@ -34,8 +34,8 @@ import { IntelligentAgentService } from '../features/ai-agent/intelligent-agent/
 import { KanbanKnowledgeBaseService } from '../features/ai-agent/kanban-knowledge-base/kanban-knowledge-base.service';
 import { AgentLearningService } from '../features/ai-agent/agent-learning/agent-learning.service';
 import { AgentRoleService } from '../features/ai-agent/agent-role/agent-role.service';
-import { TrackAgentInTaskController } from 'src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.controller';
-import { TrackAgentInTaskService } from 'src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.service';
+import { TrackAgentInTaskController } from 'kan-back/src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.controller';
+import { TrackAgentInTaskService } from 'kan-back/src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.service';
 
 @Module({
   imports: [

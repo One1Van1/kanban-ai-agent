@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 
 import { GetAgentTaskHistoryQueryDto } from './get-agent-task-history.request.dto';
 import { GetAgentTaskHistoryResponseDto } from './get-agent-task-history.response.dto';
-import { TaskHistory } from 'src/entities/task-history.entity';
+import { TaskHistory } from 'kan-back/src/entities/task-history.entity';
 
 @Injectable()
 export class GetAgentTaskHistoryService {

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 import { GetTaskHistoryResponseDto } from './get-task-history.response.dto';
-import { TaskHistory } from 'src/entities/task-history.entity';
+import { TaskHistory } from 'kan-back/src/entities/task-history.entity';
 
 @Injectable()
 export class GetTaskHistoryService {

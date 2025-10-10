@@ -3,9 +3,9 @@ import { INestApplication } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import * as request from 'supertest';
-import { DatabaseModule } from '../../src/modules/database.module';
-import { DatabaseManagementModule } from '../../src/modules/database-management.module';
-import { databaseConfig } from '../../src/config';
+import { DatabaseModule } from '../../kan-back/src/modules/database.module';
+import { DatabaseManagementModule } from '../../kan-back/src/modules/database-management.module';
+import { databaseConfig } from '../../kan-back/src/config';
 
 describe('Database Management (E2E)', () => {
   let app: INestApplication;
