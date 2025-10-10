@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CreateTaskController } from './create-task.controller';
 import { CreateTaskService } from './create-task.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { CreateTaskRequestDto } from './create-task.request.dto';
 
 describe('CreateTaskController (E2E)', () => {

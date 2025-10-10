@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, StreamableFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Response } from 'express';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { DownloadAttachmentQueryDto } from './download-attachment.query.dto';
 import { createReadStream, existsSync } from 'fs';
 import { join } from 'path';

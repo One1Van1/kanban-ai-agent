@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GetAgentTaskHistoryService } from './get-agent-task-history.service';
-import { TaskHistory } from '../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { GetAgentTaskHistoryQueryDto } from './get-agent-task-history.request.dto';
 
 describe('GetAgentTaskHistoryService', () => {

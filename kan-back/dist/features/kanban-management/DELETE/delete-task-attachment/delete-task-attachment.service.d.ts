@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
 import { DeleteTaskAttachmentRequestDto } from './delete-task-attachment.request.dto';
 import { DeleteTaskAttachmentResponseDto } from './delete-task-attachment.response.dto';
+import { TaskHistory } from '@/entities/task-history.entity';
 export declare class DeleteTaskAttachmentService {
     private readonly taskHistoryRepository;
     constructor(taskHistoryRepository: Repository<TaskHistory>);

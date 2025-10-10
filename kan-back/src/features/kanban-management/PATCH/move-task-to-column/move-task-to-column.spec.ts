@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MoveTaskToColumnController } from './move-task-to-column.controller';
 import { MoveTaskToColumnService } from './move-task-to-column.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { MoveTaskRequestDto } from './move-task-request.dto';
 
 describe('MoveTaskToColumnController (E2E)', () => {

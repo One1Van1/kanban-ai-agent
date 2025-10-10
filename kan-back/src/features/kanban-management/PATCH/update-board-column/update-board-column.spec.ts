@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateBoardColumnController } from './update-board-column.controller';
 import { UpdateBoardColumnService } from './update-board-column.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import {
   UpdateBoardColumnRequestDto,
   ColumnType,

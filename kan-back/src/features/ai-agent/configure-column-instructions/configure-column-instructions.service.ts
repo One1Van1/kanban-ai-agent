@@ -18,7 +18,7 @@ import {
   AgentTriggerConditionResponseDto,
 } from './configure-column-instructions.response.dto';
 import { AgentColumnInstruction } from '../../../types/ai-agent.interface';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
 
 @Injectable()
 export class ConfigureColumnInstructionsService {

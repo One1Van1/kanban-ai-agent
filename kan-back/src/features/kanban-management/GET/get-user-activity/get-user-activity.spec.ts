@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GetUserActivityController } from './get-user-activity.controller';
 import { GetUserActivityService } from './get-user-activity.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('GetUserActivityController (E2E)', () => {
   let app: INestApplication;
   let controller: GetUserActivityController;

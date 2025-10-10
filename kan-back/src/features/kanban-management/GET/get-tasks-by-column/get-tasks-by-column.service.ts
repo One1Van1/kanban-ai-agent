@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GetTasksByColumnQueryDto } from './get-tasks-by-column.query.dto';
 import { GetTasksByColumnResponseDto } from './get-tasks-by-column.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class GetTasksByColumnService {
   constructor(

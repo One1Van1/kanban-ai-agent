@@ -2,7 +2,7 @@ import { Repository } from 'typeorm';
 import { ConfigureColumnInstructionsRequestDto } from './configure-column-instructions.request.dto';
 import { ConfigureColumnInstructionsResponseDto } from './configure-column-instructions.response.dto';
 import { AgentColumnInstruction } from '../../../types/ai-agent.interface';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
 export declare class ConfigureColumnInstructionsService {
     private readonly agentInstructionRepository;
     private readonly logger;

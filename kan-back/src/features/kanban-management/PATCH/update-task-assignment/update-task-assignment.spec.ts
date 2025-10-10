@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UpdateTaskAssignmentController } from './update-task-assignment.controller';
 import { UpdateTaskAssignmentService } from './update-task-assignment.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import {
   UpdateTaskAssignmentRequestDto,
   AssignmentAction,

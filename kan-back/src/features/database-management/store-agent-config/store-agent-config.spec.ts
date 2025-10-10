@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StoreAgentConfigService } from './store-agent-config.service';
-import { Agent } from '../../../entities/agent.entity';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+import { Agent } from '../../../../../entities/agent.entity';
+import { AgentInstruction } from '../../../../../entities/agent-instruction.entity';
 import { StoreAgentConfigRequestDto } from './store-agent-config.request.dto';
 import { NotFoundException } from '@nestjs/common';
 

@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { ExecuteTaskTransitionRequestDto, TransitionAction } from './execute-task-transition.request.dto';
 import { ExecuteTaskTransitionResponseDto } from './execute-task-transition.response.dto';
 export declare class ExecuteTaskTransitionService {

@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ExecuteTaskTransitionController } from './execute-task-transition.controller';
 import { ExecuteTaskTransitionService } from './execute-task-transition.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import {
   ExecuteTaskTransitionRequestDto,
   TransitionAction,

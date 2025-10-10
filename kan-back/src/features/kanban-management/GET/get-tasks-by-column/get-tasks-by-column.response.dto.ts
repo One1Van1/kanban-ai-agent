@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { GetTasksByColumnQueryDto } from './get-tasks-by-column.query.dto';
 
 export class ColumnTaskDto {

@@ -7,7 +7,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { DeleteTaskAttachmentService } from './delete-task-attachment.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import {
   DeleteTaskAttachmentRequestDto,
   AttachmentDeleteMode,

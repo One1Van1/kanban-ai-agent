@@ -5,8 +5,7 @@ import { NotFoundException } from '@nestjs/common';
 import { GetTaskDetailsResponseDto } from './get-task-details.response.dto';
 
 // Импортируем существующие сущности
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class GetTaskDetailsService {
   constructor(

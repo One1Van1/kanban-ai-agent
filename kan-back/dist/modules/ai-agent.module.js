@@ -32,8 +32,8 @@ const intelligent_agent_service_1 = require("../features/ai-agent/intelligent-ag
 const kanban_knowledge_base_service_1 = require("../features/ai-agent/kanban-knowledge-base/kanban-knowledge-base.service");
 const agent_learning_service_1 = require("../features/ai-agent/agent-learning/agent-learning.service");
 const agent_role_service_1 = require("../features/ai-agent/agent-role/agent-role.service");
-const track_agent_in_task_controller_1 = require("kan-back/src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.controller");
-const track_agent_in_task_service_1 = require("kan-back/src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.service");
+const track_agent_in_task_controller_1 = require("../features/kanban-management/POST/track-agent-in-task/track-agent-in-task.controller");
+const track_agent_in_task_service_1 = require("../features/kanban-management/POST/track-agent-in-task/track-agent-in-task.service");
 let AiAgentModule = class AiAgentModule {
 };
 exports.AiAgentModule = AiAgentModule;

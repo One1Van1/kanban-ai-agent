@@ -9,11 +9,10 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var TrackAgentInTaskService_1;
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TrackAgentInTaskService = void 0;
 const common_1 = require("@nestjs/common");
-const create_agent_service_1 = require("kan-back/src/features/ai-agent/create-agent/create-agent.service");
+const create_agent_service_1 = require("../../../ai-agent/create-agent/create-agent.service");
 let TrackAgentInTaskService = TrackAgentInTaskService_1 = class TrackAgentInTaskService {
     createAgentService;
     logger = new common_1.Logger(TrackAgentInTaskService_1.name);
@@ -110,6 +109,6 @@ let TrackAgentInTaskService = TrackAgentInTaskService_1 = class TrackAgentInTask
 exports.TrackAgentInTaskService = TrackAgentInTaskService;
 exports.TrackAgentInTaskService = TrackAgentInTaskService = TrackAgentInTaskService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [typeof (_a = typeof create_agent_service_1.CreateAgentService !== "undefined" && create_agent_service_1.CreateAgentService) === "function" ? _a : Object])
+    __metadata("design:paramtypes", [create_agent_service_1.CreateAgentService])
 ], TrackAgentInTaskService);
 //# sourceMappingURL=track-agent-in-task.service.js.map

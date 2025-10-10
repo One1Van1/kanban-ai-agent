@@ -1,5 +1,5 @@
+import { TaskHistory } from '@/entities/task-history.entity';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../entities/task-history.entity';
 export interface LearningDataPoint {
     id: string;
     timestamp: Date;

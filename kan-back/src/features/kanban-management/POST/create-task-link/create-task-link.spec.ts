@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CreateTaskLinkController } from './create-task-link.controller';
 import { CreateTaskLinkService } from './create-task-link.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('CreateTaskLinkController (E2E)', () => {
   let app: INestApplication;
   let controller: CreateTaskLinkController;

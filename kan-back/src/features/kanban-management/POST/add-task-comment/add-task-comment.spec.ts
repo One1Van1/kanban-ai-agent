@@ -4,7 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AddTaskCommentController } from './add-task-comment.controller';
 import { AddTaskCommentService } from './add-task-comment.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { AddTaskCommentRequestDto } from './add-task-comment.request.dto';
 
 describe('AddTaskCommentController (E2E)', () => {

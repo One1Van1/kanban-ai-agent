@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { NotFoundException } from '@nestjs/common';
 import { Response } from 'express';
 import { DownloadAttachmentService } from './download-attachment.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { DownloadAttachmentQueryDto } from './download-attachment.query.dto';
 
 // Mock fs module

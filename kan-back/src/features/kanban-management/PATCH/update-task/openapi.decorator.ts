@@ -149,7 +149,9 @@ export function ApiUpdateTask() {
       status: 200,
       description: 'Task partially updated successfully',
       type: UpdateTaskResponseDto,
-      examples: {
+      content: {
+        'application/json': {
+          examples: {
         successful_patch: {
           summary: 'Successful partial update',
           value: {
@@ -216,11 +218,15 @@ export function ApiUpdateTask() {
           },
         },
       },
+        },
+      },
     }),
 
     ApiBadRequestResponse({
       description: 'Invalid request data for partial update',
-      examples: {
+      content: {
+        'application/json': {
+          examples: {
         invalid_email: {
           summary: 'Invalid email format',
           value: {
@@ -236,6 +242,8 @@ export function ApiUpdateTask() {
             message: ['priority must be a valid enum value'],
             error: 'Bad Request',
           },
+        },
+      },
         },
       },
     }),

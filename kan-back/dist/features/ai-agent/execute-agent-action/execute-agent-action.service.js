@@ -20,9 +20,9 @@ const typeorm_2 = require("typeorm");
 const crypto_1 = require("crypto");
 const execute_agent_action_request_dto_1 = require("./execute-agent-action.request.dto");
 const execute_agent_action_response_dto_1 = require("./execute-agent-action.response.dto");
-const agent_entity_1 = require("../../../entities/agent.entity");
-const agent_instruction_entity_1 = require("../../../entities/agent-instruction.entity");
 const instruction_executor_service_1 = require("../instruction-executor/instruction-executor.service");
+const agent_instruction_entity_1 = require("../../../entities/agent-instruction.entity");
+const agent_entity_1 = require("../../../entities/agent.entity");
 let ExecuteAgentActionService = ExecuteAgentActionService_1 = class ExecuteAgentActionService {
     agentRepository;
     agentInstructionRepository;

@@ -1,6 +1,6 @@
 import { TrackAgentInTaskRequestDto } from './track-agent-in-task.request.dto';
 import { TrackAgentInTaskResponseDto } from './track-agent-in-task.response.dto';
-import { CreateAgentService } from 'kan-back/src/features/ai-agent/create-agent/create-agent.service';
+import { CreateAgentService } from '../../../ai-agent/create-agent/create-agent.service';
 interface TaskTracking {
     agentId: string;
     taskId: string;

@@ -1,7 +1,7 @@
+import { TaskHistory } from '@/entities/task-history.entity';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../entities/task-history.entity';
 
 export interface LearningDataPoint {
   id: string;

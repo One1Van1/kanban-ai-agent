@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 export class TaskMovedDto {
   @ApiProperty({ example: 'PROJ-123', description: 'Task ID' })
   taskId: string;

@@ -5,12 +5,13 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+
 import {
   DeleteCommentRequestDto,
   CommentDeleteMode,
 } from './delete-comment.request.dto';
 import { DeleteCommentResponseDto } from './delete-comment.response.dto';
+import { TaskHistory } from '@/entities/task-history.entity';
 
 @Injectable()
 export class DeleteCommentService {

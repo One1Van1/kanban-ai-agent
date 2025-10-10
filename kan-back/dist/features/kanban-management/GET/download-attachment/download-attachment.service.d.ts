@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
 import { Response } from 'express';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { DownloadAttachmentQueryDto } from './download-attachment.query.dto';
 export declare class DownloadAttachmentService {
     private readonly taskHistoryRepository;

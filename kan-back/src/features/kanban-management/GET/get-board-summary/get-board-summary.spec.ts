@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GetBoardSummaryController } from './get-board-summary.controller';
 import { GetBoardSummaryService } from './get-board-summary.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('GetBoardSummaryController (E2E)', () => {
   let app: INestApplication;
   let controller: GetBoardSummaryController;

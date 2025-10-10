@@ -5,8 +5,7 @@
 // import { getRepositoryToken } from '@nestjs/typeorm';
 // import { GetBoardStructureController } from './get-board-structure.controller';
 // import { GetBoardStructureService } from './get-board-structure.service';
-// import { TaskHistory } from '../../../../entities/task-history.entity';
-
+// import { TaskHistory } from '@/entities/task-history.entity';
 // describe('GetBoardStructureController (e2e)', () => {
 //   let app: INestApplication;
 //   let taskHistoryRepository: Repository<TaskHistory>;

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { UploadAttachmentRequestDto } from './upload-attachment.request.dto';
 import { UploadAttachmentResponseDto } from './upload-attachment.response.dto';
 

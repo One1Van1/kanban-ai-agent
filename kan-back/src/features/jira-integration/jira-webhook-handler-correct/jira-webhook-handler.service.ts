@@ -4,10 +4,11 @@ import { JiraWebhookHandlerRequestDto } from './jira-webhook-handler.request.dto
 import { JiraWebhookHandlerResponseDto } from './jira-webhook-handler.response.dto';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Agent } from '../../../entities/agent.entity';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
+import { Agent } from '@/entities/agent.entity';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
 
 @Injectable()
 export class JiraWebhookHandlerService extends JiraBaseService {

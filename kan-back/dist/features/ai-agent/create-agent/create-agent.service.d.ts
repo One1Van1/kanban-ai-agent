@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { CreateAgentRequestDto } from './create-agent.request.dto';
 import { CreateAgentResponseDto } from './create-agent.response.dto';
-import { Agent } from '../../../entities/agent.entity';
+import { Agent } from '@/entities/agent.entity';
 export declare class CreateAgentService {
     private readonly configService;
     private readonly agentRepository;

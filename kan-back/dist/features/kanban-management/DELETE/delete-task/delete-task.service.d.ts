@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { DeleteTaskRequestDto } from './delete-task.request.dto';
 import { DeleteTaskResponseDto } from './delete-task.response.dto';
 export declare class DeleteTaskService {

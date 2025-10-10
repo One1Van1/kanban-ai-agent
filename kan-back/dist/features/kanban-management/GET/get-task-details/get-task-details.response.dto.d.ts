@@ -1,4 +1,4 @@
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 export declare class TaskDetailsDto {
     taskId: string;
     taskKey: string;

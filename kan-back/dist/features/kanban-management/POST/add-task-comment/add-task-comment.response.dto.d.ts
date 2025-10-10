@@ -1,4 +1,4 @@
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { AddTaskCommentRequestDto } from './add-task-comment.request.dto';
 export declare class CommentDto {
     id: string;

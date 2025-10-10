@@ -16,8 +16,8 @@ exports.DeleteTaskAttachmentService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const task_history_entity_1 = require("../../../../entities/task-history.entity");
 const delete_task_attachment_request_dto_1 = require("./delete-task-attachment.request.dto");
+const task_history_entity_1 = require("../../../../entities/task-history.entity");
 let DeleteTaskAttachmentService = class DeleteTaskAttachmentService {
     taskHistoryRepository;
     constructor(taskHistoryRepository) {

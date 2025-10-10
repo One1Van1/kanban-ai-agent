@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AddTaskTimelogController } from './add-task-timelog.controller';
 import { AddTaskTimelogService } from './add-task-timelog.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('AddTaskTimelogController (E2E)', () => {
   let app: INestApplication;
   let controller: AddTaskTimelogController;

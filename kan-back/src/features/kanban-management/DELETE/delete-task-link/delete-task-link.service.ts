@@ -6,9 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+
 import { DeleteTaskLinkRequestDto } from './delete-task-link.request.dto';
 import { DeleteTaskLinkResponseDto } from './delete-task-link.response.dto';
+import { TaskHistory } from '@/entities/task-history.entity';
 
 @Injectable()
 export class DeleteTaskLinkService {

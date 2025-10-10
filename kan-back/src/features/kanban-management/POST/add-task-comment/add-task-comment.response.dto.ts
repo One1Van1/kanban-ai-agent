@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { AddTaskCommentRequestDto } from './add-task-comment.request.dto';
 
 export class CommentDto {

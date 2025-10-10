@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UploadAttachmentController } from './upload-attachment.controller';
 import { UploadAttachmentService } from './upload-attachment.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('UploadAttachmentController (E2E)', () => {
   let app: INestApplication;
 

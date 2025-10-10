@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Agent } from '../../../entities/agent.entity';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+
 import { StoreAgentConfigRequestDto } from './store-agent-config.request.dto';
 import { StoreAgentConfigResponseDto } from './store-agent-config.response.dto';
+import { Agent } from '@/entities/agent.entity';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
 
 @Injectable()
 export class StoreAgentConfigService {

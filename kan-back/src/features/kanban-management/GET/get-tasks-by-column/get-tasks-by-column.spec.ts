@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GetTasksByColumnController } from './get-tasks-by-column.controller';
 import { GetTasksByColumnService } from './get-tasks-by-column.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('GetTasksByColumnController (E2E)', () => {
   let app: INestApplication;
   let service: GetTasksByColumnService;

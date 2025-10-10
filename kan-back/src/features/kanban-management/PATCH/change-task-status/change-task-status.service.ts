@@ -10,8 +10,7 @@ import {
   TaskStatus,
 } from './change-task-status.request.dto';
 import { ChangeTaskStatusResponseDto } from './change-task-status.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class ChangeTaskStatusService {
   constructor(

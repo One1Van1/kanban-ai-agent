@@ -5,8 +5,7 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { AssignTaskController } from './assign-task.controller';
 import { AssignTaskService } from './assign-task.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('AssignTaskController (e2e)', () => {
   let app: INestApplication;
   let taskHistoryRepository: Repository<TaskHistory>;

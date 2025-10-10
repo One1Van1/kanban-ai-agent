@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAgentRequestDto } from './create-agent.request.dto';
 import { CreateAgentResponseDto } from './create-agent.response.dto';
-import { Agent } from '../../../entities/agent.entity';
+import { Agent } from '@/entities/agent.entity';
 
 @Injectable()
 export class CreateAgentService {

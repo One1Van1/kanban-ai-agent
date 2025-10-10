@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskHistory } from 'kan-back/src/entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 export class GetAgentTaskHistoryResponseDto {
   @ApiProperty({ example: 'agent-uuid', description: 'ID of the agent' })
   agentId: string;

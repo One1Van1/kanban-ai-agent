@@ -180,7 +180,9 @@ export function ApiChangeTaskStatus() {
 
     ApiBadRequestResponse({
       description: 'Invalid status transition or request data',
-      examples: {
+      content: {
+        'application/json': {
+          examples: {
         invalid_transition: {
           summary: 'Invalid workflow transition',
           value: {
@@ -205,6 +207,8 @@ export function ApiChangeTaskStatus() {
             message: ['newStatus should not be empty'],
             error: 'Bad Request',
           },
+        },
+      },
         },
       },
     }),

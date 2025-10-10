@@ -2,9 +2,9 @@ import { JiraBaseService } from '../../../shared/jira/jira-base.service';
 import { JiraWebhookHandlerRequestDto } from './jira-webhook-handler.request.dto';
 import { JiraWebhookHandlerResponseDto } from './jira-webhook-handler.response.dto';
 import { Repository } from 'typeorm';
-import { Agent } from '../../../entities/agent.entity';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
 import { ConfigService } from '@nestjs/config';
+import { Agent } from '@/entities/agent.entity';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
 export declare class JiraWebhookHandlerService extends JiraBaseService {
     private readonly agentRepository;
     private readonly agentInstructionRepository;

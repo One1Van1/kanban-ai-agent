@@ -1,6 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 export class CreatedTaskDto {
   @ApiProperty({ example: 'uuid-123', description: 'Created task history ID' })
   id: string;

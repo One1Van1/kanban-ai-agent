@@ -18,10 +18,10 @@ const jira_base_service_1 = require("../../../shared/jira/jira-base.service");
 const jira_webhook_handler_response_dto_1 = require("./jira-webhook-handler.response.dto");
 const typeorm_1 = require("typeorm");
 const typeorm_2 = require("@nestjs/typeorm");
-const agent_entity_1 = require("../../../entities/agent.entity");
-const agent_instruction_entity_1 = require("../../../entities/agent-instruction.entity");
 const config_1 = require("@nestjs/config");
 const axios_1 = require("axios");
+const agent_entity_1 = require("../../../entities/agent.entity");
+const agent_instruction_entity_1 = require("../../../entities/agent-instruction.entity");
 let JiraWebhookHandlerService = class JiraWebhookHandlerService extends jira_base_service_1.JiraBaseService {
     agentRepository;
     agentInstructionRepository;

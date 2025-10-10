@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ChangeTaskStatusController } from './change-task-status.controller';
 import { ChangeTaskStatusService } from './change-task-status.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { TaskStatus } from './change-task-status.request.dto';
 
 describe('ChangeTaskStatusController (e2e)', () => {

@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GetTaskCommentsController } from './get-task-comments.controller';
 import { GetTaskCommentsService } from './get-task-comments.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('GetTaskCommentsController (E2E)', () => {
   let app: INestApplication;
   let controller: GetTaskCommentsController;

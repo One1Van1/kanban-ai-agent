@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AddTaskCommentRequestDto } from './add-task-comment.request.dto';
 import { AddTaskCommentResponseDto } from './add-task-comment.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class AddTaskCommentService {
   constructor(

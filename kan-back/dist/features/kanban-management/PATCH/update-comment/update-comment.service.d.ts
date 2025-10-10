@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { UpdateCommentRequestDto } from './update-comment.request.dto';
 import { UpdateCommentResponseDto } from './update-comment.response.dto';
 export declare class UpdateCommentService {

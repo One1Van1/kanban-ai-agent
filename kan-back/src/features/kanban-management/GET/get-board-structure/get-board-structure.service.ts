@@ -8,8 +8,7 @@ import {
   TaskSample,
   BoardWorkflow,
 } from './get-board-structure.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class GetBoardStructureService {
   constructor(

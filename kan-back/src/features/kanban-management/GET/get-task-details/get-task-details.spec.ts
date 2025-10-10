@@ -4,8 +4,7 @@ import * as request from 'supertest';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GetTaskDetailsController } from './get-task-details.controller';
 import { GetTaskDetailsService } from './get-task-details.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('GetTaskDetailsController (E2E)', () => {
   let app: INestApplication;
   let service: GetTaskDetailsService;

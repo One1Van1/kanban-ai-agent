@@ -7,8 +7,7 @@ import {
   TaskUpdateDetails,
   UpdatedTask,
 } from './update-task.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class UpdateTaskService {
   constructor(

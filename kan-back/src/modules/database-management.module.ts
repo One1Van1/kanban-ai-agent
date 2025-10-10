@@ -10,20 +10,20 @@ import { StoreAgentConfigController } from '../features/database-management/stor
 import { StoreAgentConfigService } from '../features/database-management/store-agent-config/store-agent-config.service';
 
 // Store Task History
-import { StoreTaskHistoryController } from 'kan-back/src/features/kanban-management/POST/store-task-history/store-task-history.controller';
-import { StoreTaskHistoryService } from 'kan-back/src/features/kanban-management/POST/store-task-history/store-task-history.service';
+import { StoreTaskHistoryController } from '../features/kanban-management/POST/store-task-history/store-task-history.controller';
+import { StoreTaskHistoryService } from '../features/kanban-management/POST/store-task-history/store-task-history.service';
 
 // Get Agent Task History
-import { GetAgentTaskHistoryController } from 'kan-back/src/features/kanban-management/GET/get-agent-task-history/get-agent-task-history.controller';
-import { GetAgentTaskHistoryService } from 'kan-back/src/features/kanban-management/GET/get-agent-task-history/get-agent-task-history.service';
+import { GetAgentTaskHistoryController } from '../features/kanban-management/GET/get-agent-task-history/get-agent-task-history.controller';
+import { GetAgentTaskHistoryService } from '../features/kanban-management/GET/get-agent-task-history/get-agent-task-history.service';
 
 // Get Task History
-import { GetTaskHistoryController } from 'kan-back/src/features/kanban-management/GET/get-task-history/get-task-history.controller';
-import { GetTaskHistoryService } from 'kan-back/src/features/kanban-management/GET/get-task-history/get-task-history.service';
+import { GetTaskHistoryController } from '../features/kanban-management/GET/get-task-history/get-task-history.controller';
+import { GetTaskHistoryService } from '../features/kanban-management/GET/get-task-history/get-task-history.service';
 
 // Get Task Statistics
-import { GetTaskStatisticsService } from 'kan-back/src/features/kanban-management/GET/get-task-statistics/get-task-statistics.service';
-import { GetTaskStatisticsController } from 'kan-back/src/features/kanban-management/GET/get-task-statistics/get-task-statistics.controller';
+import { GetTaskStatisticsService } from '../features/kanban-management/GET/get-task-statistics/get-task-statistics.service';
+import { GetTaskStatisticsController } from '../features/kanban-management/GET/get-task-statistics/get-task-statistics.controller';
 
 @Module({
   imports: [

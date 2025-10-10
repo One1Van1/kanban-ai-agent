@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { GetTaskStatisticsService } from './get-task-statistics.service';
-import { TaskHistory } from '../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { GetTaskStatisticsQueryDto } from './get-task-statistics.request.dto';
 
 describe('GetTaskStatisticsService', () => {

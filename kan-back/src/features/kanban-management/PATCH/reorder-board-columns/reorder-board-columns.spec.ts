@@ -4,8 +4,7 @@ import { Repository } from 'typeorm';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { ReorderBoardColumnsController } from './reorder-board-columns.controller';
 import { ReorderBoardColumnsService } from './reorder-board-columns.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('ReorderBoardColumnsController', () => {
   let controller: ReorderBoardColumnsController;
   let service: ReorderBoardColumnsService;

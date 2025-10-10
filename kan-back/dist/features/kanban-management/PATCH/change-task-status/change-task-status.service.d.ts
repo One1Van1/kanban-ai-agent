@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm';
 import { ChangeTaskStatusRequestDto } from './change-task-status.request.dto';
 import { ChangeTaskStatusResponseDto } from './change-task-status.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 export declare class ChangeTaskStatusService {
     private readonly taskHistoryRepository;
     constructor(taskHistoryRepository: Repository<TaskHistory>);

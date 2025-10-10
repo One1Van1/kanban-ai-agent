@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DeleteTaskController } from './delete-task.controller';
 import { DeleteTaskService } from './delete-task.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { DeleteTaskRequestDto, DeleteMode } from './delete-task.request.dto';
 import {
   NotFoundException,

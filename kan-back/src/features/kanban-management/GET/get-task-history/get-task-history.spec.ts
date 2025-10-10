@@ -2,8 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { GetTaskHistoryService } from './get-task-history.service';
-import { TaskHistory } from '../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('GetTaskHistoryService', () => {
   let service: GetTaskHistoryService;
   let repository: jest.Mocked<Repository<TaskHistory>>;

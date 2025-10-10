@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+
 import {
   DeleteBoardColumnRequestDto,
   ColumnDeleteMode,
@@ -15,6 +15,7 @@ import {
   DeleteBoardColumnResponseDto,
   ColumnDeletionMetadata,
 } from './delete-board-column.response.dto';
+import { TaskHistory } from '@/entities/task-history.entity';
 
 @Injectable()
 export class DeleteBoardColumnService {

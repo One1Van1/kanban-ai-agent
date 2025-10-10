@@ -7,7 +7,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { DeleteBoardService } from './delete-board.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import {
   DeleteBoardRequestDto,
   BoardDeleteMode,

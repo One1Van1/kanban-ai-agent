@@ -7,7 +7,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { DeleteBoardColumnService } from './delete-board-column.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import {
   DeleteBoardColumnRequestDto,
   ColumnDeleteMode,

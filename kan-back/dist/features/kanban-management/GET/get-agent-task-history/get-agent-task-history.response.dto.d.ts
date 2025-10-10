@@ -1,4 +1,4 @@
-import { TaskHistory } from 'kan-back/src/entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 export declare class GetAgentTaskHistoryResponseDto {
     agentId: string;
     count: number;

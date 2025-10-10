@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import { NotFoundException, ConflictException } from '@nestjs/common';
 import { AddCommentReactionController } from './add-comment-reaction.controller';
 import { AddCommentReactionService } from './add-comment-reaction.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { ReactionType } from './add-comment-reaction.request.dto';
 
 describe('AddCommentReactionController', () => {

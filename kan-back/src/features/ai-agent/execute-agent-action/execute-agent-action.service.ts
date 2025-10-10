@@ -17,9 +17,10 @@ import {
   AgentActionOutputDto,
 } from './execute-agent-action.response.dto';
 import { AgentActivity } from '../../../types/ai-agent.interface';
-import { Agent } from '../../../entities/agent.entity';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
+
 import { InstructionExecutorService } from '../instruction-executor/instruction-executor.service';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
+import { Agent } from '@/entities/agent.entity';
 
 @Injectable()
 export class ExecuteAgentActionService {

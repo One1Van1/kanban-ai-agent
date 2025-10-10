@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { UpdateTaskLabelsRequestDto } from './update-task-labels.request.dto';
 import { UpdateTaskLabelsResponseDto } from './update-task-labels.response.dto';
 export declare class UpdateTaskLabelsService {

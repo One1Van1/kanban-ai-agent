@@ -2,9 +2,9 @@ import { Repository } from 'typeorm';
 import { ExecuteAgentActionRequestDto } from './execute-agent-action.request.dto';
 import { ExecuteAgentActionResponseDto } from './execute-agent-action.response.dto';
 import { AgentActivity } from '../../../types/ai-agent.interface';
-import { Agent } from '../../../entities/agent.entity';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
 import { InstructionExecutorService } from '../instruction-executor/instruction-executor.service';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
+import { Agent } from '@/entities/agent.entity';
 export declare class ExecuteAgentActionService {
     private readonly agentRepository;
     private readonly agentInstructionRepository;

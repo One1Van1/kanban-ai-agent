@@ -163,29 +163,33 @@ function ApiChangeTaskStatus() {
         },
     }), (0, swagger_1.ApiBadRequestResponse)({
         description: 'Invalid status transition or request data',
-        examples: {
-            invalid_transition: {
-                summary: 'Invalid workflow transition',
-                value: {
-                    statusCode: 400,
-                    message: "Invalid status transition from 'todo' to 'done'. Allowed transitions: in-progress, blocked, cancelled",
-                    error: 'Bad Request',
-                },
-            },
-            invalid_status: {
-                summary: 'Invalid status value',
-                value: {
-                    statusCode: 400,
-                    message: ['newStatus must be a valid enum value'],
-                    error: 'Bad Request',
-                },
-            },
-            missing_status: {
-                summary: 'Missing required status',
-                value: {
-                    statusCode: 400,
-                    message: ['newStatus should not be empty'],
-                    error: 'Bad Request',
+        content: {
+            'application/json': {
+                examples: {
+                    invalid_transition: {
+                        summary: 'Invalid workflow transition',
+                        value: {
+                            statusCode: 400,
+                            message: "Invalid status transition from 'todo' to 'done'. Allowed transitions: in-progress, blocked, cancelled",
+                            error: 'Bad Request',
+                        },
+                    },
+                    invalid_status: {
+                        summary: 'Invalid status value',
+                        value: {
+                            statusCode: 400,
+                            message: ['newStatus must be a valid enum value'],
+                            error: 'Bad Request',
+                        },
+                    },
+                    missing_status: {
+                        summary: 'Missing required status',
+                        value: {
+                            statusCode: 400,
+                            message: ['newStatus should not be empty'],
+                            error: 'Bad Request',
+                        },
+                    },
                 },
             },
         },

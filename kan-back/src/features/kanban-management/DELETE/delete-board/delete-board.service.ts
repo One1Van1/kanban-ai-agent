@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+
 import {
   DeleteBoardRequestDto,
   BoardDeleteMode,
@@ -17,6 +17,7 @@ import {
   TaskRelocation,
   FilesDeletion,
 } from './delete-board.response.dto';
+import { TaskHistory } from '@/entities/task-history.entity';
 
 @Injectable()
 export class DeleteBoardService {

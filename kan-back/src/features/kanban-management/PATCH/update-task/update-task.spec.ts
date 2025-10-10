@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { UpdateTaskController } from './update-task.controller';
 import { UpdateTaskService } from './update-task.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { TaskPriority } from './update-task.request.dto';
 
 describe('UpdateTaskController (e2e)', () => {

@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { ReorderBoardColumnsRequestDto } from './reorder-board-columns.request.dto';
 import { ReorderBoardColumnsResponseDto } from './reorder-board-columns.response.dto';
 export declare class ReorderBoardColumnsService {

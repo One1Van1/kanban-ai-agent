@@ -1,8 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
-import { Agent } from '../../../entities/agent.entity';
+
 import { ExecuteAgentActionRequestDto } from '../execute-agent-action/execute-agent-action.request.dto';
 import { AgentActionOutputDto } from '../execute-agent-action/execute-agent-action.response.dto';
 import { SendTelegramService } from '../../notifications/send-telegram/send-telegram.service';
@@ -13,6 +12,8 @@ import { IntelligentAgentService } from '../intelligent-agent/intelligent-agent.
 import { KanbanKnowledgeBaseService } from '../kanban-knowledge-base/kanban-knowledge-base.service';
 import { AgentLearningService } from '../agent-learning/agent-learning.service';
 import { AgentRoleService, AgentRole } from '../agent-role/agent-role.service';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
+import { Agent } from '@/entities/agent.entity';
 
 interface AIInstructionAnalysis {
   shouldExecute: boolean;

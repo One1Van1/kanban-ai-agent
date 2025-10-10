@@ -17,7 +17,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const store_task_history_response_dto_1 = require("./store-task-history.response.dto");
-const task_history_entity_1 = require("kan-back/src/entities/task-history.entity");
+const task_history_entity_1 = require("../../../../entities/task-history.entity");
 let StoreTaskHistoryService = class StoreTaskHistoryService {
     taskHistoryRepository;
     constructor(taskHistoryRepository) {

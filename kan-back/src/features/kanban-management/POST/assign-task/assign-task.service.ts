@@ -3,8 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AssignTaskRequestDto } from './assign-task.request.dto';
 import { AssignTaskResponseDto } from './assign-task.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class AssignTaskService {
   constructor(

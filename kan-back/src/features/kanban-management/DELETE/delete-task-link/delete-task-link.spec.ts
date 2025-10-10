@@ -4,8 +4,7 @@ import { Repository } from 'typeorm';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 import { DeleteTaskLinkController } from './delete-task-link.controller';
 import { DeleteTaskLinkService } from './delete-task-link.service';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 describe('DeleteTaskLinkController', () => {
   let controller: DeleteTaskLinkController;
   let service: DeleteTaskLinkService;
@@ -78,12 +77,17 @@ describe('DeleteTaskLinkController', () => {
     it('should throw NotFoundException when link is not found', async () => {
       const requestDto = {};
 
-      jest.spyOn(service, 'execute').mockRejectedValue(
-        new NotFoundException(`Link with ID ${linkId} not found on task ${taskId}`)
-      );
+      jest
+        .spyOn(service, 'execute')
+        .mockRejectedValue(
+          new NotFoundException(
+            `Link with ID ${linkId} not found on task ${taskId}`,
+          ),
+        );
 
-      await expect(controller.handle(taskId, linkId, requestDto))
-        .rejects.toThrow(NotFoundException);
+      await expect(
+        controller.handle(taskId, linkId, requestDto),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException when user lacks permissions', async () => {
@@ -91,12 +95,17 @@ describe('DeleteTaskLinkController', () => {
         deletedBy: 'unauthorized-user',
       };
 
-      jest.spyOn(service, 'execute').mockRejectedValue(
-        new ForbiddenException('Insufficient permissions to delete task links')
-      );
+      jest
+        .spyOn(service, 'execute')
+        .mockRejectedValue(
+          new ForbiddenException(
+            'Insufficient permissions to delete task links',
+          ),
+        );
 
-      await expect(controller.handle(taskId, linkId, requestDto))
-        .rejects.toThrow(ForbiddenException);
+      await expect(
+        controller.handle(taskId, linkId, requestDto),
+      ).rejects.toThrow(ForbiddenException);
     });
   });
 });

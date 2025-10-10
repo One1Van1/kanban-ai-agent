@@ -1,10 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { AgentInstruction } from '../../../entities/agent-instruction.entity';
-import { Agent } from '../../../entities/agent.entity';
+
 import { ExecuteAgentActionRequestDto } from '../execute-agent-action/execute-agent-action.request.dto';
 import { AgentActionOutputDto } from '../execute-agent-action/execute-agent-action.response.dto';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
+import { Agent } from '@/entities/agent.entity';
 
 interface BusinessContext {
   taskType: string;

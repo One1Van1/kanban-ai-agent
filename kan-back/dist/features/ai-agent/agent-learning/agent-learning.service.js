@@ -14,10 +14,10 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 var AgentLearningService_1;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AgentLearningService = void 0;
+const task_history_entity_1 = require("../../../entities/task-history.entity");
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const task_history_entity_1 = require("../../../entities/task-history.entity");
 let AgentLearningService = AgentLearningService_1 = class AgentLearningService {
     taskHistoryRepository;
     logger = new common_1.Logger(AgentLearningService_1.name);

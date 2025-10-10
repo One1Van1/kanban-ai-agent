@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../../entities/task-history.entity';
+import { TaskHistory } from '@/entities/task-history.entity';
 import { UpdateBoardColumnRequestDto } from './update-board-column.request.dto';
 import { UpdateBoardColumnResponseDto } from './update-board-column.response.dto';
 export declare class UpdateBoardColumnService {

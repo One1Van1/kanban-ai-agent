@@ -4,8 +4,7 @@ import { Repository } from 'typeorm';
 import { ConflictException } from '@nestjs/common';
 import { CreateTaskRequestDto } from './create-task.request.dto';
 import { CreateTaskResponseDto } from './create-task.response.dto';
-import { TaskHistory } from '../../../../entities/task-history.entity';
-
+import { TaskHistory } from '@/entities/task-history.entity';
 @Injectable()
 export class CreateTaskService {
   constructor(
