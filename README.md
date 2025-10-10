@@ -22,6 +22,25 @@ kanban-ai-agent/
 
 ## ⚡ Quick Start
 
+### 🚀 Development Scripts
+
+We provide several convenient scripts for development:
+
+```bash
+# Using Make (recommended)
+make help          # Show all available commands
+make start         # Start development environment
+make stop          # Stop all services
+make status        # Check service status
+make clean         # Clean up ports and processes
+
+# Or using scripts directly
+./scripts/start-dev.sh    # Start development environment
+./scripts/stop-dev.sh     # Stop all services
+./scripts/status.sh       # Check service status
+./scripts/clean-ports.sh  # Clean up ports
+```
+
 ### 🚀 Full Development Environment
 
 ```bash
@@ -33,6 +52,8 @@ cd kanban-ai-agent
 yarn setup
 
 # Start both frontend and backend
+make start
+# or
 yarn dev
 ```
 

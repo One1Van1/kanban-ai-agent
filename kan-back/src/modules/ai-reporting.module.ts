@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { BullModule } from '@nestjs/bull';
+// import { BullModule } from '@nestjs/bull'; // не используется
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Agent } from '../entities/agent.entity';
 import { AgentInstruction } from '../entities/agent-instruction.entity';
