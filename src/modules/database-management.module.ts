@@ -10,20 +10,20 @@ import { StoreAgentConfigController } from '../features/database-management/stor
 import { StoreAgentConfigService } from '../features/database-management/store-agent-config/store-agent-config.service';
 
 // Store Task History
-import { StoreTaskHistoryController } from '../features/database-management/store-task-history/store-task-history.controller';
-import { StoreTaskHistoryService } from '../features/database-management/store-task-history/store-task-history.service';
+import { StoreTaskHistoryController } from 'src/features/kanban-management/POST/store-task-history/store-task-history.controller';
+import { StoreTaskHistoryService } from 'src/features/kanban-management/POST/store-task-history/store-task-history.service';
 
 // Get Agent Task History
-import { GetAgentTaskHistoryController } from '../features/database-management/get-agent-task-history/get-agent-task-history.controller';
-import { GetAgentTaskHistoryService } from '../features/database-management/get-agent-task-history/get-agent-task-history.service';
+import { GetAgentTaskHistoryController } from 'src/features/kanban-management/GET/get-agent-task-history/get-agent-task-history.controller';
+import { GetAgentTaskHistoryService } from 'src/features/kanban-management/GET/get-agent-task-history/get-agent-task-history.service';
 
 // Get Task History
-import { GetTaskHistoryController } from '../features/database-management/get-task-history/get-task-history.controller';
-import { GetTaskHistoryService } from '../features/database-management/get-task-history/get-task-history.service';
+import { GetTaskHistoryController } from 'src/features/kanban-management/GET/get-task-history/get-task-history.controller';
+import { GetTaskHistoryService } from 'src/features/kanban-management/GET/get-task-history/get-task-history.service';
 
 // Get Task Statistics
-import { GetTaskStatisticsController } from '../features/database-management/get-task-statistics/get-task-statistics.controller';
-import { GetTaskStatisticsService } from '../features/database-management/get-task-statistics/get-task-statistics.service';
+import { GetTaskStatisticsService } from 'src/features/kanban-management/GET/get-task-statistics/get-task-statistics.service';
+import { GetTaskStatisticsController } from 'src/features/kanban-management/GET/get-task-statistics/get-task-statistics.controller';
 
 @Module({
   imports: [

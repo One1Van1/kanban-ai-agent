@@ -15,7 +15,7 @@ import { ConfigureColumnInstructionsController } from '../features/ai-agent/conf
 import { CreateAgentController } from '../features/ai-agent/create-agent/create-agent.controller';
 import { ExecuteAgentActionController } from '../features/ai-agent/execute-agent-action/execute-agent-action.controller';
 import { GetAgentActivityController } from '../features/ai-agent/get-agent-activity/get-agent-activity.controller';
-import { TrackAgentInTaskController } from '../features/ai-agent/track-agent-in-task/track-agent-in-task.controller';
+
 // 🧠 Новые контроллеры для интеллектуальных функций
 import { AgentLearningController } from '../features/ai-agent/agent-learning/agent-learning.controller';
 import { AgentRoleController } from '../features/ai-agent/agent-role/agent-role.controller';
@@ -26,7 +26,7 @@ import { ConfigureColumnInstructionsService } from '../features/ai-agent/configu
 import { CreateAgentService } from '../features/ai-agent/create-agent/create-agent.service';
 import { ExecuteAgentActionService } from '../features/ai-agent/execute-agent-action/execute-agent-action.service';
 import { GetAgentActivityService } from '../features/ai-agent/get-agent-activity/get-agent-activity.service';
-import { TrackAgentInTaskService } from '../features/ai-agent/track-agent-in-task/track-agent-in-task.service';
+
 import { InstructionExecutorService } from '../features/ai-agent/instruction-executor/instruction-executor.service';
 
 // 🧠 Новые интеллектуальные сервисы
@@ -34,6 +34,8 @@ import { IntelligentAgentService } from '../features/ai-agent/intelligent-agent/
 import { KanbanKnowledgeBaseService } from '../features/ai-agent/kanban-knowledge-base/kanban-knowledge-base.service';
 import { AgentLearningService } from '../features/ai-agent/agent-learning/agent-learning.service';
 import { AgentRoleService } from '../features/ai-agent/agent-role/agent-role.service';
+import { TrackAgentInTaskController } from 'src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.controller';
+import { TrackAgentInTaskService } from 'src/features/kanban-management/POST/track-agent-in-task/track-agent-in-task.service';
 
 @Module({
   imports: [

@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { StoreTaskHistoryService } from './store-task-history.service';
-import { TaskHistory } from '../../../entities/task-history.entity';
 import { StoreTaskHistoryRequestDto } from './store-task-history.request.dto';
+import { TaskHistory } from 'src/entities/task-history.entity';
 
 describe('StoreTaskHistoryService', () => {
   let service: StoreTaskHistoryService;

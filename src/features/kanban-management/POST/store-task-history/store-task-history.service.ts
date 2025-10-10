@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { TaskHistory } from '../../../entities/task-history.entity';
 import { StoreTaskHistoryRequestDto } from './store-task-history.request.dto';
 import { StoreTaskHistoryResponseDto } from './store-task-history.response.dto';
+import { TaskHistory } from 'src/entities/task-history.entity';
 
 @Injectable()
 export class StoreTaskHistoryService {
