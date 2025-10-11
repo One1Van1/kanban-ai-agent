@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { GetAllAgentsResponse } from '../types';
 
 export class APIClient {
   private baseURL: string;
@@ -68,6 +69,7 @@ export class APIClient {
 
   // AI Agents API
   agents = {
+    getAll: (): Promise<GetAllAgentsResponse> => this.get('/agents'),
     getById: (id: string) => this.get(`/ai-agent/${id}`),
     create: (data: any) => this.post('/ai-agent', data),
     configure: (id: string, data: any) =>

@@ -10,6 +10,22 @@ export interface Agent {
   updatedAt: string;
 }
 
+// API Agent response type - matches backend response
+export interface AgentSummary {
+  id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'inactive' | 'paused';
+  boardType: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetAllAgentsResponse {
+  agents: AgentSummary[];
+  total: number;
+}
+
 export interface AgentInstruction {
   id: string;
   agentId: string;
