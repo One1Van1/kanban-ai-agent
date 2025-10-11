@@ -4,166 +4,112 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bot, Plus, ArrowRight } from 'lucide-react';
+import { Bot, Plus, ArrowRight, Users, Calendar } from 'lucide-react';
+import { Sidebar } from '@/components/ui/sidebar';
+import { useTranslation } from '@/src/lib/i18n';
 
 export default function KanbanPage() {
+  const { t } = useTranslation();
+
   // Mock data for now
   const boards = [
     {
       id: '1',
-      name: 'Development Sprint',
-      description: 'Current development tasks and features',
+      name: t('kanban.boards.development.name'),
+      description: t('kanban.boards.development.description'),
       tasksCount: 24,
       activeAgents: 3,
     },
     {
       id: '2',
-      name: 'QA Testing',
-      description: 'Quality assurance and testing workflow',
+      name: t('kanban.boards.qa.name'),
+      description: t('kanban.boards.qa.description'),
       tasksCount: 12,
       activeAgents: 2,
     },
     {
       id: '3',
-      name: 'Product Backlog',
-      description: 'Future features and improvements',
+      name: t('kanban.boards.backlog.name'),
+      description: t('kanban.boards.backlog.description'),
       tasksCount: 45,
       activeAgents: 1,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/">
-                <div className="flex items-center">
-                  <Bot className="h-8 w-8 text-blue-600" />
-                  <span className="ml-2 text-xl font-bold text-gray-900">
-                    AI Kanban Agent
-                  </span>
-                </div>
-              </Link>
+    <div className="flex min-h-screen bg-background">
+      <Sidebar />
+      
+      <div className="flex-1 pl-64">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">{t('kanban.title')}</h1>
+              <p className="mt-2 text-muted-foreground">
+                {t('kanban.subtitle')}
+              </p>
             </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/agents">
-                <Button variant="ghost">Agents</Button>
-              </Link>
-              <Link href="/kanban">
-                <Button variant="default">Kanban</Button>
-              </Link>
-            </div>
+            <Button className="bg-primary hover:bg-primary/90">
+              <Plus className="h-4 w-4 mr-2" />
+              {t('kanban.createBoard')}
+            </Button>
           </div>
-        </div>
-      </nav>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Kanban Boards</h1>
-            <p className="mt-2 text-gray-600">
-              Manage your project workflows with AI-powered automation
-            </p>
-          </div>
-          <Button className="flex items-center">
-            <Plus className="h-4 w-4 mr-2" />
-            Create Board
-          </Button>
-        </div>
-
-        {/* Boards Grid */}
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {boards.map((board) => (
-            <Card
-              key={board.id}
-              className="hover:shadow-lg transition-shadow cursor-pointer"
-            >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{board.name}</CardTitle>
-                  <Badge variant="outline">{board.activeAgents} Agents</Badge>
-                </div>
-                <p className="text-sm text-gray-600">{board.description}</p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Total Tasks:</span>
-                    <span className="font-semibold">{board.tasksCount}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {boards.map((board) => (
+              <Card key={board.id} className="hover:shadow-lg transition-shadow cursor-pointer">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{board.name}</CardTitle>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {board.description}
+                      </p>
+                    </div>
+                    <Badge variant="secondary">
+                      {board.activeAgents} {t('kanban.agents')}
+                    </Badge>
                   </div>
-
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">AI Agents:</span>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
                     <div className="flex items-center">
-                      <Bot className="h-4 w-4 text-blue-600 mr-1" />
-                      <span className="font-semibold">
-                        {board.activeAgents} Active
-                      </span>
+                      <Calendar className="h-4 w-4 mr-1" />
+                      {board.tasksCount} {t('kanban.tasks')}
+                    </div>
+                    <div className="flex items-center">
+                      <Users className="h-4 w-4 mr-1" />
+                      {board.activeAgents} {t('kanban.agents')}
                     </div>
                   </div>
+                  <Link href={`/kanban/${board.id}`}>
+                    <Button variant="outline" className="w-full">
+                      {t('kanban.openBoard')}
+                      <ArrowRight className="h-4 w-4 ml-2" />
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-                  <Button
-                    variant="outline"
-                    className="w-full mt-4"
-                    onClick={() => {
-                      // Navigate to board details (to be implemented)
-                      console.log(`Opening board ${board.id}`);
-                    }}
-                  >
-                    Open Board
-                    <ArrowRight className="h-4 w-4 ml-2" />
-                  </Button>
-                </div>
+          <div className="mt-12">
+            <Card>
+              <CardContent className="text-center py-12">
+                <Bot className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  {t('kanban.noBoards.title')}
+                </h3>
+                <p className="text-muted-foreground mb-6">
+                  {t('kanban.noBoards.description')}
+                </p>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('kanban.createBoard')}
+                </Button>
               </CardContent>
             </Card>
-          ))}
-        </div>
-
-        {/* Quick Start Section */}
-        <div className="mt-12">
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Start</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="text-center p-4">
-                  <div className="bg-blue-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-blue-600 font-bold">1</span>
-                  </div>
-                  <h3 className="font-semibold mb-2">Create Board</h3>
-                  <p className="text-sm text-gray-600">
-                    Set up your project structure with custom columns
-                  </p>
-                </div>
-
-                <div className="text-center p-4">
-                  <div className="bg-green-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-green-600 font-bold">2</span>
-                  </div>
-                  <h3 className="font-semibold mb-2">Configure Agents</h3>
-                  <p className="text-sm text-gray-600">
-                    Set up AI agents to automate your workflow
-                  </p>
-                </div>
-
-                <div className="text-center p-4">
-                  <div className="bg-purple-100 rounded-full w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                    <span className="text-purple-600 font-bold">3</span>
-                  </div>
-                  <h3 className="font-semibold mb-2">Start Working</h3>
-                  <p className="text-sm text-gray-600">
-                    Let AI handle routine tasks while you focus on important
-                    work
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          </div>
         </div>
       </div>
     </div>

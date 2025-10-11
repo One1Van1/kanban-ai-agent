@@ -22,12 +22,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAgentsStore } from '@/src/lib/stores/agents-store';
-import { Bot, ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
+import { Sidebar } from '@/components/ui/sidebar';
+import { useTranslation } from '@/src/lib/i18n';
 
 export default function CreateAgentPage() {
   const router = useRouter();
   const { createAgent, isLoading } = useAgentsStore();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -43,7 +46,6 @@ export default function CreateAgentPage() {
 
   const handleInputChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }));
     }
@@ -53,11 +55,11 @@ export default function CreateAgentPage() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Agent name is required';
+      newErrors.name = t('createAgent.validation.nameRequired');
     }
 
     if (!formData.instructions.trim()) {
-      newErrors.instructions = 'Instructions are required';
+      newErrors.instructions = t('createAgent.validation.instructionsRequired');
     }
 
     setErrors(newErrors);
@@ -74,145 +76,173 @@ export default function CreateAgentPage() {
     try {
       const agentData = {
         ...formData,
-        userId: 'system', // Временно используем system как userId
+        userId: 'system',
       };
-      console.log('Sending agent data:', agentData); // Для отладки
       await createAgent(agentData);
-      toast.success('Agent created successfully!');
+      toast.success(t('createAgent.messages.success'));
       router.push('/agents');
     } catch (error: any) {
-      console.error('Failed to create agent:', error); // Для отладки
-      toast.error(error.message || 'Failed to create agent');
+      toast.error(error.message || t('createAgent.messages.error'));
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
-      {/* Navigation */}
-      <nav className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/">
-                <div className="flex items-center">
-                  <Bot className="h-8 w-8 text-blue-600" />
-                  <span className="ml-2 text-xl font-bold text-gray-900">
-                    AI Kanban Agent
-                  </span>
-                </div>
-              </Link>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/agents">
-                <Button variant="default">Agents</Button>
-              </Link>
-              <Link href="/kanban">
-                <Button variant="ghost">Kanban</Button>
-              </Link>
-            </div>
+    <div className="flex min-h-screen bg-background">
+      <Sidebar />
+
+      <div className="flex-1 pl-64">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="mb-8">
+            <Link href="/agents">
+              <Button variant="ghost" className="mb-4">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                {t('createAgent.backToAgents')}
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold text-foreground">
+              {t('createAgent.title')}
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {t('createAgent.subtitle')}
+            </p>
           </div>
-        </div>
-      </nav>
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Header */}
-        <div className="mb-8">
-          <Link href="/agents">
-            <Button variant="ghost" className="mb-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Agents
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Agent</h1>
-          <p className="mt-2 text-gray-600">
-            Set up a new AI agent to automate your Kanban workflow
-          </p>
-        </div>
-
-        {/* Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Agent Configuration</CardTitle>
-            <CardDescription>
-              Define the basic properties and behavior of your AI agent
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Agent Name */}
-              <div className="space-y-2">
-                <Label htmlFor="name">Agent Name *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="e.g., QA Automation Agent"
-                  className={errors.name ? 'border-red-500' : ''}
-                />
-                {errors.name && (
-                  <p className="text-sm text-red-600">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    handleInputChange('description', e.target.value)
-                  }
-                  placeholder="Describe what this agent does..."
-                  rows={3}
-                />
-              </div>
-
-              {/* Instructions */}
-              <div className="space-y-2">
-                <Label htmlFor="instructions">Instructions *</Label>
-                <Textarea
-                  id="instructions"
-                  value={formData.instructions}
-                  onChange={(e) =>
-                    handleInputChange('instructions', e.target.value)
-                  }
-                  placeholder="Provide detailed instructions for this agent..."
-                  rows={5}
-                  className={errors.instructions ? 'border-red-500' : ''}
-                />
-                {errors.instructions && (
-                  <p className="text-sm text-red-600">{errors.instructions}</p>
-                )}
-                <p className="text-sm text-gray-500">
-                  Example: "When a task moves to 'In Progress', write a comment
-                  encouraging the team and asking if they need any help."
-                </p>
-              </div>
-              {/* Submit Buttons */}
-              <div className="flex justify-end space-x-4 pt-4">
-                <Link href="/agents">
-                  <Button variant="outline" type="button">
-                    Cancel
-                  </Button>
-                </Link>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="h-4 w-4 mr-2" />
-                      Create Agent
-                    </>
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('createAgent.form.title')}</CardTitle>
+              <CardDescription>
+                {t('createAgent.form.description')}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name">{t('createAgent.form.name')} *</Label>
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder={t('createAgent.form.namePlaceholder')}
+                    className={errors.name ? 'border-red-500' : ''}
+                  />
+                  {errors.name && (
+                    <p className="text-sm text-red-600">{errors.name}</p>
                   )}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="description">
+                    {t('createAgent.form.agentDescription')}
+                  </Label>
+                  <Input
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) =>
+                      handleInputChange('description', e.target.value)
+                    }
+                    placeholder={t('createAgent.form.descriptionPlaceholder')}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="instructions">
+                    {t('createAgent.form.instructions')} *
+                  </Label>
+                  <Textarea
+                    id="instructions"
+                    value={formData.instructions}
+                    onChange={(e) =>
+                      handleInputChange('instructions', e.target.value)
+                    }
+                    placeholder={t('createAgent.form.instructionsPlaceholder')}
+                    rows={6}
+                    className={errors.instructions ? 'border-red-500' : ''}
+                  />
+                  {errors.instructions && (
+                    <p className="text-sm text-red-600">
+                      {errors.instructions}
+                    </p>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="model">{t('createAgent.form.model')}</Label>
+                    <Select
+                      value={formData.model}
+                      onValueChange={(value) =>
+                        handleInputChange('model', value)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="claude-3-haiku-20240307">
+                          Claude 3 Haiku
+                        </SelectItem>
+                        <SelectItem value="claude-3-sonnet-20240229">
+                          Claude 3 Sonnet
+                        </SelectItem>
+                        <SelectItem value="gpt-3.5-turbo">
+                          GPT-3.5 Turbo
+                        </SelectItem>
+                        <SelectItem value="gpt-4">GPT-4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="temperature">
+                      {t('createAgent.form.temperature')}
+                    </Label>
+                    <Input
+                      id="temperature"
+                      type="number"
+                      min="0"
+                      max="1"
+                      step="0.1"
+                      value={formData.temperature}
+                      onChange={(e) =>
+                        handleInputChange('temperature', e.target.value)
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="maxTokens">
+                    {t('createAgent.form.maxTokens')}
+                  </Label>
+                  <Input
+                    id="maxTokens"
+                    type="number"
+                    min="100"
+                    max="4000"
+                    value={formData.maxTokens}
+                    onChange={(e) =>
+                      handleInputChange('maxTokens', e.target.value)
+                    }
+                  />
+                </div>
+
+                <div className="flex gap-4 pt-4">
+                  <Button type="submit" disabled={isLoading}>
+                    <Save className="h-4 w-4 mr-2" />
+                    {isLoading
+                      ? t('createAgent.form.creating')
+                      : t('createAgent.form.createAgent')}
+                  </Button>
+                  <Link href="/agents">
+                    <Button type="button" variant="outline">
+                      {t('createAgent.form.cancel')}
+                    </Button>
+                  </Link>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
