@@ -8,6 +8,8 @@ import {
 } from 'typeorm';
 import { AgentInstruction } from './agent-instruction.entity';
 import { TaskHistory } from './task-history.entity';
+import { BoardIntegration } from './board-integration.entity';
+import { BoardType } from '../types/board-integration.interface';
 
 @Entity('agents')
 export class Agent {
@@ -26,14 +28,15 @@ export class Agent {
   @Column({ type: 'jsonb', nullable: true })
   config: Record<string, any>;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  jiraInstanceUrl?: string;
+  @Column({
+    type: 'enum',
+    enum: BoardType,
+    nullable: true,
+  })
+  boardType?: BoardType;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  jiraProjectKey?: string;
-
-  @Column({ type: 'text', nullable: true })
-  jiraApiToken?: string;
+  @Column({ type: 'jsonb', nullable: true })
+  boardConfig: Record<string, any>;
 
   @Column({ type: 'jsonb', nullable: true })
   contextSources: Record<string, any>;
@@ -55,4 +58,7 @@ export class Agent {
 
   @OneToMany(() => TaskHistory, (history) => history.agent)
   taskHistories: TaskHistory[];
+
+  @OneToMany(() => BoardIntegration, (integration) => integration.agent)
+  boardIntegrations: BoardIntegration[];
 }

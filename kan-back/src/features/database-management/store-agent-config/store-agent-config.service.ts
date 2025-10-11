@@ -45,9 +45,13 @@ export class StoreAgentConfigService {
       description: dto.description,
       status: dto.status || 'active',
       config: dto.config,
-      jiraInstanceUrl: dto.jiraInstanceUrl,
-      jiraProjectKey: dto.jiraProjectKey,
-      jiraApiToken: dto.jiraApiToken,
+      // Временно комментируем новые поля до обновления DTO
+      // boardType: dto.boardType,
+      boardConfig: {
+        instanceUrl: dto.jiraInstanceUrl,
+        projectKey: dto.jiraProjectKey,
+        apiToken: dto.jiraApiToken,
+      },
       contextSources: dto.contextSources,
       notificationSettings: dto.notificationSettings,
       createdBy: dto.createdBy,
@@ -83,12 +87,22 @@ export class StoreAgentConfigService {
       existingAgent.description = dto.description;
     if (dto.status) existingAgent.status = dto.status;
     if (dto.config) existingAgent.config = dto.config;
-    if (dto.jiraInstanceUrl !== undefined)
-      existingAgent.jiraInstanceUrl = dto.jiraInstanceUrl;
-    if (dto.jiraProjectKey !== undefined)
-      existingAgent.jiraProjectKey = dto.jiraProjectKey;
-    if (dto.jiraApiToken !== undefined)
-      existingAgent.jiraApiToken = dto.jiraApiToken;
+
+    // Обновляем board config, объединяя старые Jira поля
+    if (
+      dto.jiraInstanceUrl !== undefined ||
+      dto.jiraProjectKey !== undefined ||
+      dto.jiraApiToken !== undefined
+    ) {
+      existingAgent.boardConfig = {
+        ...existingAgent.boardConfig,
+        instanceUrl:
+          dto.jiraInstanceUrl || existingAgent.boardConfig?.instanceUrl,
+        projectKey: dto.jiraProjectKey || existingAgent.boardConfig?.projectKey,
+        apiToken: dto.jiraApiToken || existingAgent.boardConfig?.apiToken,
+      };
+    }
+
     if (dto.contextSources) existingAgent.contextSources = dto.contextSources;
     if (dto.notificationSettings)
       existingAgent.notificationSettings = dto.notificationSettings;

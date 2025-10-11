@@ -3,11 +3,17 @@ import {
   IsOptional,
   IsBoolean,
   IsNumber,
+  IsEnum,
+  IsObject,
+  IsArray,
+  ValidateNested,
   Min,
   Max,
   MaxLength,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { BoardType } from '../../../types/board-integration.interface';
 
 export class CreateAgentRequestDto {
   @ApiProperty({ description: 'Agent name', example: 'Task Analyzer Bot' })
@@ -73,4 +79,25 @@ export class CreateAgentRequestDto {
   @IsOptional()
   @IsString()
   userId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Primary board type for this agent',
+    enum: BoardType,
+    example: BoardType.JIRA,
+  })
+  @IsOptional()
+  @IsEnum(BoardType)
+  boardType?: BoardType;
+
+  @ApiPropertyOptional({
+    description: 'Primary board configuration',
+    example: {
+      instanceUrl: 'https://company.atlassian.net',
+      projectKey: 'PROJ',
+      apiToken: 'your-api-token',
+    },
+  })
+  @IsOptional()
+  @IsObject()
+  boardConfig?: Record<string, any>;
 }
