@@ -16,6 +16,11 @@ import { CreateAgentController } from '../features/ai-agent/create-agent/create-
 import { ExecuteAgentActionController } from '../features/ai-agent/execute-agent-action/execute-agent-action.controller';
 import { GetAgentActivityController } from '../features/ai-agent/get-agent-activity/get-agent-activity.controller';
 
+// New Agent Retrieval Controllers
+import { GetAllAgentsController } from '../features/ai-agent/get-all-agents/get-all-agents.controller';
+import { GetAgentByIdController } from '../features/ai-agent/get-agent-by-id/get-agent-by-id.controller';
+import { GetAgentsByBoardTypeController } from '../features/ai-agent/get-agents-by-board-type/get-agents-by-board-type.controller';
+
 // 🧠 Новые контроллеры для интеллектуальных функций
 import { AgentLearningController } from '../features/ai-agent/agent-learning/agent-learning.controller';
 import { AgentRoleController } from '../features/ai-agent/agent-role/agent-role.controller';
@@ -26,6 +31,11 @@ import { ConfigureColumnInstructionsService } from '../features/ai-agent/configu
 import { CreateAgentService } from '../features/ai-agent/create-agent/create-agent.service';
 import { ExecuteAgentActionService } from '../features/ai-agent/execute-agent-action/execute-agent-action.service';
 import { GetAgentActivityService } from '../features/ai-agent/get-agent-activity/get-agent-activity.service';
+
+// New Agent Retrieval Services
+import { GetAllAgentsService } from '../features/ai-agent/get-all-agents/get-all-agents.service';
+import { GetAgentByIdService } from '../features/ai-agent/get-agent-by-id/get-agent-by-id.service';
+import { GetAgentsByBoardTypeService } from '../features/ai-agent/get-agents-by-board-type/get-agents-by-board-type.service';
 
 import { InstructionExecutorService } from '../features/ai-agent/instruction-executor/instruction-executor.service';
 
@@ -51,6 +61,10 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     ExecuteAgentActionController,
     GetAgentActivityController,
     TrackAgentInTaskController,
+    // New Agent Retrieval Controllers
+    GetAllAgentsController,
+    GetAgentByIdController,
+    GetAgentsByBoardTypeController,
     // 🧠 Новые контроллеры для интеллектуальных функций
     AgentLearningController, // Обучение и метрики производительности
     AgentRoleController, // Управление ролями и специализацией
@@ -62,6 +76,10 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     ExecuteAgentActionService,
     GetAgentActivityService,
     TrackAgentInTaskService,
+    // New Agent Retrieval Services
+    GetAllAgentsService,
+    GetAgentByIdService,
+    GetAgentsByBoardTypeService,
     InstructionExecutorService, // 🚀 Enhanced AI-powered instruction executor
     // 🧠 Новые интеллектуальные сервисы
     IntelligentAgentService, // Многоуровневый анализ и принятие решений
