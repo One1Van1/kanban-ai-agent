@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateAgentRequestDto } from './create-agent.request.dto';
 import { CreateAgentResponseDto } from './create-agent.response.dto';
 import { Agent } from '@/entities/agent.entity';
+import { AgentInstruction } from '@/entities/agent-instruction.entity';
 
 @Injectable()
 export class CreateAgentService {
@@ -14,6 +15,8 @@ export class CreateAgentService {
     private readonly configService: ConfigService,
     @InjectRepository(Agent)
     private readonly agentRepository: Repository<Agent>,
+    @InjectRepository(AgentInstruction)
+    private readonly agentInstructionRepository: Repository<AgentInstruction>,
   ) {}
 
   async execute(
@@ -48,6 +51,32 @@ export class CreateAgentService {
 
       // Сохраняем в базу данных
       const savedAgent = await this.agentRepository.save(agent);
+
+      // Создаем базовую инструкцию в таблице agent_instructions
+      if (requestDto.instructions) {
+        const agentInstruction = this.agentInstructionRepository.create({
+          agentId: savedAgent.id,
+          columnId: 'all', // Общая инструкция для всех колонок
+          columnName: 'All Columns',
+          instruction: requestDto.instructions,
+          triggerEvent: 'on_enter', // По умолчанию срабатывает при входе в колонку
+          conditions: {
+            description: 'Default instruction for all columns',
+            applyToAll: true,
+          },
+          actions: {
+            type: 'comment',
+            template: requestDto.instructions,
+          },
+          isActive: true,
+          priority: 1,
+        });
+
+        await this.agentInstructionRepository.save(agentInstruction);
+        this.logger.log(
+          `Agent instruction created for agent: ${savedAgent.id}`,
+        );
+      }
 
       this.logger.log(
         `AI agent created successfully with ID: ${savedAgent.id}`,

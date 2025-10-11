@@ -199,20 +199,34 @@ export class ExecuteAgentActionService {
       `🔍 Searching for instructions: agentId=${agentId}, columnId=${columnId}`,
     );
 
-    const instruction = await this.agentInstructionRepository.findOne({
+    // Сначала ищем специфическую инструкцию для колонки
+    let instruction = await this.agentInstructionRepository.findOne({
       where: {
         agentId,
         columnId,
       },
     });
 
+    // Если не нашли, ищем универсальную инструкцию для всех колонок
+    if (!instruction) {
+      this.logger.log(
+        `🔍 No specific instruction found, searching for universal (columnId="all")`,
+      );
+      instruction = await this.agentInstructionRepository.findOne({
+        where: {
+          agentId,
+          columnId: 'all',
+        },
+      });
+    }
+
     if (instruction) {
       this.logger.log(
-        `✅ Found instruction: ${instruction.id} - ${instruction.instruction} (triggerEvent: ${instruction.triggerEvent}, isActive: ${instruction.isActive})`,
+        `✅ Found instruction: ${instruction.id} - ${instruction.instruction} (triggerEvent: ${instruction.triggerEvent}, isActive: ${instruction.isActive}, columnId: ${instruction.columnId})`,
       );
     } else {
       this.logger.warn(
-        `❌ No instructions found for agent ${agentId} in column ${columnId}`,
+        `❌ No instructions found for agent ${agentId} in column ${columnId} or universal`,
       );
 
       // Попробуем найти все инструкции для этого агента для отладки

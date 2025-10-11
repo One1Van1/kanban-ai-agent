@@ -118,14 +118,18 @@ export class JiraWebhookHandlerService extends JiraBaseService {
 
       this.logger.log(`🔍 Looking for agents for column: ${statusName}`);
 
-      // Найти всех активных агентов с инструкциями для этой колонки
+      // Найти всех активных агентов с инструкциями для этой колонки или для всех колонок
       const agents = await this.agentRepository
         .createQueryBuilder('agent')
         .leftJoinAndSelect('agent.instructions', 'instruction')
         .where('agent.status = :status', { status: 'active' })
-        .andWhere('instruction.columnName = :columnName', {
-          columnName: statusName,
-        })
+        .andWhere(
+          '(instruction.columnName = :columnName OR instruction.columnName = :allColumns)',
+          {
+            columnName: statusName,
+            allColumns: 'All Columns',
+          },
+        )
         .andWhere('instruction.isActive = :isActive', { isActive: true })
         .getMany();
 
