@@ -58,6 +58,18 @@ export const translations = {
         'Создайте своего первого AI агента для автоматизации задач',
       noAgentsDesc: 'Создайте своего первого AI агента для автоматизации задач',
 
+      // Loading and error states
+      loading: 'Загрузка агентов...',
+      errorTitle: 'Ошибка загрузки агентов',
+      activeCount: 'Активно агентов',
+
+      // Agent details
+      noDescription: 'Нет описания',
+      created: 'Создан',
+      updated: 'Обновлен',
+      boardType: 'Тип доски',
+      configure: 'Настроить агента',
+
       // Agent statuses
       status: {
         active: 'Агенты успешно создаются!',
@@ -266,6 +278,7 @@ export const translations = {
       search: 'Поиск',
       filter: 'Фильтр',
       sort: 'Сортировка',
+      tryAgain: 'Попробовать снова',
       actions: 'Действия',
       settings: 'Настройки',
       profile: 'Профиль',
@@ -337,6 +350,18 @@ export const translations = {
       noAgents: "You don't have any agents yet",
       noAgentsDescription: 'Create your first AI agent to automate tasks',
       noAgentsDesc: 'Create your first AI agent to automate tasks',
+
+      // Loading and error states
+      loading: 'Loading agents...',
+      errorTitle: 'Error loading agents',
+      activeCount: 'Active agents',
+
+      // Agent details
+      noDescription: 'No description',
+      created: 'Created',
+      updated: 'Updated',
+      boardType: 'Board type',
+      configure: 'Configure agent',
 
       // Agent statuses
       status: {
@@ -546,6 +571,7 @@ export const translations = {
       search: 'Search',
       filter: 'Filter',
       sort: 'Sort',
+      tryAgain: 'Try Again',
       actions: 'Actions',
       settings: 'Settings',
       profile: 'Profile',

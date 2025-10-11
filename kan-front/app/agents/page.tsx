@@ -105,21 +105,21 @@ export default function AgentsPage() {
                   <div className="ml-3">
                     <p className="text-sm font-medium text-green-800">
                       {loading
-                        ? 'Загрузка агентов...'
+                        ? t('agents.loading')
                         : error
-                          ? 'Ошибка загрузки'
+                          ? t('agents.error')
                           : agents.length > 0
-                            ? `Активно агентов: ${agents.length}`
-                            : 'Агенты не найдены'}
+                            ? `${t('agents.activeCount')}: ${agents.length}`
+                            : t('agents.notFound')}
                     </p>
                     <p className="text-sm text-green-700">
                       {loading
-                        ? 'Подключение к API...'
+                        ? t('agents.connecting')
                         : error
                           ? error
                           : agents.length > 0
-                            ? 'Управляйте своими AI агентами для автоматизации задач'
-                            : 'Создайте своего первого AI агента для автоматизации задач'}
+                            ? t('agents.manageDescription')
+                            : t('agents.createFirstDescription')}
                     </p>
                   </div>
                 </div>
@@ -146,11 +146,11 @@ export default function AgentsPage() {
                 <CardContent className="text-center py-12">
                   <Bot className="h-16 w-16 text-red-400 mx-auto mb-4" />
                   <h3 className="text-lg font-semibold text-red-800 mb-2">
-                    Ошибка загрузки агентов
+                    {t('agents.errorTitle')}
                   </h3>
                   <p className="text-red-600 mb-6">{error}</p>
                   <Button onClick={loadAgents} variant="outline">
-                    Попробовать снова
+                    {t('common.tryAgain')}
                   </Button>
                 </CardContent>
               </Card>
@@ -180,9 +180,9 @@ export default function AgentsPage() {
               {agents.map((agent) => (
                 <Card
                   key={agent.id}
-                  className="hover:shadow-lg transition-shadow"
+                  className="hover:shadow-lg transition-shadow flex flex-col h-80"
                 >
-                  <CardHeader className="pb-3">
+                  <CardHeader className="pb-3 flex-shrink-0">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-2">
                         <Bot className="h-5 w-5 text-primary" />
@@ -197,35 +197,36 @@ export default function AgentsPage() {
                       </span>
                     </div>
                   </CardHeader>
-                  <CardContent className="pt-0">
+                  <CardContent className="pt-0 flex flex-col flex-grow">
                     <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                      {agent.description || 'Нет описания'}
+                      {agent.description || t('agents.noDescription')}
                     </p>
 
-                    <div className="space-y-2 text-xs text-muted-foreground mb-4">
-                      <div>Создан: {formatDate(agent.createdAt)}</div>
-                      <div>Обновлен: {formatDate(agent.updatedAt)}</div>
+                    <div className="space-y-2 text-xs text-muted-foreground mb-4 flex-grow">
+                      <div>
+                        {t('agents.created')}: {formatDate(agent.createdAt)}
+                      </div>
+                      <div>
+                        {t('agents.updated')}: {formatDate(agent.updatedAt)}
+                      </div>
                       {agent.boardType && (
-                        <div>Тип доски: {agent.boardType}</div>
+                        <div>
+                          {t('agents.boardType')}: {agent.boardType}
+                        </div>
                       )}
                     </div>
 
-                    <div className="flex space-x-2">
-                      <Link href={`/agents/create`} className="flex-1">
-                        <Button variant="outline" className="w-full" size="sm">
-                          <Edit className="h-3 w-3 mr-1" />
-                          Настроить
+                    <div className="mt-auto">
+                      <Link href={`/agents/create`} className="block">
+                        <Button
+                          variant="outline"
+                          className="w-full justify-center"
+                          size="default"
+                        >
+                          <Edit className="h-4 w-4 mr-2" />
+                          {t('agents.configure')}
                         </Button>
                       </Link>
-                      <Button
-                        variant="outline"
-                        className="flex-1"
-                        size="sm"
-                        disabled
-                      >
-                        <Activity className="h-3 w-3 mr-1" />
-                        Активность
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>
