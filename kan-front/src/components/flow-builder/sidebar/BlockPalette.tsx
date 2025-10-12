@@ -218,7 +218,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-4">
+        <div className="p-3 space-y-3">
           {Object.entries(groupedBlocks).map(([category, blocks]) => (
             <Card
               key={category}
@@ -226,31 +226,31 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
                 categoryColors[category as keyof typeof categoryColors]
               }
             >
-              <CardHeader className="pb-2">
+              <CardHeader className="pb-2 px-3 pt-3">
                 <CardTitle className="text-sm font-medium">
                   {t(`flowBuilder.blockPalette.categories.${category}`)}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0 space-y-2">
+              <CardContent className="pt-0 px-3 pb-3 space-y-2">
                 {blocks.map((block) => (
                   <Button
                     key={block.type}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start h-auto p-3 text-left hover:bg-muted/50"
+                    className="w-full justify-start h-auto p-3 text-left hover:bg-muted/50 min-h-[60px]"
                     onClick={() => onAddBlock(block.type, block.category)}
                   >
                     <div className="flex items-start gap-3 w-full">
-                      <div className={`mt-0.5 ${block.color}`}>
+                      <div className={`mt-0.5 flex-shrink-0 ${block.color}`}>
                         {block.icon}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-xs text-foreground">
+                      <div className="flex-1 min-w-0 overflow-hidden">
+                        <div className="font-medium text-xs text-foreground break-words">
                           {t(
                             `flowBuilder.blockPalette.blocks.${block.type}.name`,
                           )}
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">
+                        <div className="text-xs text-muted-foreground mt-0.5 break-words leading-tight">
                           {t(
                             `flowBuilder.blockPalette.blocks.${block.type}.description`,
                           )}

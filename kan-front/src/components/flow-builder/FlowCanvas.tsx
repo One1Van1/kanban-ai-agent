@@ -172,7 +172,7 @@ export function FlowCanvas({
     <div className="flex h-full w-full bg-background">
       {/* Боковая панель с палитрой блоков */}
       {isSidebarOpen && (
-        <div className="w-80 bg-card border-r border-border shadow-sm h-full">
+        <div className="w-96 bg-card border-r border-border shadow-sm h-full">
           <BlockPalette onAddBlock={onAddBlock} />
         </div>
       )}
