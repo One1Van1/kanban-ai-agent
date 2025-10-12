@@ -5,6 +5,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Clock, Timer, CheckCircle } from 'lucide-react';
+import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface WaitBlockProps {
   data: {
@@ -17,6 +18,8 @@ interface WaitBlockProps {
 }
 
 export function WaitBlock({ data, id, selected }: WaitBlockProps) {
+  const { t } = useLanguage();
+
   const getIcon = () => {
     switch (data.type) {
       case 'wait_response':
@@ -40,7 +43,7 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
 
   return (
     <Card
-      className={`w-64 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
+      className={`w-72 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
     >
       {/* Входной handle */}
       <Handle
@@ -50,26 +53,34 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
       />
 
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm">
+        <CardTitle className="flex items-start gap-2 text-sm">
           {getIcon()}
-          <span>Wait</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {data.type}
+          <span className="flex-1 min-w-0">
+            {t('flowBuilder.blockPalette.categories.wait')}
+          </span>
+          <Badge
+            variant="secondary"
+            className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
+          >
+            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">{data.name}</div>
+        <div className="text-xs font-medium mb-2">
+          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+        </div>
 
         {data.config?.waitFor && (
           <div className="text-xs text-muted-foreground mb-1">
-            Wait for: {data.config.waitFor}
+            {t('flowBuilder.fields.waitFor')}: {data.config.waitFor}
           </div>
         )}
 
         {data.config?.timeout && (
           <div className="text-xs text-muted-foreground">
-            Timeout: {formatTimeout(data.config.timeout)}
+            {t('flowBuilder.fields.timeout')}:{' '}
+            {formatTimeout(data.config.timeout)}
           </div>
         )}
       </CardContent>
@@ -99,9 +110,15 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
 
       {/* Лейблы для веток */}
       <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs px-2 pb-1">
-        <span className="text-green-600 font-medium">Success</span>
-        <span className="text-red-600 font-medium">Error</span>
-        <span className="text-gray-600 font-medium">Timeout</span>
+        <span className="text-green-600 font-medium">
+          {t('flowBuilder.states.success')}
+        </span>
+        <span className="text-red-600 font-medium">
+          {t('flowBuilder.states.error')}
+        </span>
+        <span className="text-gray-600 font-medium">
+          {t('flowBuilder.states.timeout')}
+        </span>
       </div>
     </Card>
   );

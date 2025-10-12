@@ -5,6 +5,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Archive, Variable } from 'lucide-react';
+import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface ContextBlockProps {
   data: {
@@ -17,6 +18,8 @@ interface ContextBlockProps {
 }
 
 export function ContextBlock({ data, id, selected }: ContextBlockProps) {
+  const { t } = useLanguage();
+
   const getIcon = () => {
     switch (data.type) {
       case 'extract_files':
@@ -34,7 +37,7 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
 
   return (
     <Card
-      className={`w-64 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
+      className={`w-72 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
     >
       {/* Входной handle */}
       <Handle
@@ -44,29 +47,37 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
       />
 
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm">
+        <CardTitle className="flex items-start gap-2 text-sm">
           {getIcon()}
-          <span>Context</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {data.type}
+          <span className="flex-1 min-w-0">
+            {t('flowBuilder.blockPalette.categories.context')}
+          </span>
+          <Badge
+            variant="secondary"
+            className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
+          >
+            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">{data.name}</div>
+        <div className="text-xs font-medium mb-2">
+          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+        </div>
         {data.config?.variableName && (
           <div className="text-xs text-muted-foreground mb-1">
-            Variable: {data.config.variableName}
+            {t('flowBuilder.fields.variable')}: {data.config.variableName}
           </div>
         )}
         {data.config?.source && (
           <div className="text-xs text-muted-foreground mb-1">
-            Source: {data.config.source}
+            {t('flowBuilder.fields.source')}: {data.config.source}
           </div>
         )}
         {data.config?.filter?.fileType && (
           <div className="text-xs text-muted-foreground">
-            Types: {data.config.filter.fileType.join(', ')}
+            {t('flowBuilder.fields.types')}:{' '}
+            {data.config.filter.fileType.join(', ')}
           </div>
         )}
       </CardContent>

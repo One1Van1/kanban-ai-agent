@@ -5,6 +5,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { GitBranch, RotateCcw, AlertTriangle } from 'lucide-react';
+import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface LogicBlockProps {
   data: {
@@ -17,6 +18,8 @@ interface LogicBlockProps {
 }
 
 export function LogicBlock({ data, id, selected }: LogicBlockProps) {
+  const { t } = useLanguage();
+
   const getIcon = () => {
     switch (data.type) {
       case 'if_else':
@@ -36,7 +39,7 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
 
   return (
     <Card
-      className={`w-64 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
+      className={`w-72 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
     >
       {/* Входной handle */}
       <Handle
@@ -46,29 +49,37 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
       />
 
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm">
+        <CardTitle className="flex items-start gap-2 text-sm">
           {getIcon()}
-          <span>Logic</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {data.type}
+          <span className="flex-1 min-w-0">
+            {t('flowBuilder.blockPalette.categories.logic')}
+          </span>
+          <Badge
+            variant="secondary"
+            className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
+          >
+            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">{data.name}</div>
+        <div className="text-xs font-medium mb-2">
+          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+        </div>
         {data.config?.condition?.variable && (
           <div className="text-xs text-muted-foreground mb-1">
-            Variable: {data.config.condition.variable}
+            {t('flowBuilder.fields.variable')}: {data.config.condition.variable}
           </div>
         )}
         {data.config?.condition?.operator && (
           <div className="text-xs text-muted-foreground mb-1">
-            Condition: {data.config.condition.operator}
+            {t('flowBuilder.fields.condition')}:{' '}
+            {data.config.condition.operator}
           </div>
         )}
         {data.config?.condition?.value && (
           <div className="text-xs text-muted-foreground">
-            Value: {data.config.condition.value}
+            {t('flowBuilder.fields.value')}: {data.config.condition.value}
           </div>
         )}
       </CardContent>
@@ -92,8 +103,12 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
           />
           {/* Лейблы для веток */}
           <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs px-4 pb-1">
-            <span className="text-green-600 font-medium">True</span>
-            <span className="text-red-600 font-medium">False</span>
+            <span className="text-green-600 font-medium">
+              {t('flowBuilder.states.true')}
+            </span>
+            <span className="text-red-600 font-medium">
+              {t('flowBuilder.states.false')}
+            </span>
           </div>
         </>
       )}

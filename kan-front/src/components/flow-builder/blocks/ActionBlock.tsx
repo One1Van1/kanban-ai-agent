@@ -5,6 +5,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { MessageSquare, Brain, FileText, Paperclip, Bell } from 'lucide-react';
+import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface ActionBlockProps {
   data: {
@@ -17,6 +18,8 @@ interface ActionBlockProps {
 }
 
 export function ActionBlock({ data, id, selected }: ActionBlockProps) {
+  const { t } = useLanguage();
+
   const getIcon = () => {
     switch (data.type) {
       case 'comment':
@@ -40,7 +43,7 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
 
   return (
     <Card
-      className={`w-64 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
+      className={`w-72 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
     >
       {/* Входной handle */}
       <Handle
@@ -50,16 +53,23 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
       />
 
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm">
+        <CardTitle className="flex items-start gap-2 text-sm">
           {getIcon()}
-          <span>Action</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {data.type}
+          <span className="flex-1 min-w-0">
+            {t('flowBuilder.blockPalette.categories.action')}
+          </span>
+          <Badge
+            variant="secondary"
+            className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
+          >
+            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">{data.name}</div>
+        <div className="text-xs font-medium mb-2">
+          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+        </div>
 
         {/* Конфигурация для комментариев */}
         {data.type === 'comment' && data.config?.commentText && (

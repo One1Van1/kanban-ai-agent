@@ -386,6 +386,10 @@ export const translations = {
         variable: 'Переменная',
         condition: 'Условие',
         value: 'Значение',
+        source: 'Источник',
+        types: 'Типы',
+        waitFor: 'Ожидать',
+        timeout: 'Таймаут',
       },
 
       // Events
@@ -395,6 +399,15 @@ export const translations = {
         card_updated: 'Карточка обновлена',
         card_deleted: 'Карточка удалена',
         comment_added: 'Комментарий добавлен',
+      },
+
+      // States
+      states: {
+        success: 'Успех',
+        error: 'Ошибка',
+        timeout: 'Таймаут',
+        true: 'Истина',
+        false: 'Ложь',
       },
 
       launchBuilder: 'Запустить Builder (Скоро)',
@@ -819,6 +832,10 @@ export const translations = {
         variable: 'Variable',
         condition: 'Condition',
         value: 'Value',
+        source: 'Source',
+        types: 'Types',
+        waitFor: 'Wait for',
+        timeout: 'Timeout',
       },
 
       // Events
@@ -828,6 +845,15 @@ export const translations = {
         card_updated: 'Card Updated',
         card_deleted: 'Card Deleted',
         comment_added: 'Comment Added',
+      },
+
+      // States
+      states: {
+        success: 'Success',
+        error: 'Error',
+        timeout: 'Timeout',
+        true: 'True',
+        false: 'False',
       },
 
       launchBuilder: 'Launch Builder (Coming Soon)',
