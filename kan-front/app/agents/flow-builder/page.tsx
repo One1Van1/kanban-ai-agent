@@ -162,6 +162,7 @@ export default function FlowBuilderPage() {
                 onFlowChange={setCurrentFlow}
                 isSidebarOpen={isPaletteOpen}
                 isPropertiesOpen={isPropertiesOpen}
+                isMainSidebarOpen={isSidebarOpen}
               />
             </div>
           </div>

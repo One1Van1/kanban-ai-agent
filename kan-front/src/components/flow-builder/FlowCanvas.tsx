@@ -25,7 +25,6 @@ import { ContextBlock } from './blocks/ContextBlock';
 import { LogicBlock } from './blocks/LogicBlock';
 import { ActionBlock } from './blocks/ActionBlock';
 import { WaitBlock } from './blocks/WaitBlock';
-import { useSidebar } from '@/src/lib/SidebarContext';
 
 // Регистрируем кастомные типы блоков
 const nodeTypes = {
@@ -42,6 +41,7 @@ interface FlowCanvasProps {
   readonly?: boolean;
   isSidebarOpen?: boolean;
   isPropertiesOpen?: boolean;
+  isMainSidebarOpen?: boolean;
 }
 
 export function FlowCanvas({
@@ -50,6 +50,7 @@ export function FlowCanvas({
   readonly = false,
   isSidebarOpen = true,
   isPropertiesOpen: externalIsPropertiesOpen = false,
+  isMainSidebarOpen = true,
 }: FlowCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -57,7 +58,6 @@ export function FlowCanvas({
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(
     externalIsPropertiesOpen,
   );
-  const { isOpen: isMainSidebarOpen } = useSidebar();
 
   // Обработка соединения блоков
   const onConnect = useCallback(
@@ -216,16 +216,18 @@ export function FlowCanvas({
         </ReactFlow>
       </div>
 
-      {/* Палитра блоков - справа, появляется/исчезает плавно */}
+      {/* Палитра блоков - справа, расширяется когда левая шторка закрывается */}
       <div
-        className={`${isSidebarOpen ? 'w-80' : 'w-0'} bg-card border-l border-border shadow-sm transition-all duration-300 ease-in-out overflow-hidden`}
+        className={`${isSidebarOpen ? (isMainSidebarOpen ? 'w-80' : 'w-96') : 'w-0'} bg-card border-l border-border shadow-sm transition-all duration-300 ease-in-out overflow-hidden`}
       >
         {isSidebarOpen && <BlockPalette onAddBlock={onAddBlock} />}
       </div>
 
-      {/* Панель свойств - крайняя справа */}
+      {/* Панель свойств - крайняя справа, также расширяется */}
       {isPropertiesOpen && selectedBlock && (
-        <div className="w-96 bg-card border-l border-border shadow-sm transition-all duration-300">
+        <div
+          className={`${isMainSidebarOpen ? 'w-96' : 'w-[28rem]'} bg-card border-l border-border shadow-sm transition-all duration-300`}
+        >
           <PropertiesPanel
             blockId={selectedBlock}
             nodes={nodes}
