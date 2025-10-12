@@ -385,13 +385,96 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
 
   card.className = className;
 
-  // Применяем базовые CSS стили
+  // Определяем цвета для текущей темы
+  const isDark = document.documentElement.classList.contains('dark');
+  let bgColor, borderColor, textColor, badgeBackground, badgeText, mutedText;
+
+  if (isDark) {
+    // Тёмная тема
+    badgeBackground = '#27272a';
+    badgeText = '#a1a1aa';
+    mutedText = '#9ca3af';
+    switch (blockCategory) {
+      case 'trigger':
+        bgColor = 'rgba(20, 83, 45, 0.2)';
+        borderColor = '#166534';
+        textColor = '#bbf7d0';
+        break;
+      case 'context':
+        bgColor = 'rgba(30, 64, 175, 0.2)';
+        borderColor = '#1e40af';
+        textColor = '#bfdbfe';
+        break;
+      case 'logic':
+        bgColor = 'rgba(161, 98, 7, 0.2)';
+        borderColor = '#a16207';
+        textColor = '#fef08a';
+        break;
+      case 'action':
+        bgColor = 'rgba(124, 45, 18, 0.2)';
+        borderColor = '#7c2d12';
+        textColor = '#e9d5ff';
+        break;
+      case 'wait':
+        bgColor = 'rgba(194, 65, 12, 0.2)';
+        borderColor = '#c2410c';
+        textColor = '#fed7aa';
+        break;
+      default:
+        bgColor = 'rgba(20, 83, 45, 0.2)';
+        borderColor = '#166534';
+        textColor = '#bbf7d0';
+    }
+  } else {
+    // Светлая тема
+    badgeBackground = '#f4f4f5';
+    badgeText = '#71717a';
+    mutedText = '#6b7280';
+    switch (blockCategory) {
+      case 'trigger':
+        bgColor = '#f0fdf4';
+        borderColor = '#bbf7d0';
+        textColor = '#166534';
+        break;
+      case 'context':
+        bgColor = '#eff6ff';
+        borderColor = '#bfdbfe';
+        textColor = '#1e40af';
+        break;
+      case 'logic':
+        bgColor = '#fefce8';
+        borderColor = '#fef08a';
+        textColor = '#a16207';
+        break;
+      case 'action':
+        bgColor = '#faf5ff';
+        borderColor = '#e9d5ff';
+        textColor = '#7c2d12';
+        break;
+      case 'wait':
+        bgColor = '#fff7ed';
+        borderColor = '#fed7aa';
+        textColor = '#c2410c';
+        break;
+      default:
+        bgColor = '#f0fdf4';
+        borderColor = '#bbf7d0';
+        textColor = '#166534';
+    }
+  }
+
+  // Применяем inline стили с правильными цветами
   card.style.cssText = `
     position: absolute;
     top: -1000px;
     left: -1000px;
     width: 288px;
     min-height: 120px;
+    background-color: ${bgColor};
+    border: 1px solid ${borderColor};
+    color: ${textColor};
+    border-radius: 8px;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     pointer-events: none;
     z-index: 10000;
     font-family: system-ui, -apple-system, sans-serif;
@@ -412,8 +495,8 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
           ${blockInfo.categoryName}
         </span>
         <span style="
-          background: #f4f4f5;
-          color: #71717a;
+          background: ${badgeBackground};
+          color: ${badgeText};
           padding: 4px 8px;
           border-radius: 6px;
           font-size: 12px;
@@ -429,13 +512,13 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
     
     <!-- CardContent -->
     <div style="padding: 0 24px 24px 24px;">
-      <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px;">
+      <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px; color: ${textColor};">
         ${blockInfo.name}
       </div>
       ${
         mockConfig?.boardType
           ? `
-        <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+        <div style="font-size: 12px; color: ${mutedText}; margin-bottom: 4px;">
           Board: ${mockConfig.boardType.toUpperCase()}
         </div>
       `
@@ -444,7 +527,7 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
       ${
         mockConfig?.event
           ? `
-        <div style="font-size: 12px; color: #6b7280;">
+        <div style="font-size: 12px; color: ${mutedText};">
           Event: ${mockConfig.event.replace('_', ' ')}
         </div>
       `
@@ -816,6 +899,66 @@ const getConfigText = (blockType: string, config: any) => {
 
 // Получение информации о блоке для preview
 const getBlockInfo = (blockType: string, blockCategory: string) => {
+  // Получаем текущий язык из localStorage (как это делает LanguageContext)
+  const getCurrentLanguage = () => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('language');
+      return saved === 'en' || saved === 'ru' ? saved : 'ru';
+    }
+    return 'ru';
+  };
+
+  // Импортируем переводы напрямую
+  const { translations } = require('../../../lib/i18n/translations');
+  const currentLang = getCurrentLanguage();
+
+  const getTranslatedCategoryName = (category: string) => {
+    const path = `flowBuilder.blockPalette.categories.${category}`;
+    const keys = path.split('.');
+    let current = translations[currentLang];
+
+    for (const key of keys) {
+      if (current && typeof current === 'object' && key in current) {
+        current = current[key];
+      } else {
+        // Fallback к английскому если не найдено
+        let fallback = translations.en;
+        for (const k of keys) {
+          if (fallback && typeof fallback === 'object' && k in fallback) {
+            fallback = fallback[k];
+          } else {
+            return category; // Если ничего не найдено
+          }
+        }
+        return fallback;
+      }
+    }
+    return current || category;
+  };
+
+  const getTranslatedBlockName = (blockType: string) => {
+    const path = `flowBuilder.blockPalette.blocks.${blockType}.name`;
+    const keys = path.split('.');
+    let current = translations[currentLang];
+
+    for (const key of keys) {
+      if (current && typeof current === 'object' && key in current) {
+        current = current[key];
+      } else {
+        // Fallback к английскому если не найдено
+        let fallback = translations.en;
+        for (const k of keys) {
+          if (fallback && typeof fallback === 'object' && k in fallback) {
+            fallback = fallback[k];
+          } else {
+            return blockType.replace('_', ' '); // Если ничего не найдено
+          }
+        }
+        return fallback;
+      }
+    }
+    return current || blockType.replace('_', ' ');
+  };
   const categoryColors = {
     trigger:
       'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/20 dark:border-green-800 dark:text-green-200',
@@ -834,14 +977,6 @@ const getBlockInfo = (blockType: string, blockCategory: string) => {
     logic: 'bg-yellow-500',
     action: 'bg-purple-500',
     wait: 'bg-orange-500',
-  };
-
-  const categoryNames = {
-    trigger: 'Trigger',
-    context: 'Context',
-    logic: 'Logic',
-    action: 'Action',
-    wait: 'Wait',
   };
 
   const blockIcons = {
@@ -878,12 +1013,12 @@ const getBlockInfo = (blockType: string, blockCategory: string) => {
   };
 
   return {
-    name: getBlockDisplayName(blockType),
-    categoryName: categoryNames[blockCategory as keyof typeof categoryNames],
+    name: getTranslatedBlockName(blockType),
+    categoryName: getTranslatedCategoryName(blockCategory),
     colorClass: categoryColors[blockCategory as keyof typeof categoryColors],
     handleColor: handleColors[blockCategory as keyof typeof handleColors],
     icon: blockIcons[blockType as keyof typeof blockIcons] || Zap,
-    description: `Configure ${getBlockDisplayName(blockType)} settings`,
+    description: `Configure ${getTranslatedBlockName(blockType)} settings`,
   };
 };
 
