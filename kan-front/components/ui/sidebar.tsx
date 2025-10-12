@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Bot, Home, Users, Plus, Workflow, LayoutGrid } from 'lucide-react';
 import { LanguageSelector } from './language-selector';
+import { ModeToggle } from '@/src/components/mode-toggle';
 import { useTranslation } from '@/src/lib/i18n';
 
 export function Sidebar() {
@@ -17,7 +18,10 @@ export function Sidebar() {
             <Bot className="h-6 w-6 text-primary" />
             <span className="text-lg font-bold">AI Kanban</span>
           </div>
-          <LanguageSelector />
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <LanguageSelector />
+          </div>
         </div>
 
         <nav className="flex-1 space-y-2 p-4">

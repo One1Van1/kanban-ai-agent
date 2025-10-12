@@ -60,13 +60,26 @@ export default function AgentsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return 'text-green-600 bg-green-100';
+        return 'text-primary bg-primary/10 border border-primary/20';
       case 'inactive':
-        return 'text-red-600 bg-red-100';
+        return 'text-muted-foreground bg-muted border border-border';
       case 'paused':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-amber-600 bg-amber-50 border border-amber-200 dark:text-amber-400 dark:bg-amber-900/20 dark:border-amber-800';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-muted-foreground bg-muted border border-border';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'active':
+        return t('agents.status.active');
+      case 'inactive':
+        return t('agents.status.inactive');
+      case 'paused':
+        return t('agents.status.paused');
+      default:
+        return status;
     }
   };
 
@@ -96,31 +109,31 @@ export default function AgentsPage() {
 
           {/* Status Message */}
           <div className="mb-8">
-            <Card className="bg-green-50 border-green-200">
-              <CardContent className="pt-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <Bot className="h-5 w-5 text-green-600" />
-                  </div>
-                  <div className="ml-3">
-                    <p className="text-sm font-medium text-green-800">
-                      {loading
-                        ? t('agents.loading')
-                        : error
-                          ? t('agents.error')
-                          : agents.length > 0
-                            ? `${t('agents.activeCount')}: ${agents.length}`
-                            : t('agents.notFound')}
-                    </p>
-                    <p className="text-sm text-green-700">
-                      {loading
-                        ? t('agents.connecting')
-                        : error
-                          ? error
-                          : agents.length > 0
-                            ? t('agents.manageDescription')
-                            : t('agents.createFirstDescription')}
-                    </p>
+            <Card>
+              <CardContent className="py-6">
+                <div className="flex items-center justify-center text-center">
+                  <div className="flex items-center gap-3">
+                    <Bot className="h-6 w-6 text-primary" />
+                    <div>
+                      <p className="text-base font-semibold text-foreground">
+                        {loading
+                          ? t('agents.loading')
+                          : error
+                            ? t('agents.error')
+                            : agents.length > 0
+                              ? `${t('agents.activeCount')}: ${agents.length}`
+                              : t('agents.notFound')}
+                      </p>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {loading
+                          ? t('agents.connecting')
+                          : error
+                            ? error
+                            : agents.length > 0
+                              ? t('agents.manageDescription')
+                              : t('agents.createFirstDescription')}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -193,7 +206,7 @@ export default function AgentsPage() {
                       <span
                         className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(agent.status)}`}
                       >
-                        {agent.status}
+                        {getStatusText(agent.status)}
                       </span>
                     </div>
                   </CardHeader>
@@ -219,7 +232,7 @@ export default function AgentsPage() {
                     <div className="mt-auto">
                       <Link href={`/agents/create`} className="block">
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           className="w-full justify-center"
                           size="default"
                         >

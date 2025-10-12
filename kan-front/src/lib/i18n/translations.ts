@@ -72,8 +72,9 @@ export const translations = {
 
       // Agent statuses
       status: {
-        active: 'Агенты успешно создаются!',
+        active: 'Активен',
         inactive: 'Неактивен',
+        paused: 'Приостановлен',
         error: 'Ошибка',
       },
 
@@ -365,8 +366,9 @@ export const translations = {
 
       // Agent statuses
       status: {
-        active: 'Agents are being created successfully!',
+        active: 'Active',
         inactive: 'Inactive',
+        paused: 'Paused',
         error: 'Error',
       },
 
