@@ -237,7 +237,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
                     key={block.type}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start h-auto p-2.5 text-left hover:bg-muted/50 whitespace-normal"
+                    className="w-full justify-start h-auto p-2.5 text-left bg-background/50 dark:bg-background/30 hover:bg-muted/50 dark:hover:bg-muted/40 whitespace-normal border border-border/40 dark:border-border/70 hover:border-border/80 dark:hover:border-border transition-colors"
                     onClick={() => onAddBlock(block.type, block.category)}
                   >
                     <div className="flex items-start gap-2 w-full">
