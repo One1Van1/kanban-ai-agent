@@ -80,7 +80,7 @@ export default function FlowBuilderPage() {
       <div
         className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'ml-64' : 'ml-0'}`}
       >
-        <div className="min-h-full">
+        <div className="h-screen">
           <div className="h-full flex flex-col">
             <div className="h-16 bg-card border-b border-border shadow-sm flex-shrink-0">
               <div className="h-full flex items-center justify-between px-6">

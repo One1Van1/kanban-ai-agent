@@ -218,7 +218,7 @@ export function FlowCanvas({
 
       {/* Палитра блоков - справа, расширяется когда левая шторка закрывается */}
       <div
-        className={`${isSidebarOpen ? (isMainSidebarOpen ? 'w-80' : 'w-96') : 'w-0'} bg-card border-l border-border shadow-sm transition-all duration-300 ease-in-out overflow-hidden`}
+        className={`${isSidebarOpen ? (isMainSidebarOpen ? 'w-96' : 'w-[26rem]') : 'w-0'} bg-card border-l border-border shadow-sm transition-all duration-300 ease-in-out ${isSidebarOpen ? '' : 'overflow-hidden'}`}
       >
         {isSidebarOpen && <BlockPalette onAddBlock={onAddBlock} />}
       </div>
