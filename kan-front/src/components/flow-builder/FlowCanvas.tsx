@@ -40,18 +40,23 @@ interface FlowCanvasProps {
   flow?: FlowDefinition;
   onFlowChange?: (flow: FlowDefinition) => void;
   readonly?: boolean;
+  isSidebarOpen?: boolean;
+  isPropertiesOpen?: boolean;
 }
 
 export function FlowCanvas({
   flow,
   onFlowChange,
   readonly = false,
+  isSidebarOpen = true,
+  isPropertiesOpen: externalIsPropertiesOpen = false,
 }: FlowCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
+  const [isPropertiesOpen, setIsPropertiesOpen] = useState(
+    externalIsPropertiesOpen,
+  );
   const { isOpen: isMainSidebarOpen } = useSidebar();
 
   // Обработка соединения блоков
@@ -171,83 +176,56 @@ export function FlowCanvas({
   }, [flow, onFlowChange, nodes, edges]);
 
   return (
-    <div
-      className={`flex h-full w-full bg-background transition-all duration-300 ${
-        isMainSidebarOpen ? '' : 'mr-4'
-      }`}
-    >
-      {/* Основной канвас */}
-      <div
-        className={`flex-1 relative h-full transition-all duration-300 ${
-          isMainSidebarOpen ? '' : 'ml-4'
-        }`}
-      >
-        {/* Панель инструментов */}
-        <FlowToolbar
-          onSave={handleSaveFlow}
-          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-          onToggleProperties={() => setIsPropertiesOpen(!isPropertiesOpen)}
-          readonly={readonly}
-        />
-
-        {/* Палитра блоков - под панелью инструментов справа */}
-        {isSidebarOpen && (
-          <div className="absolute top-12 right-0 w-80 bg-card border-l border-border shadow-sm z-10">
-            <BlockPalette onAddBlock={onAddBlock} />
-          </div>
-        )}
-
-        {/* React Flow канвас */}
-        <div
-          className={`absolute inset-0 top-12 bg-gradient-to-br from-background to-muted/20 transition-all duration-300 ${
-            isSidebarOpen ? 'right-80' : 'right-0'
-          }`}
+    <div className="flex h-full w-full bg-background">
+      {/* React Flow канвас - расширяется естественно */}
+      <div className="flex-1 relative bg-gradient-to-br from-background to-muted/20">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={onNodesChange}
+          onEdgesChange={onEdgesChange}
+          onConnect={onConnect}
+          onNodeClick={onNodeClick}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{
+            padding: 0.3,
+          }}
+          defaultEdgeOptions={{
+            style: { strokeWidth: 2, stroke: 'hsl(var(--foreground) / 0.4)' },
+            animated: true,
+          }}
         >
-          <ReactFlow
-            nodes={nodes}
-            edges={edges}
-            onNodesChange={onNodesChange}
-            onEdgesChange={onEdgesChange}
-            onConnect={onConnect}
-            onNodeClick={onNodeClick}
-            nodeTypes={nodeTypes}
-            fitView
-            fitViewOptions={{
-              padding: 0.3,
-            }}
-            defaultEdgeOptions={{
-              style: { strokeWidth: 2, stroke: 'hsl(var(--foreground) / 0.4)' },
-              animated: true,
-            }}
-          >
-            <Controls
-              className="bg-card border border-border shadow-sm rounded-lg"
-              showZoom={true}
-              showFitView={true}
-              showInteractive={true}
-            />
-            <MiniMap
-              nodeColor="hsl(var(--primary))"
-              maskColor="hsl(var(--card) / 0.9)"
-              className="border border-border shadow-sm rounded-lg bg-card"
-            />
-            <Background
-              variant={BackgroundVariant.Dots}
-              gap={24}
-              size={1.5}
-              color="hsl(var(--border))"
-            />
-          </ReactFlow>
-        </div>
+          <Controls
+            className="bg-card border border-border shadow-sm rounded-lg"
+            showZoom={true}
+            showFitView={true}
+            showInteractive={true}
+          />
+          <MiniMap
+            nodeColor="hsl(var(--primary))"
+            maskColor="hsl(var(--card) / 0.9)"
+            className="border border-border shadow-sm rounded-lg bg-card"
+          />
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={24}
+            size={1.5}
+            color="hsl(var(--border))"
+          />
+        </ReactFlow>
       </div>
 
-      {/* Панель свойств - справа от палитры блоков */}
+      {/* Палитра блоков - справа, появляется/исчезает плавно */}
+      <div
+        className={`${isSidebarOpen ? 'w-80' : 'w-0'} bg-card border-l border-border shadow-sm transition-all duration-300 ease-in-out overflow-hidden`}
+      >
+        {isSidebarOpen && <BlockPalette onAddBlock={onAddBlock} />}
+      </div>
+
+      {/* Панель свойств - крайняя справа */}
       {isPropertiesOpen && selectedBlock && (
-        <div
-          className={`w-96 bg-card border-l border-border shadow-sm h-full transition-all duration-300 ${
-            isMainSidebarOpen ? '' : 'mr-4'
-          }`}
-        >
+        <div className="w-96 bg-card border-l border-border shadow-sm transition-all duration-300">
           <PropertiesPanel
             blockId={selectedBlock}
             nodes={nodes}

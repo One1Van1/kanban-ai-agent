@@ -24,7 +24,6 @@ import {
 import { useAgentsStore } from '@/src/lib/stores/agents-store';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
-import { Sidebar } from '@/components/ui/sidebar';
 import { useTranslation } from '@/src/lib/i18n';
 
 export default function CreateAgentPage() {
@@ -87,162 +86,154 @@ export default function CreateAgentPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-
-      <div className="flex-1 pl-64">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="mb-8">
-            <Link href="/agents">
-              <Button variant="ghost" className="mb-4">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                {t('createAgent.backToAgents')}
-              </Button>
-            </Link>
-            <h1 className="text-3xl font-bold text-foreground">
-              {t('createAgent.title')}
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              {t('createAgent.subtitle')}
-            </p>
-          </div>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('createAgent.form.title')}</CardTitle>
-              <CardDescription>
-                {t('createAgent.form.description')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">{t('createAgent.form.name')} *</Label>
-                  <Input
-                    id="name"
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
-                    placeholder={t('createAgent.form.namePlaceholder')}
-                    className={errors.name ? 'border-red-500' : ''}
-                  />
-                  {errors.name && (
-                    <p className="text-sm text-red-600">{errors.name}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="description">
-                    {t('createAgent.form.agentDescription')}
-                  </Label>
-                  <Input
-                    id="description"
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleInputChange('description', e.target.value)
-                    }
-                    placeholder={t('createAgent.form.descriptionPlaceholder')}
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="instructions">
-                    {t('createAgent.form.instructions')} *
-                  </Label>
-                  <Textarea
-                    id="instructions"
-                    value={formData.instructions}
-                    onChange={(e) =>
-                      handleInputChange('instructions', e.target.value)
-                    }
-                    placeholder={t('createAgent.form.instructionsPlaceholder')}
-                    rows={6}
-                    className={errors.instructions ? 'border-red-500' : ''}
-                  />
-                  {errors.instructions && (
-                    <p className="text-sm text-red-600">
-                      {errors.instructions}
-                    </p>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="model">{t('createAgent.form.model')}</Label>
-                    <Select
-                      value={formData.model}
-                      onValueChange={(value) =>
-                        handleInputChange('model', value)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="claude-3-haiku-20240307">
-                          Claude 3 Haiku
-                        </SelectItem>
-                        <SelectItem value="claude-3-sonnet-20240229">
-                          Claude 3 Sonnet
-                        </SelectItem>
-                        <SelectItem value="gpt-3.5-turbo">
-                          GPT-3.5 Turbo
-                        </SelectItem>
-                        <SelectItem value="gpt-4">GPT-4</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="temperature">
-                      {t('createAgent.form.temperature')}
-                    </Label>
-                    <Input
-                      id="temperature"
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.1"
-                      value={formData.temperature}
-                      onChange={(e) =>
-                        handleInputChange('temperature', e.target.value)
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="maxTokens">
-                    {t('createAgent.form.maxTokens')}
-                  </Label>
-                  <Input
-                    id="maxTokens"
-                    type="number"
-                    min="100"
-                    max="4000"
-                    value={formData.maxTokens}
-                    onChange={(e) =>
-                      handleInputChange('maxTokens', e.target.value)
-                    }
-                  />
-                </div>
-
-                <div className="flex gap-4 pt-4">
-                  <Button type="submit" disabled={isLoading}>
-                    <Save className="h-4 w-4 mr-2" />
-                    {isLoading
-                      ? t('createAgent.form.creating')
-                      : t('createAgent.form.createAgent')}
-                  </Button>
-                  <Link href="/agents">
-                    <Button type="button" variant="outline">
-                      {t('createAgent.form.cancel')}
-                    </Button>
-                  </Link>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
+    <div className="min-h-full">
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <Link href="/agents">
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              {t('createAgent.backToAgents')}
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold text-foreground">
+            {t('createAgent.title')}
+          </h1>
+          <p className="mt-2 text-muted-foreground">
+            {t('createAgent.subtitle')}
+          </p>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('createAgent.form.title')}</CardTitle>
+            <CardDescription>
+              {t('createAgent.form.description')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="name">{t('createAgent.form.name')} *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  placeholder={t('createAgent.form.namePlaceholder')}
+                  className={errors.name ? 'border-red-500' : ''}
+                />
+                {errors.name && (
+                  <p className="text-sm text-red-600">{errors.name}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="description">
+                  {t('createAgent.form.agentDescription')}
+                </Label>
+                <Input
+                  id="description"
+                  value={formData.description}
+                  onChange={(e) =>
+                    handleInputChange('description', e.target.value)
+                  }
+                  placeholder={t('createAgent.form.descriptionPlaceholder')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="instructions">
+                  {t('createAgent.form.instructions')} *
+                </Label>
+                <Textarea
+                  id="instructions"
+                  value={formData.instructions}
+                  onChange={(e) =>
+                    handleInputChange('instructions', e.target.value)
+                  }
+                  placeholder={t('createAgent.form.instructionsPlaceholder')}
+                  rows={6}
+                  className={errors.instructions ? 'border-red-500' : ''}
+                />
+                {errors.instructions && (
+                  <p className="text-sm text-red-600">{errors.instructions}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="model">{t('createAgent.form.model')}</Label>
+                  <Select
+                    value={formData.model}
+                    onValueChange={(value) => handleInputChange('model', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="claude-3-haiku-20240307">
+                        Claude 3 Haiku
+                      </SelectItem>
+                      <SelectItem value="claude-3-sonnet-20240229">
+                        Claude 3 Sonnet
+                      </SelectItem>
+                      <SelectItem value="gpt-3.5-turbo">
+                        GPT-3.5 Turbo
+                      </SelectItem>
+                      <SelectItem value="gpt-4">GPT-4</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="temperature">
+                    {t('createAgent.form.temperature')}
+                  </Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    min="0"
+                    max="1"
+                    step="0.1"
+                    value={formData.temperature}
+                    onChange={(e) =>
+                      handleInputChange('temperature', e.target.value)
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="maxTokens">
+                  {t('createAgent.form.maxTokens')}
+                </Label>
+                <Input
+                  id="maxTokens"
+                  type="number"
+                  min="100"
+                  max="4000"
+                  value={formData.maxTokens}
+                  onChange={(e) =>
+                    handleInputChange('maxTokens', e.target.value)
+                  }
+                />
+              </div>
+
+              <div className="flex gap-4 pt-4">
+                <Button type="submit" disabled={isLoading}>
+                  <Save className="h-4 w-4 mr-2" />
+                  {isLoading
+                    ? t('createAgent.form.creating')
+                    : t('createAgent.form.createAgent')}
+                </Button>
+                <Link href="/agents">
+                  <Button type="button" variant="outline">
+                    {t('createAgent.form.cancel')}
+                  </Button>
+                </Link>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

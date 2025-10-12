@@ -16,6 +16,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   const pathname = usePathname();
   const isFlowBuilder = pathname === '/agents/flow-builder';
 
+  // Flow Builder теперь управляет своим собственным сайдбаром
+  if (isFlowBuilder) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="flex h-screen bg-background">
       <Sidebar />
@@ -37,19 +42,12 @@ export function AppLayout({ children }: AppLayoutProps) {
           isOpen ? 'ml-64' : 'ml-0'
         }`}
       >
-        {isFlowBuilder ? (
-          // Flow Builder занимает всю высоту без padding, но с анимациями
-          <div className="h-full relative transition-all duration-300">
-            {children}
-          </div>
-        ) : (
-          // Обычные страницы с padding
-          <div
-            className={`p-6 transition-all duration-300 ${!isOpen ? 'pt-20' : 'pt-16 md:pt-6'}`}
-          >
-            {children}
-          </div>
-        )}
+        {/* Обычные страницы с padding */}
+        <div
+          className={`p-6 transition-all duration-300 ${!isOpen ? 'pt-20' : 'pt-16 md:pt-6'}`}
+        >
+          {children}
+        </div>
       </main>
     </div>
   );

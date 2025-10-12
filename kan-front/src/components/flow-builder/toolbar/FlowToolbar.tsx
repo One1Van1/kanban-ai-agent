@@ -30,7 +30,7 @@ export function FlowToolbar({
   const { t } = useTranslation();
 
   return (
-    <div className="h-12 bg-background border-b border-border flex items-center justify-between px-4">
+    <>
       {/* Левая группа - основные действия */}
       <div className="flex items-center gap-2">
         <Button
@@ -99,6 +99,6 @@ export function FlowToolbar({
           <PanelRightOpen className="h-4 w-4" />
         </Button>
       </div>
-    </div>
+    </>
   );
 }

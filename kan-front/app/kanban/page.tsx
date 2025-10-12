@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Bot, Plus, ArrowRight, Users, Calendar } from 'lucide-react';
-import { Sidebar } from '@/components/ui/sidebar';
 import { useTranslation } from '@/src/lib/i18n';
 
 export default function KanbanPage() {
@@ -37,79 +36,78 @@ export default function KanbanPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      
-      <div className="flex-1 pl-64">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">{t('kanban.title')}</h1>
-              <p className="mt-2 text-muted-foreground">
-                {t('kanban.subtitle')}
-              </p>
-            </div>
-            <Button className="bg-primary hover:bg-primary/90">
-              <Plus className="h-4 w-4 mr-2" />
-              {t('kanban.createBoard')}
-            </Button>
+    <div className="min-h-full">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">
+              {t('kanban.title')}
+            </h1>
+            <p className="mt-2 text-muted-foreground">{t('kanban.subtitle')}</p>
           </div>
+          <Button className="bg-primary hover:bg-primary/90">
+            <Plus className="h-4 w-4 mr-2" />
+            {t('kanban.createBoard')}
+          </Button>
+        </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {boards.map((board) => (
-              <Card key={board.id} className="hover:shadow-lg transition-shadow cursor-pointer">
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{board.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        {board.description}
-                      </p>
-                    </div>
-                    <Badge variant="secondary">
-                      {board.activeAgents} {t('kanban.agents')}
-                    </Badge>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {boards.map((board) => (
+            <Card
+              key={board.id}
+              className="hover:shadow-lg transition-shadow cursor-pointer"
+            >
+              <CardHeader>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="text-lg">{board.name}</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {board.description}
+                    </p>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
-                    <div className="flex items-center">
-                      <Calendar className="h-4 w-4 mr-1" />
-                      {board.tasksCount} {t('kanban.tasks')}
-                    </div>
-                    <div className="flex items-center">
-                      <Users className="h-4 w-4 mr-1" />
-                      {board.activeAgents} {t('kanban.agents')}
-                    </div>
+                  <Badge variant="secondary">
+                    {board.activeAgents} {t('kanban.agents')}
+                  </Badge>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1" />
+                    {board.tasksCount} {t('kanban.tasks')}
                   </div>
-                  <Link href={`/kanban/${board.id}`}>
-                    <Button variant="outline" className="w-full">
-                      {t('kanban.openBoard')}
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-12">
-            <Card>
-              <CardContent className="text-center py-12">
-                <Bot className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">
-                  {t('kanban.noBoards.title')}
-                </h3>
-                <p className="text-muted-foreground mb-6">
-                  {t('kanban.noBoards.description')}
-                </p>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('kanban.createBoard')}
-                </Button>
+                  <div className="flex items-center">
+                    <Users className="h-4 w-4 mr-1" />
+                    {board.activeAgents} {t('kanban.agents')}
+                  </div>
+                </div>
+                <Link href={`/kanban/${board.id}`}>
+                  <Button variant="outline" className="w-full">
+                    {t('kanban.openBoard')}
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
-          </div>
+          ))}
+        </div>
+
+        <div className="mt-12">
+          <Card>
+            <CardContent className="text-center py-12">
+              <Bot className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                {t('kanban.noBoards.title')}
+              </h3>
+              <p className="text-muted-foreground mb-6">
+                {t('kanban.noBoards.description')}
+              </p>
+              <Button>
+                <Plus className="h-4 w-4 mr-2" />
+                {t('kanban.createBoard')}
+              </Button>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
