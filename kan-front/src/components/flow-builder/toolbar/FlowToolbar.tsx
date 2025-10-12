@@ -12,6 +12,7 @@ import {
   Download,
   Upload,
 } from 'lucide-react';
+import { useTranslation } from '../../../lib/i18n/client';
 
 interface FlowToolbarProps {
   onSave: () => void;
@@ -26,8 +27,10 @@ export function FlowToolbar({
   onToggleProperties,
   readonly = false,
 }: FlowToolbarProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className="h-12 bg-white border-b border-gray-200 flex items-center justify-between px-4">
+    <div className="h-12 bg-background border-b border-border flex items-center justify-between px-4">
       {/* Левая группа - основные действия */}
       <div className="flex items-center gap-2">
         <Button
@@ -48,12 +51,12 @@ export function FlowToolbar({
               className="h-8"
             >
               <Save className="h-4 w-4 mr-1" />
-              Save
+              {t('flowBuilder.save')}
             </Button>
 
             <Button variant="outline" size="sm" className="h-8">
               <Play className="h-4 w-4 mr-1" />
-              Test
+              {t('flowBuilder.test')}
             </Button>
           </>
         )}
@@ -61,7 +64,9 @@ export function FlowToolbar({
 
       {/* Центральная группа - название flow */}
       <div className="flex-1 flex justify-center">
-        <h1 className="text-sm font-medium text-gray-900">Flow Builder</h1>
+        <h1 className="text-sm font-medium text-foreground">
+          {t('flowBuilder.title')}
+        </h1>
       </div>
 
       {/* Правая группа - настройки и панели */}

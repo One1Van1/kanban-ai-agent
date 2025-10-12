@@ -31,12 +31,12 @@ export function TriggerBlock({ data, id, selected }: TriggerBlockProps) {
   };
 
   const getColor = () => {
-    return 'bg-green-50 border-green-200 text-green-800';
+    return 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950/20 dark:border-green-800 dark:text-green-200';
   };
 
   return (
     <Card
-      className={`w-64 ${selected ? 'ring-2 ring-blue-500' : ''} ${getColor()}`}
+      className={`w-64 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
     >
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-sm">
@@ -48,19 +48,19 @@ export function TriggerBlock({ data, id, selected }: TriggerBlockProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-1">{data.name}</div>
+        <div className="text-xs font-medium mb-2">{data.name}</div>
         {data.config?.boardType && (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-muted-foreground mb-1">
             Board: {data.config.boardType.toUpperCase()}
           </div>
         )}
         {data.config?.targetColumn && (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-muted-foreground mb-1">
             Column: {data.config.targetColumn}
           </div>
         )}
         {data.config?.event && (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-muted-foreground">
             Event: {data.config.event}
           </div>
         )}
@@ -70,7 +70,7 @@ export function TriggerBlock({ data, id, selected }: TriggerBlockProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 bg-green-500"
+        className="w-3 h-3 bg-green-500 border-2 border-white"
       />
     </Card>
   );

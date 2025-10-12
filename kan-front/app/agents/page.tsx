@@ -99,12 +99,23 @@ export default function AgentsPage() {
                 {t('agents.subtitle')}
               </p>
             </div>
-            <Link href="/agents/create">
-              <Button className="bg-primary hover:bg-primary/90">
-                <Plus className="h-4 w-4 mr-2" />
-                {t('agents.createAgent')}
-              </Button>
-            </Link>
+            <div className="flex gap-3">
+              <Link href="/agents/flow-builder">
+                <Button
+                  variant="outline"
+                  className="border-primary text-primary hover:bg-primary/10"
+                >
+                  <Settings className="h-4 w-4 mr-2" />
+                  🎨 Flow Builder
+                </Button>
+              </Link>
+              <Link href="/agents/create">
+                <Button className="bg-primary hover:bg-primary/90">
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('agents.createAgent')}
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Status Message */}

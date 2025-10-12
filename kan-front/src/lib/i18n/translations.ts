@@ -199,8 +199,17 @@ export const translations = {
 
     // Flow Builder page
     flowBuilder: {
-      title: 'Flow Builder',
-      subtitle: 'Создавайте визуальные рабочие процессы для ваших агентов',
+      title: 'AI Flow Builder',
+      subtitle: 'Создайте AI-агента с помощью визуального конструктора',
+      createDemo: 'Создать демо',
+      test: 'Тест',
+      save: 'Сохранить',
+
+      demo: {
+        name: 'Анализ фотографий стрижки',
+        description: 'Демо flow по требованиям тимлида',
+      },
+
       beta: 'Beta',
       comingSoon: 'Скоро',
       description:
@@ -493,8 +502,17 @@ export const translations = {
 
     // Flow Builder page
     flowBuilder: {
-      title: 'Flow Builder',
-      subtitle: 'Create visual workflows for your agents',
+      title: 'AI Flow Builder',
+      subtitle: 'Create AI agents using visual constructor',
+      createDemo: 'Create Demo',
+      test: 'Test',
+      save: 'Save',
+
+      demo: {
+        name: 'Hair Cut Photo Analysis',
+        description: 'Demo flow based on team lead requirements',
+      },
+
       beta: 'Beta',
       comingSoon: 'Coming Soon',
       description:

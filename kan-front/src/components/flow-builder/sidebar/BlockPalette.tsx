@@ -220,18 +220,22 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
   };
 
   const categoryColors = {
-    trigger: 'bg-green-50 border-green-200',
-    context: 'bg-blue-50 border-blue-200',
-    logic: 'bg-yellow-50 border-yellow-200',
-    action: 'bg-purple-50 border-purple-200',
-    wait: 'bg-orange-50 border-orange-200',
+    trigger:
+      'bg-green-50 border-green-200 dark:bg-green-950/20 dark:border-green-800',
+    context:
+      'bg-blue-50 border-blue-200 dark:bg-blue-950/20 dark:border-blue-800',
+    logic:
+      'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/20 dark:border-yellow-800',
+    action:
+      'bg-purple-50 border-purple-200 dark:bg-purple-950/20 dark:border-purple-800',
+    wait: 'bg-orange-50 border-orange-200 dark:bg-orange-950/20 dark:border-orange-800',
   };
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900">Block Palette</h2>
-        <p className="text-sm text-gray-500 mt-1">
+      <div className="p-4 border-b border-border">
+        <h2 className="text-lg font-semibold text-foreground">Block Palette</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Drag blocks to canvas to build your flow
         </p>
       </div>
@@ -256,7 +260,7 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
                     key={block.type}
                     variant="outline"
                     size="sm"
-                    className="w-full justify-start h-auto p-3 text-left"
+                    className="w-full justify-start h-auto p-3 text-left hover:bg-muted/50"
                     onClick={() => onAddBlock(block.type, block.category)}
                   >
                     <div className="flex items-start gap-3 w-full">
@@ -264,10 +268,10 @@ export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
                         {block.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-xs text-gray-900">
+                        <div className="font-medium text-xs text-foreground">
                           {block.name}
                         </div>
-                        <div className="text-xs text-gray-500 mt-0.5">
+                        <div className="text-xs text-muted-foreground mt-0.5">
                           {block.description}
                         </div>
                       </div>

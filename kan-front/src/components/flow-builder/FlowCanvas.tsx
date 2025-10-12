@@ -46,8 +46,8 @@ export function FlowCanvas({
   onFlowChange,
   readonly = false,
 }: FlowCanvasProps) {
-  const [nodes, setNodes, onNodesChange] = useNodesState([]);
-  const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
@@ -169,16 +169,16 @@ export function FlowCanvas({
   }, [flow, onFlowChange, nodes, edges]);
 
   return (
-    <div className="flex h-full bg-gray-50">
+    <div className="flex h-full w-full bg-background">
       {/* Боковая панель с палитрой блоков */}
       {isSidebarOpen && (
-        <div className="w-80 bg-white border-r border-gray-200 shadow-sm">
+        <div className="w-80 bg-card border-r border-border shadow-sm h-full">
           <BlockPalette onAddBlock={onAddBlock} />
         </div>
       )}
 
       {/* Основной канвас */}
-      <div className="flex-1 relative">
+      <div className="flex-1 relative h-full">
         {/* Панель инструментов */}
         <FlowToolbar
           onSave={handleSaveFlow}
@@ -188,7 +188,7 @@ export function FlowCanvas({
         />
 
         {/* React Flow канвас */}
-        <div className="h-full">
+        <div className="absolute inset-0 top-12 bg-gradient-to-br from-background to-muted/20">
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -199,20 +199,29 @@ export function FlowCanvas({
             nodeTypes={nodeTypes}
             fitView
             fitViewOptions={{
-              padding: 0.2,
+              padding: 0.3,
+            }}
+            defaultEdgeOptions={{
+              style: { strokeWidth: 2, stroke: 'hsl(var(--foreground) / 0.4)' },
+              animated: true,
             }}
           >
-            <Controls />
+            <Controls
+              className="bg-card border border-border shadow-sm rounded-lg"
+              showZoom={true}
+              showFitView={true}
+              showInteractive={true}
+            />
             <MiniMap
-              nodeColor="#3b82f6"
-              maskColor="rgba(255, 255, 255, 0.8)"
-              className="border border-gray-300"
+              nodeColor="hsl(var(--primary))"
+              maskColor="hsl(var(--card) / 0.9)"
+              className="border border-border shadow-sm rounded-lg bg-card"
             />
             <Background
               variant={BackgroundVariant.Dots}
-              gap={20}
-              size={1}
-              color="#e5e7eb"
+              gap={24}
+              size={1.5}
+              color="hsl(var(--border))"
             />
           </ReactFlow>
         </div>
@@ -220,7 +229,7 @@ export function FlowCanvas({
 
       {/* Панель свойств */}
       {isPropertiesOpen && selectedBlock && (
-        <div className="w-96 bg-white border-l border-gray-200 shadow-sm">
+        <div className="w-96 bg-card border-l border-border shadow-sm h-full">
           <PropertiesPanel
             blockId={selectedBlock}
             nodes={nodes}

@@ -29,18 +29,18 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
   };
 
   const getColor = () => {
-    return 'bg-blue-50 border-blue-200 text-blue-800';
+    return 'bg-blue-50 border-blue-200 text-blue-800 dark:bg-blue-950/20 dark:border-blue-800 dark:text-blue-200';
   };
 
   return (
     <Card
-      className={`w-64 ${selected ? 'ring-2 ring-blue-500' : ''} ${getColor()}`}
+      className={`w-64 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
     >
       {/* Входной handle */}
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 bg-blue-500"
+        className="w-3 h-3 bg-blue-500 border-2 border-white"
       />
 
       <CardHeader className="pb-2">
@@ -53,19 +53,19 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-1">{data.name}</div>
+        <div className="text-xs font-medium mb-2">{data.name}</div>
         {data.config?.variableName && (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-muted-foreground mb-1">
             Variable: {data.config.variableName}
           </div>
         )}
         {data.config?.source && (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-muted-foreground mb-1">
             Source: {data.config.source}
           </div>
         )}
         {data.config?.filter?.fileType && (
-          <div className="text-xs text-gray-600">
+          <div className="text-xs text-muted-foreground">
             Types: {data.config.filter.fileType.join(', ')}
           </div>
         )}
@@ -75,7 +75,7 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 bg-blue-500"
+        className="w-3 h-3 bg-blue-500 border-2 border-white"
       />
     </Card>
   );

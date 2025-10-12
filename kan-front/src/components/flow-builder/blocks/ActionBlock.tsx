@@ -35,18 +35,18 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
   };
 
   const getColor = () => {
-    return 'bg-purple-50 border-purple-200 text-purple-800';
+    return 'bg-purple-50 border-purple-200 text-purple-800 dark:bg-purple-950/20 dark:border-purple-800 dark:text-purple-200';
   };
 
   return (
     <Card
-      className={`w-64 ${selected ? 'ring-2 ring-blue-500' : ''} ${getColor()}`}
+      className={`w-64 ${selected ? 'ring-2 ring-blue-500 shadow-lg' : 'shadow-sm'} ${getColor()} transition-all hover:shadow-md`}
     >
       {/* Входной handle */}
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 bg-purple-500"
+        className="w-3 h-3 bg-purple-500 border-2 border-white"
       />
 
       <CardHeader className="pb-2">
@@ -59,11 +59,11 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-1">{data.name}</div>
+        <div className="text-xs font-medium mb-2">{data.name}</div>
 
         {/* Конфигурация для комментариев */}
         {data.type === 'comment' && data.config?.commentText && (
-          <div className="text-xs text-gray-600 truncate">
+          <div className="text-xs text-muted-foreground truncate">
             "{data.config.commentText}"
           </div>
         )}
@@ -72,12 +72,12 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
         {data.type === 'ai_request' && (
           <>
             {data.config?.aiModel && (
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground mb-1">
                 Model: {data.config.aiModel}
               </div>
             )}
             {data.config?.prompt && (
-              <div className="text-xs text-gray-600 truncate">
+              <div className="text-xs text-muted-foreground truncate">
                 Prompt: "{data.config.prompt.substring(0, 30)}..."
               </div>
             )}
@@ -88,12 +88,12 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
         {(data.type === 'create_file' || data.type === 'attach_file') && (
           <>
             {data.config?.fileName && (
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground mb-1">
                 File: {data.config.fileName}
               </div>
             )}
             {data.config?.fileFormat && (
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground">
                 Format: {data.config.fileFormat}
               </div>
             )}
@@ -104,12 +104,12 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
         {data.type === 'send_notification' && (
           <>
             {data.config?.recipient && (
-              <div className="text-xs text-gray-600">
+              <div className="text-xs text-muted-foreground mb-1">
                 To: {data.config.recipient}
               </div>
             )}
             {data.config?.message && (
-              <div className="text-xs text-gray-600 truncate">
+              <div className="text-xs text-muted-foreground truncate">
                 "{data.config.message.substring(0, 30)}..."
               </div>
             )}
@@ -121,7 +121,7 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 bg-purple-500"
+        className="w-3 h-3 bg-purple-500 border-2 border-white"
       />
     </Card>
   );
