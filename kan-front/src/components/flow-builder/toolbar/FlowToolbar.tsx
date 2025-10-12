@@ -12,7 +12,7 @@ import {
   Download,
   Upload,
 } from 'lucide-react';
-import { useTranslation } from '../../../lib/i18n/client';
+import { useTranslation } from '../../../lib/i18n';
 
 interface FlowToolbarProps {
   onSave: () => void;
@@ -75,19 +75,19 @@ export function FlowToolbar({
           <>
             <Button variant="ghost" size="sm" className="h-8">
               <Download className="h-4 w-4 mr-1" />
-              Export
+              {t('flowBuilder.toolbar.export')}
             </Button>
 
             <Button variant="ghost" size="sm" className="h-8">
               <Upload className="h-4 w-4 mr-1" />
-              Import
+              {t('flowBuilder.toolbar.import')}
             </Button>
           </>
         )}
 
         <Button variant="ghost" size="sm" className="h-8">
           <Settings className="h-4 w-4 mr-1" />
-          Settings
+          {t('flowBuilder.toolbar.settings')}
         </Button>
 
         <Button

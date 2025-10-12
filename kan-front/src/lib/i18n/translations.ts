@@ -205,6 +205,117 @@ export const translations = {
       test: 'Тест',
       save: 'Сохранить',
 
+      // Block Palette
+      blockPalette: {
+        title: 'Палитра блоков',
+        subtitle: 'Перетащите блоки на холст, чтобы создать поток',
+        categories: {
+          trigger: 'Триггеры',
+          context: 'Контекст',
+          logic: 'Логика',
+          action: 'Действия',
+          wait: 'Ожидание',
+        },
+        blocks: {
+          // Triggers
+          board_move: {
+            name: 'Движение карточки',
+            description: 'Срабатывает при перемещении карточки между колонками',
+          },
+          board_create: {
+            name: 'Создание карточки',
+            description: 'Срабатывает при создании новой карточки',
+          },
+          webhook: {
+            name: 'Вебхук',
+            description: 'Срабатывает при внешнем вебхук запросе',
+          },
+          schedule: {
+            name: 'Расписание',
+            description: 'Срабатывает в определенное время или интервалы',
+          },
+          // Context
+          extract_files: {
+            name: 'Извлечь файлы',
+            description: 'Извлечь файлы из вложений карточки',
+          },
+          get_card_data: {
+            name: 'Получить данные карточки',
+            description: 'Извлечь данные из полей карточки',
+          },
+          set_variable: {
+            name: 'Установить переменную',
+            description: 'Создать или обновить переменную',
+          },
+          // Logic
+          if_else: {
+            name: 'ЕСЛИ/ИНАЧЕ',
+            description: 'Условное ветвление на основе переменных',
+          },
+          switch: {
+            name: 'Переключатель',
+            description: 'Множественное ветвление условий',
+          },
+          loop: {
+            name: 'Цикл',
+            description: 'Повторить действия для каждого элемента',
+          },
+          try_catch: {
+            name: 'Обработка ошибок',
+            description: 'Блок обработки ошибок',
+          },
+          // Actions
+          comment: {
+            name: 'Комментарий',
+            description: 'Добавить комментарий к карточке',
+          },
+          ai_request: {
+            name: 'AI запрос',
+            description: 'Отправить запрос к AI модели',
+          },
+          move_card: {
+            name: 'Переместить карточку',
+            description: 'Переместить карточку в другую колонку',
+          },
+          create_file: {
+            name: 'Создать файл',
+            description: 'Создать и прикрепить файл к карточке',
+          },
+          send_notification: {
+            name: 'Отправить уведомление',
+            description: 'Отправить уведомление участникам',
+          },
+          update_field: {
+            name: 'Обновить поле',
+            description: 'Обновить поле карточки',
+          },
+          api_call: {
+            name: 'API вызов',
+            description: 'Сделать внешний API запрос',
+          },
+          // Wait
+          wait_response: {
+            name: 'Ждать ответ',
+            description: 'Ждать ответ от AI или внешней системы',
+          },
+          wait_timeout: {
+            name: 'Ждать время',
+            description: 'Ждать определенное время',
+          },
+          wait_condition: {
+            name: 'Ждать условие',
+            description: 'Ждать выполнения условия',
+          },
+        },
+      },
+
+      // Toolbar
+      toolbar: {
+        export: 'Экспорт',
+        import: 'Импорт',
+        settings: 'Настройки',
+      },
+
       demo: {
         name: 'Анализ фотографий стрижки',
         description: 'Демо flow по требованиям тимлида',
@@ -507,6 +618,117 @@ export const translations = {
       createDemo: 'Create Demo',
       test: 'Test',
       save: 'Save',
+
+      // Block Palette
+      blockPalette: {
+        title: 'Block Palette',
+        subtitle: 'Drag blocks to canvas to build your flow',
+        categories: {
+          trigger: 'Triggers',
+          context: 'Context',
+          logic: 'Logic',
+          action: 'Actions',
+          wait: 'Wait',
+        },
+        blocks: {
+          // Triggers
+          board_move: {
+            name: 'Card Moved',
+            description: 'Triggered when a card is moved between columns',
+          },
+          board_create: {
+            name: 'Card Created',
+            description: 'Triggered when a new card is created',
+          },
+          webhook: {
+            name: 'Webhook',
+            description: 'Triggered by external webhook from any system',
+          },
+          schedule: {
+            name: 'Schedule',
+            description: 'Triggered at specific times or intervals',
+          },
+          // Context
+          extract_files: {
+            name: 'Extract Files',
+            description: 'Extract files from card attachments',
+          },
+          get_card_data: {
+            name: 'Get Card Data',
+            description: 'Extract data from card fields',
+          },
+          set_variable: {
+            name: 'Set Variable',
+            description: 'Create or update a variable',
+          },
+          // Logic
+          if_else: {
+            name: 'IF/ELSE',
+            description: 'Conditional branching based on variables',
+          },
+          switch: {
+            name: 'Switch',
+            description: 'Multiple condition branching',
+          },
+          loop: {
+            name: 'Loop',
+            description: 'Repeat actions for each item',
+          },
+          try_catch: {
+            name: 'Try/Catch',
+            description: 'Error handling block',
+          },
+          // Actions
+          comment: {
+            name: 'Comment',
+            description: 'Add comment to card',
+          },
+          ai_request: {
+            name: 'AI Request',
+            description: 'Send request to AI model',
+          },
+          move_card: {
+            name: 'Move Card',
+            description: 'Move card to another column',
+          },
+          create_file: {
+            name: 'Create File',
+            description: 'Create and attach file to card',
+          },
+          send_notification: {
+            name: 'Send Notification',
+            description: 'Send notification to team members',
+          },
+          update_field: {
+            name: 'Update Field',
+            description: 'Update card field',
+          },
+          api_call: {
+            name: 'API Call',
+            description: 'Make external API request',
+          },
+          // Wait
+          wait_response: {
+            name: 'Wait Response',
+            description: 'Wait for AI or external system response',
+          },
+          wait_timeout: {
+            name: 'Wait Timeout',
+            description: 'Wait for specific time',
+          },
+          wait_condition: {
+            name: 'Wait Condition',
+            description: 'Wait for condition to be met',
+          },
+        },
+      },
+
+      // Toolbar
+      toolbar: {
+        export: 'Export',
+        import: 'Import',
+        settings: 'Settings',
+      },
 
       demo: {
         name: 'Hair Cut Photo Analysis',
