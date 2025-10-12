@@ -2,16 +2,23 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { Bot, Home, Users, Plus, Workflow, LayoutGrid } from 'lucide-react';
+import { Bot, Home, Users, Plus, Workflow, LayoutGrid, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { LanguageSelector } from './language-selector';
 import { ModeToggle } from '@/src/components/mode-toggle';
 import { useTranslation } from '@/src/lib/i18n';
+import { useSidebar } from '@/src/lib/SidebarContext';
 
 export function Sidebar() {
   const { t } = useTranslation();
+  const { isOpen, toggle } = useSidebar();
 
   return (
-    <div className="fixed left-0 top-0 z-40 h-screen w-64 border-r bg-background">
+    <div
+      className={`fixed left-0 top-0 z-40 h-screen border-r bg-background transition-transform duration-300 ${
+        isOpen ? 'translate-x-0 w-64' : '-translate-x-full w-64'
+      }`}
+    >
       <div className="flex h-full flex-col">
         <div className="flex h-16 items-center justify-between border-b px-6">
           <div className="flex items-center gap-2">
@@ -21,6 +28,14 @@ export function Sidebar() {
           <div className="flex items-center gap-2">
             <ModeToggle />
             <LanguageSelector />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggle}
+              className="h-8 w-8 p-0 hover:bg-muted"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </div>
 

@@ -25,6 +25,7 @@ import { ContextBlock } from './blocks/ContextBlock';
 import { LogicBlock } from './blocks/LogicBlock';
 import { ActionBlock } from './blocks/ActionBlock';
 import { WaitBlock } from './blocks/WaitBlock';
+import { useSidebar } from '@/src/lib/SidebarContext';
 
 // Регистрируем кастомные типы блоков
 const nodeTypes = {
@@ -51,6 +52,7 @@ export function FlowCanvas({
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
+  const { isOpen: isMainSidebarOpen } = useSidebar();
 
   // Обработка соединения блоков
   const onConnect = useCallback(
@@ -169,16 +171,17 @@ export function FlowCanvas({
   }, [flow, onFlowChange, nodes, edges]);
 
   return (
-    <div className="flex h-full w-full bg-background">
-      {/* Боковая панель с палитрой блоков */}
-      {isSidebarOpen && (
-        <div className="w-96 bg-card border-r border-border shadow-sm h-full">
-          <BlockPalette onAddBlock={onAddBlock} />
-        </div>
-      )}
-
+    <div
+      className={`flex h-full w-full bg-background transition-all duration-300 ${
+        isMainSidebarOpen ? '' : 'mr-4'
+      }`}
+    >
       {/* Основной канвас */}
-      <div className="flex-1 relative h-full">
+      <div
+        className={`flex-1 relative h-full transition-all duration-300 ${
+          isMainSidebarOpen ? '' : 'ml-4'
+        }`}
+      >
         {/* Панель инструментов */}
         <FlowToolbar
           onSave={handleSaveFlow}
@@ -187,8 +190,19 @@ export function FlowCanvas({
           readonly={readonly}
         />
 
+        {/* Палитра блоков - под панелью инструментов справа */}
+        {isSidebarOpen && (
+          <div className="absolute top-12 right-0 w-80 bg-card border-l border-border shadow-sm z-10">
+            <BlockPalette onAddBlock={onAddBlock} />
+          </div>
+        )}
+
         {/* React Flow канвас */}
-        <div className="absolute inset-0 top-12 bg-gradient-to-br from-background to-muted/20">
+        <div
+          className={`absolute inset-0 top-12 bg-gradient-to-br from-background to-muted/20 transition-all duration-300 ${
+            isSidebarOpen ? 'right-80' : 'right-0'
+          }`}
+        >
           <ReactFlow
             nodes={nodes}
             edges={edges}
@@ -227,9 +241,13 @@ export function FlowCanvas({
         </div>
       </div>
 
-      {/* Панель свойств */}
+      {/* Панель свойств - справа от палитры блоков */}
       {isPropertiesOpen && selectedBlock && (
-        <div className="w-96 bg-card border-l border-border shadow-sm h-full">
+        <div
+          className={`w-96 bg-card border-l border-border shadow-sm h-full transition-all duration-300 ${
+            isMainSidebarOpen ? '' : 'mr-4'
+          }`}
+        >
           <PropertiesPanel
             blockId={selectedBlock}
             nodes={nodes}

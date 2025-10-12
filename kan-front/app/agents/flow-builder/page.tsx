@@ -6,10 +6,12 @@ import { Button } from '../../../components/ui/button';
 import { Save, Play, ArrowLeft, Workflow } from 'lucide-react';
 import { FlowDefinition } from '../../../src/types/flow-builder';
 import { useTranslation } from '../../../src/lib/i18n';
+import { useSidebar } from '../../../src/lib/SidebarContext';
 import Link from 'next/link';
 
 export default function FlowBuilderPage() {
   const { t } = useTranslation();
+  const { isOpen } = useSidebar();
   const [currentFlow, setCurrentFlow] = useState<FlowDefinition | undefined>(
     undefined,
   );
@@ -49,13 +51,17 @@ export default function FlowBuilderPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-background">
-      {/* Хедер */}
-      <div className="h-16 bg-card border-b border-border flex items-center justify-between px-6 shadow-sm ml-0 md:ml-64">
+    <div className="h-full flex flex-col bg-background transition-all duration-300">
+      {/* Хедер с адаптивными отступами */}
+      <div
+        className={`h-16 bg-card border-b border-border flex items-center justify-between shadow-sm flex-shrink-0 transition-all duration-300 ${
+          isOpen ? 'px-6' : 'px-8'
+        }`}
+      >
         <div className="flex items-center gap-4">
           <Link
             href="/agents"
-            className="p-2 hover:bg-muted rounded-lg transition-colors"
+            className="p-2 hover:bg-muted rounded-lg transition-colors relative z-50"
           >
             <ArrowLeft className="h-4 w-4 text-muted-foreground" />
           </Link>
@@ -106,7 +112,7 @@ export default function FlowBuilderPage() {
       </div>
 
       {/* Основная область Flow Builder */}
-      <div className="absolute inset-0 top-16 ml-0 md:ml-64 bg-background">
+      <div className="flex-1 bg-background overflow-hidden transition-all duration-300">
         <FlowCanvas flow={currentFlow} onFlowChange={setCurrentFlow} />
       </div>
     </div>
