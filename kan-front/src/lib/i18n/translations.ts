@@ -219,7 +219,7 @@ export const translations = {
         blocks: {
           // Triggers
           board_move: {
-            name: 'Движение карточки',
+            name: 'Перемещение карточки',
             description: 'Срабатывает при перемещении карточки между колонками',
           },
           board_create: {
@@ -376,6 +376,25 @@ export const translations = {
         propertiesPanel: 'Панель свойств',
         blockPalette: 'Палитра блоков',
         flowTesting: 'Тестирование и развертывание Flow',
+      },
+
+      // Fields
+      fields: {
+        board: 'Доска',
+        column: 'Колонка',
+        event: 'Событие',
+        variable: 'Переменная',
+        condition: 'Условие',
+        value: 'Значение',
+      },
+
+      // Events
+      events: {
+        card_moved: 'Карточка перемещена',
+        card_created: 'Карточка создана',
+        card_updated: 'Карточка обновлена',
+        card_deleted: 'Карточка удалена',
+        comment_added: 'Комментарий добавлен',
       },
 
       launchBuilder: 'Запустить Builder (Скоро)',
@@ -790,6 +809,25 @@ export const translations = {
         propertiesPanel: 'Properties panel',
         blockPalette: 'Block palette',
         flowTesting: 'Flow testing & deployment',
+      },
+
+      // Fields
+      fields: {
+        board: 'Board',
+        column: 'Column',
+        event: 'Event',
+        variable: 'Variable',
+        condition: 'Condition',
+        value: 'Value',
+      },
+
+      // Events
+      events: {
+        card_moved: 'Card Moved',
+        card_created: 'Card Created',
+        card_updated: 'Card Updated',
+        card_deleted: 'Card Deleted',
+        comment_added: 'Comment Added',
       },
 
       launchBuilder: 'Launch Builder (Coming Soon)',

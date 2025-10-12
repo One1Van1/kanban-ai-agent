@@ -13,6 +13,7 @@ import {
   Upload,
 } from 'lucide-react';
 import { useTranslation } from '../../../lib/i18n';
+import { LanguageToggle } from '../../ui/language-toggle';
 
 interface FlowToolbarProps {
   onSave: () => void;
@@ -89,6 +90,8 @@ export function FlowToolbar({
           <Settings className="h-4 w-4 mr-1" />
           {t('flowBuilder.toolbar.settings')}
         </Button>
+
+        <LanguageToggle />
 
         <Button
           variant="ghost"
