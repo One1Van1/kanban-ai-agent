@@ -33,6 +33,7 @@ import { useTranslation } from '../../../lib/i18n';
 
 interface BlockPaletteProps {
   onAddBlock: (blockType: string, blockCategory: string) => void;
+  getZoom?: () => number;
 }
 
 // Полная таблица конвертации Tailwind классов в CSS стили
@@ -346,7 +347,11 @@ const createBlockPreview = (blockType: string, blockCategory: string) => {
 };
 
 // ТОЧНАЯ КОПИЯ структуры блоков с канваса
-const createExactBlockPreview = (blockType: string, blockCategory: string) => {
+const createExactBlockPreview = (
+  blockType: string,
+  blockCategory: string,
+  zoom: number = 1,
+) => {
   console.log('🎯 EXACT createBlockPreview called:', {
     blockType,
     blockCategory,
@@ -463,32 +468,50 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
     }
   }
 
-  // Применяем inline стили с правильными цветами
+  // Вычисляем размеры с учетом zoom
+  const scaledWidth = Math.round(288 * zoom);
+  const scaledMinHeight = Math.round(120 * zoom);
+  const scaledBorderRadius = Math.round(8 * zoom);
+  const scaledFontSize = Math.round(14 * zoom);
+
+  // Применяем inline стили с правильными цветами и масштабированием
   card.style.cssText = `
     position: absolute;
     top: -1000px;
     left: -1000px;
-    width: 288px;
-    min-height: 120px;
+    width: ${scaledWidth}px;
+    min-height: ${scaledMinHeight}px;
     background-color: ${bgColor};
     border: 1px solid ${borderColor};
     color: ${textColor};
-    border-radius: 8px;
+    border-radius: ${scaledBorderRadius}px;
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     pointer-events: none;
     z-index: 10000;
     font-family: system-ui, -apple-system, sans-serif;
+    transform: scale(1);
   `;
 
-  // HTML структура как у React компонентов
+  // HTML структура как у React компонентов с масштабированием
   const iconSVG = getIconSVG(blockType);
   const handleColorStyle = getHandleColorStyle(blockCategory);
 
+  // Масштабированные размеры для HTML элементов
+  const scaledPadding = Math.round(24 * zoom);
+  const scaledPaddingSmall = Math.round(8 * zoom);
+  const scaledHeaderFontSize = Math.round(14 * zoom);
+  const scaledContentFontSize = Math.round(12 * zoom);
+  const scaledIconSize = Math.round(16 * zoom);
+  const scaledBadgePadding = Math.round(4 * zoom);
+  const scaledBadgeRadius = Math.round(6 * zoom);
+  const scaledMaxWidth = Math.round(120 * zoom);
+  const scaledGap = Math.round(8 * zoom);
+
   card.innerHTML = `
     <!-- CardHeader -->
-    <div style="padding: 24px 24px 8px 24px;">
-      <div style="display: flex; align-items: flex-start; gap: 8px; font-size: 14px; font-weight: 600;">
-        <div style="width: 16px; height: 16px;">
+    <div style="padding: ${scaledPadding}px ${scaledPadding}px ${scaledPaddingSmall}px ${scaledPadding}px;">
+      <div style="display: flex; align-items: flex-start; gap: ${scaledGap}px; font-size: ${scaledHeaderFontSize}px; font-weight: 600;">
+        <div style="width: ${scaledIconSize}px; height: ${scaledIconSize}px;">
           ${iconSVG}
         </div>
         <span style="flex: 1; min-width: 0;">
@@ -497,11 +520,11 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
         <span style="
           background: ${badgeBackground};
           color: ${badgeText};
-          padding: 4px 8px;
-          border-radius: 6px;
-          font-size: 12px;
+          padding: ${scaledBadgePadding}px ${scaledBadgePadding * 2}px;
+          border-radius: ${scaledBadgeRadius}px;
+          font-size: ${scaledContentFontSize}px;
           font-weight: 500;
-          max-width: 120px;
+          max-width: ${scaledMaxWidth}px;
           text-align: center;
           line-height: 1.2;
         ">
@@ -511,14 +534,14 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
     </div>
     
     <!-- CardContent -->
-    <div style="padding: 0 24px 24px 24px;">
-      <div style="font-size: 12px; font-weight: 500; margin-bottom: 8px; color: ${textColor};">
+    <div style="padding: 0 ${scaledPadding}px ${scaledPadding}px ${scaledPadding}px;">
+      <div style="font-size: ${scaledContentFontSize}px; font-weight: 500; margin-bottom: ${scaledPaddingSmall}px; color: ${textColor};">
         ${blockInfo.name}
       </div>
       ${
         mockConfig?.boardType
           ? `
-        <div style="font-size: 12px; color: ${mutedText}; margin-bottom: 4px;">
+        <div style="font-size: ${scaledContentFontSize}px; color: ${mutedText}; margin-bottom: ${scaledBadgePadding}px;">
           Board: ${mockConfig.boardType.toUpperCase()}
         </div>
       `
@@ -527,7 +550,7 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
       ${
         mockConfig?.event
           ? `
-        <div style="font-size: 12px; color: ${mutedText};">
+        <div style="font-size: ${scaledContentFontSize}px; color: ${mutedText};">
           Event: ${mockConfig.event.replace('_', ' ')}
         </div>
       `
@@ -541,13 +564,13 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
         ? `
       <div style="
         position: absolute;
-        top: -6px;
+        top: ${-6 * zoom}px;
         left: 50%;
         transform: translateX(-50%);
-        width: 12px;
-        height: 12px;
+        width: ${12 * zoom}px;
+        height: ${12 * zoom}px;
         border-radius: 50%;
-        border: 2px solid white;
+        border: ${2 * zoom}px solid white;
         ${handleColorStyle}
       "></div>
     `
@@ -556,13 +579,13 @@ const createExactBlockPreview = (blockType: string, blockCategory: string) => {
     
     <div style="
       position: absolute;
-      bottom: -6px;
+      bottom: ${-6 * zoom}px;
       left: 50%;
       transform: translateX(-50%);
-      width: 12px;
-      height: 12px;
+      width: ${12 * zoom}px;
+      height: ${12 * zoom}px;
       border-radius: 50%;
-      border: 2px solid white;
+      border: ${2 * zoom}px solid white;
       ${handleColorStyle}
     "></div>
   `;
@@ -1064,47 +1087,6 @@ const getBlockDisplayName = (blockType: string) => {
   );
 };
 
-// Обработчики drag & drop для блоков
-const handleDragStart = (
-  event: React.DragEvent,
-  blockType: string,
-  blockCategory: string,
-) => {
-  event.dataTransfer.setData(
-    'application/reactflow',
-    JSON.stringify({ blockType, blockCategory }),
-  );
-  event.dataTransfer.effectAllowed = 'copy';
-
-  // Создаем реальный блок preview СИНХРОННО
-  const previewElement = createExactBlockPreview(blockType, blockCategory);
-
-  // Устанавливаем drag image сразу (синхронно)
-  if (previewElement) {
-    event.dataTransfer.setDragImage(previewElement, 144, 70);
-  }
-
-  // Очищаем preview после drag
-  setTimeout(() => {
-    if (document.body.contains(previewElement)) {
-      document.body.removeChild(previewElement);
-    }
-  }, 1000);
-
-  // Добавляем визуальный эффект при драге
-  const target = event.currentTarget as HTMLElement;
-  target.style.opacity = '0.5';
-  target.style.transform = 'scale(0.95)';
-  target.style.transition = 'all 0.2s ease';
-};
-
-const handleDragEnd = (event: React.DragEvent) => {
-  const target = event.currentTarget as HTMLElement;
-  target.style.opacity = '1';
-  target.style.transform = 'scale(1)';
-  target.style.transition = 'all 0.2s ease';
-};
-
 interface PaletteBlock {
   type: string;
   category: 'trigger' | 'context' | 'logic' | 'action' | 'wait';
@@ -1250,8 +1232,59 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
   },
 ];
 
-export function BlockPalette({ onAddBlock }: BlockPaletteProps) {
+export function BlockPalette({ onAddBlock, getZoom }: BlockPaletteProps) {
   const { t } = useTranslation();
+
+  // Обработчики drag & drop для блоков
+  const handleDragStart = (
+    event: React.DragEvent,
+    blockType: string,
+    blockCategory: string,
+  ) => {
+    event.dataTransfer.setData(
+      'application/reactflow',
+      JSON.stringify({ blockType, blockCategory }),
+    );
+    event.dataTransfer.effectAllowed = 'copy';
+
+    // Получаем актуальный zoom в момент drag
+    const currentZoom = getZoom ? getZoom() : 1;
+
+    // Создаем реальный блок preview СИНХРОННО с учетом zoom
+    const previewElement = createExactBlockPreview(
+      blockType,
+      blockCategory,
+      currentZoom,
+    );
+
+    // Устанавливаем drag image сразу (синхронно) с учетом масштаба
+    if (previewElement) {
+      const offsetX = Math.round(144 * currentZoom);
+      const offsetY = Math.round(70 * currentZoom);
+      event.dataTransfer.setDragImage(previewElement, offsetX, offsetY);
+    }
+
+    // Очищаем preview после drag
+    setTimeout(() => {
+      if (document.body.contains(previewElement)) {
+        document.body.removeChild(previewElement);
+      }
+    }, 1000);
+
+    // Добавляем визуальный эффект при драге
+    const target = event.currentTarget as HTMLElement;
+    target.style.opacity = '0.5';
+    target.style.transform = 'scale(0.95)';
+    target.style.transition = 'all 0.2s ease';
+  };
+
+  const handleDragEnd = (event: React.DragEvent) => {
+    // Сбрасываем визуальные эффекты после завершения drag
+    const target = event.currentTarget as HTMLElement;
+    target.style.opacity = '1';
+    target.style.transform = 'scale(1)';
+    target.style.transition = 'all 0.2s ease';
+  };
 
   const groupedBlocks = PALETTE_BLOCKS.reduce(
     (acc, block) => {

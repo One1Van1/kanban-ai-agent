@@ -76,7 +76,7 @@ function FlowCanvasInner({
   isPropertiesOpen: externalIsPropertiesOpen = false,
   isMainSidebarOpen = true,
 }: FlowCanvasProps) {
-  const { screenToFlowPosition } = useReactFlow();
+  const { screenToFlowPosition, getZoom } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
@@ -511,7 +511,9 @@ function FlowCanvasInner({
       <div
         className={`${isSidebarOpen ? (isMainSidebarOpen ? 'w-96' : 'w-[26rem]') : 'w-0'} bg-card border-l border-border shadow-sm transition-all duration-300 ease-in-out ${isSidebarOpen ? '' : 'overflow-hidden'}`}
       >
-        {isSidebarOpen && <BlockPalette onAddBlock={onAddBlock} />}
+        {isSidebarOpen && (
+          <BlockPalette onAddBlock={onAddBlock} getZoom={getZoom} />
+        )}
       </div>
 
       {/* Панель свойств - крайняя справа, также расширяется */}
