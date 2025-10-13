@@ -264,6 +264,14 @@ export const translations = {
             name: 'Обработка ошибок',
             description: 'Блок обработки ошибок',
           },
+          ai_result: {
+            name: 'AI результат',
+            description:
+              'Ветвление по результату ответа AI (текст / пусто / ошибка)',
+            textHelp: 'AI вернул непустой текстовый ответ',
+            emptyHelp: 'Ответ AI не содержит полезного текста',
+            errorHelp: 'Ошибка обработки или получения ответа AI',
+          },
           // Actions
           comment: {
             name: 'Комментарий',
@@ -408,6 +416,8 @@ export const translations = {
         timeout: 'Таймаут',
         true: 'Истина',
         false: 'Ложь',
+        text: 'Текст',
+        empty: 'Пусто',
       },
 
       launchBuilder: 'Запустить Builder (Скоро)',
@@ -710,6 +720,13 @@ export const translations = {
             name: 'Try/Catch',
             description: 'Error handling block',
           },
+          ai_result: {
+            name: 'AI Result',
+            description: 'Branch by AI response result (text / empty / error)',
+            textHelp: 'AI returned non-empty textual content',
+            emptyHelp: 'AI response contained no meaningful text',
+            errorHelp: 'There was an error processing the AI response',
+          },
           // Actions
           comment: {
             name: 'Comment',
@@ -854,6 +871,8 @@ export const translations = {
         timeout: 'Timeout',
         true: 'True',
         false: 'False',
+        text: 'Text',
+        empty: 'Empty',
       },
 
       launchBuilder: 'Launch Builder (Coming Soon)',

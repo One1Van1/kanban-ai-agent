@@ -284,6 +284,7 @@ function FlowCanvasInner({
       switch: 'Switch',
       loop: 'Loop',
       try_catch: 'Try/Catch',
+      ai_result: 'AI Result',
 
       // Actions
       comment: 'Add Comment',
@@ -341,6 +342,10 @@ function FlowCanvasInner({
             operator: 'exists',
             value: '',
           },
+        };
+      case 'ai_result':
+        return {
+          responseVariable: 'ai_response',
         };
       case 'comment':
         return {

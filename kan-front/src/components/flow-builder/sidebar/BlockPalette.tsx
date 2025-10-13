@@ -1048,6 +1048,7 @@ const getBlockInfo = (blockType: string, blockCategory: string) => {
     switch: Settings,
     loop: RotateCcw,
     try_catch: AlertTriangle,
+    ai_result: Brain,
 
     // Actions
     comment: MessageSquare,
@@ -1094,6 +1095,7 @@ const getBlockDisplayName = (blockType: string) => {
     switch: 'Switch',
     loop: 'Loop',
     try_catch: 'Try/Catch',
+    ai_result: 'AI Result',
 
     // Actions
     comment: 'Add Comment',
@@ -1193,6 +1195,12 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     type: 'try_catch',
     category: 'logic',
     icon: <AlertTriangle className="w-4 h-4" />,
+    color: 'text-yellow-600',
+  },
+  {
+    type: 'ai_result',
+    category: 'logic',
+    icon: <Brain className="w-4 h-4" />,
     color: 'text-yellow-600',
   },
 

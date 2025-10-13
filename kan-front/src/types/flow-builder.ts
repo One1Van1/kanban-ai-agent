@@ -89,7 +89,7 @@ export interface ContextBlock {
 // Logic Block Types
 export interface LogicBlock {
   id: string;
-  type: 'if_else' | 'switch' | 'loop' | 'try_catch';
+  type: 'if_else' | 'switch' | 'loop' | 'try_catch' | 'ai_result';
   name: string;
   config: {
     condition: {
@@ -99,6 +99,8 @@ export interface LogicBlock {
     };
     trueBranch?: string[]; // IDs следующих блоков
     falseBranch?: string[]; // IDs следующих блоков
+    // For ai_result type
+    responseVariable?: string;
   };
 }
 
@@ -119,7 +121,10 @@ export interface ActionBlock {
     // Для AI запросов
     aiModel?: 'claude' | 'gpt' | 'gemini';
     prompt?: string;
-    attachments?: string[]; // переменные с файлами
+    // attachments references variable names that contain file lists (e.g. extracted card attachments)
+    attachments?: string[]; // variable names with files
+    // name of variable where AI response (text) will be stored
+    outputVariable?: string;
 
     // Для файлов
     fileName?: string;
@@ -143,6 +148,8 @@ export interface WaitBlock {
     onSuccess?: string[]; // IDs следующих блоков
     onError?: string[]; // IDs следующих блоков
     onTimeout?: string[]; // IDs следующих блоков
+    // variable containing awaited data (e.g. AI response text) for subsequent branching
+    responseVariable?: string;
   };
 }
 
@@ -166,7 +173,18 @@ export interface FlowConnection {
   id: string;
   from: string;
   to: string;
-  condition?: 'true' | 'false' | 'success' | 'error' | 'timeout';
+  // condition identifies which output path of the source block this connection represents
+  // For logic blocks: 'true' | 'false'
+  // For wait/AI blocks: 'success' | 'error' | 'timeout' | 'text' | 'empty'
+  // 'text' / 'empty' allow branching based on AI response content presence
+  condition?:
+    | 'true'
+    | 'false'
+    | 'success'
+    | 'error'
+    | 'timeout'
+    | 'text'
+    | 'empty';
   label?: string;
 }
 
