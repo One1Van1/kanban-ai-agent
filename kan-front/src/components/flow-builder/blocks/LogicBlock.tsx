@@ -28,6 +28,8 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
     switch (data.type) {
       case 'if_else':
         return <GitBranch className="w-4 h-4" />;
+      case 'switch':
+        return <GitBranch className="w-4 h-4" />;
       case 'loop':
         return <RotateCcw className="w-4 h-4" />;
       case 'try_catch':
@@ -64,17 +66,20 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
             >
               {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
             </Badge>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-6 w-6 p-0 border border-border/40 hover:border-border hover:bg-background/50"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsEditing(!isEditing);
-              }}
-            >
-              <Pencil className="h-3 w-3" />
-            </Button>
+            {/* Кнопка редактирования только для блоков, которые можно настраивать */}
+            {data.type !== 'switch' && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 w-6 p-0 border border-border/40 hover:border-border hover:bg-background/50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(!isEditing);
+                }}
+              >
+                <Pencil className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </CardTitle>
       </CardHeader>
@@ -245,55 +250,55 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
             {/* Отображение для loop */}
             {data.type === 'loop' && (
               <>
-                {data.config?.collection && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Collection: {data.config.collection}
-                  </div>
-                )}
-                {data.config?.itemVariable && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Item Variable: {data.config.itemVariable}
-                  </div>
-                )}
-                {data.config?.maxIterations && (
-                  <div className="text-xs text-muted-foreground">
-                    Max Iterations: {data.config.maxIterations}
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.collection')}:{' '}
+                  {data.config?.collection || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.itemVariable')}:{' '}
+                  {data.config?.itemVariable || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.maxIterations')}:{' '}
+                  {data.config?.maxIterations || t('flowBuilder.fields.notSet')}
+                </div>
               </>
             )}
 
             {/* Отображение для try_catch */}
             {data.type === 'try_catch' && (
               <>
-                {data.config?.errorVariable && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Error Variable: {data.config.errorVariable}
-                  </div>
-                )}
-                {data.config?.errorType && (
-                  <div className="text-xs text-muted-foreground">
-                    Error Type: {data.config.errorType}
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.errorVariable')}:{' '}
+                  {data.config?.errorVariable || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.errorType')}:{' '}
+                  {data.config?.errorType || t('flowBuilder.fields.notSet')}
+                </div>
               </>
             )}
 
             {/* Отображение для ai_result */}
             {data.type === 'ai_result' && (
               <>
-                {data.config?.responseVariable && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.variable')}:{' '}
-                    {data.config.responseVariable}
-                  </div>
-                )}
-                {data.config?.aiModel && (
-                  <div className="text-xs text-muted-foreground">
-                    AI Model: {data.config.aiModel}
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.variable')}:{' '}
+                  {data.config?.responseVariable ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.aiModel')}:{' '}
+                  {data.config?.aiModel || t('flowBuilder.fields.notSet')}
+                </div>
               </>
+            )}
+
+            {/* Отображение для switch - простой переключатель без настроек */}
+            {data.type === 'switch' && (
+              <div className="text-xs text-muted-foreground">
+                {t('flowBuilder.blockPalette.blocks.switch.description')}
+              </div>
             )}
           </div>
         )}
@@ -378,13 +383,48 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
         </>
       )}
 
-      {data.type !== 'if_else' && data.type !== 'ai_result' && (
-        <Handle
-          type="source"
-          position={Position.Bottom}
-          className="w-3 h-3 bg-yellow-500 border-2 border-white"
-        />
+      {data.type === 'switch' && (
+        <>
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="case1"
+            style={{ left: '20%' }}
+            className="w-3 h-3 bg-blue-500 border-2 border-white"
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="case2"
+            style={{ left: '40%' }}
+            className="w-3 h-3 bg-green-500 border-2 border-white"
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="case3"
+            style={{ left: '60%' }}
+            className="w-3 h-3 bg-yellow-500 border-2 border-white"
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            id="default"
+            style={{ left: '80%' }}
+            className="w-3 h-3 bg-gray-500 border-2 border-white"
+          />
+        </>
       )}
+
+      {data.type !== 'if_else' &&
+        data.type !== 'ai_result' &&
+        data.type !== 'switch' && (
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            className="w-3 h-3 bg-yellow-500 border-2 border-white"
+          />
+        )}
     </Card>
   );
 }

@@ -82,6 +82,7 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
               {t('flowBuilder.editMode')}
             </div>
             <div className="space-y-1">
+              {/* Поля для всех типов */}
               <input
                 type="text"
                 placeholder={t('flowBuilder.fields.variable')}
@@ -96,13 +97,17 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
                 className="w-full text-xs px-2 py-1 border rounded bg-background"
                 onClick={(e) => e.stopPropagation()}
               />
-              <input
-                type="text"
-                placeholder={t('flowBuilder.fields.types')}
-                defaultValue={data.config?.filter?.fileType?.join(', ') || ''}
-                className="w-full text-xs px-2 py-1 border rounded bg-background"
-                onClick={(e) => e.stopPropagation()}
-              />
+
+              {/* Поле типов только для extract_files */}
+              {data.type === 'extract_files' && (
+                <input
+                  type="text"
+                  placeholder={t('flowBuilder.fields.types')}
+                  defaultValue={data.config?.filter?.fileType?.join(', ') || ''}
+                  className="w-full text-xs px-2 py-1 border rounded bg-background"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
             </div>
             <div className="flex gap-1 pt-1">
               <Button
@@ -134,19 +139,39 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
             <div className="text-xs font-medium mb-2">
               {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
             </div>
-            <div className="text-xs text-muted-foreground mb-1">
-              {t('flowBuilder.fields.variable')}:{' '}
-              {data.config?.variableName || t('flowBuilder.fields.notSet')}
-            </div>
-            <div className="text-xs text-muted-foreground mb-1">
-              {t('flowBuilder.fields.source')}:{' '}
-              {data.config?.source || t('flowBuilder.fields.notSet')}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {t('flowBuilder.fields.types')}:{' '}
-              {data.config?.filter?.fileType?.join(', ') ||
-                t('flowBuilder.fields.notSet')}
-            </div>
+
+            {/* Поля для extract_files */}
+            {data.type === 'extract_files' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.variable')}:{' '}
+                  {data.config?.variableName || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.source')}:{' '}
+                  {data.config?.source || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.types')}:{' '}
+                  {data.config?.filter?.fileType?.join(', ') ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
+              </>
+            )}
+
+            {/* Поля для get_card_data */}
+            {data.type === 'get_card_data' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.variable')}:{' '}
+                  {data.config?.variableName || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.source')}:{' '}
+                  {data.config?.source || t('flowBuilder.fields.notSet')}
+                </div>
+              </>
+            )}
           </div>
         )}
       </CardContent>

@@ -489,6 +489,11 @@ function FlowCanvasInner({
           source: 'card_attachments',
           filter: {},
         };
+      case 'get_card_data':
+        return {
+          variableName: 'cardData',
+          source: 'current_card',
+        };
       case 'if_else':
         return {
           condition: {
@@ -496,6 +501,10 @@ function FlowCanvasInner({
             operator: 'exists',
             value: '',
           },
+        };
+      case 'switch':
+        return {
+          // Переключатель не нуждается в конфигурации
         };
       case 'ai_result':
         return {

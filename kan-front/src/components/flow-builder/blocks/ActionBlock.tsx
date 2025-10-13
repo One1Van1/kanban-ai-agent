@@ -230,11 +230,11 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
             {data.type === 'ai_request' && (
               <>
                 <div className="text-xs text-muted-foreground mb-1">
-                  Model:{' '}
+                  {t('flowBuilder.fields.model')}:{' '}
                   {data.config?.aiModel || t('flowBuilder.fields.notSet')}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">
-                  Prompt: "
+                  {t('flowBuilder.fields.prompt')}: "
                   {data.config?.prompt
                     ? data.config.prompt.substring(0, 30) + '...'
                     : t('flowBuilder.fields.notSet')}
@@ -246,32 +246,31 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
             {/* Конфигурация для файлов */}
             {(data.type === 'create_file' || data.type === 'attach_file') && (
               <>
-                {data.config?.fileName && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    File: {data.config.fileName}
-                  </div>
-                )}
-                {data.config?.fileFormat && (
-                  <div className="text-xs text-muted-foreground">
-                    Format: {data.config.fileFormat}
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.file')}:{' '}
+                  {data.config?.fileName || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.format')}:{' '}
+                  {data.config?.fileFormat || t('flowBuilder.fields.notSet')}
+                </div>
               </>
             )}
 
             {/* Конфигурация для уведомлений */}
             {data.type === 'send_notification' && (
               <>
-                {data.config?.recipient && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    To: {data.config.recipient}
-                  </div>
-                )}
-                {data.config?.message && (
-                  <div className="text-xs text-muted-foreground truncate">
-                    "{data.config.message.substring(0, 30)}..."
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.recipient')}:{' '}
+                  {data.config?.recipient || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground truncate">
+                  {t('flowBuilder.fields.message')}: "
+                  {data.config?.message
+                    ? data.config.message.substring(0, 30) + '...'
+                    : t('flowBuilder.fields.notSet')}
+                  "
+                </div>
               </>
             )}
           </div>
