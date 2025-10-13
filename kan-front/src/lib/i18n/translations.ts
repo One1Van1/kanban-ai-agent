@@ -415,6 +415,8 @@ export const translations = {
         format: 'Формат',
         recipient: 'Получатель',
         message: 'Сообщение',
+        fileName: 'Имя файла',
+        fileContent: 'Содержимое файла',
       },
 
       // Events
@@ -887,6 +889,8 @@ export const translations = {
         format: 'Format',
         recipient: 'To',
         message: 'Message',
+        fileName: 'File Name',
+        fileContent: 'File Content',
       },
 
       // Events

@@ -137,7 +137,7 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                 <>
                   <input
                     type="text"
-                    placeholder="File name"
+                    placeholder={t('flowBuilder.fields.fileName')}
                     defaultValue={data.config?.fileName || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
@@ -147,7 +147,7 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <option value="">Select File Format</option>
+                    <option value="">{t('flowBuilder.fields.format')}</option>
                     <option value="txt">Text (.txt)</option>
                     <option value="json">JSON (.json)</option>
                     <option value="csv">CSV (.csv)</option>
@@ -155,11 +155,7 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                     <option value="doc">Document (.doc)</option>
                   </select>
                   <textarea
-                    placeholder={
-                      data.type === 'create_file'
-                        ? 'File content...'
-                        : 'File path or source...'
-                    }
+                    placeholder={t('flowBuilder.fields.fileContent')}
                     defaultValue={
                       data.config?.content || data.config?.path || ''
                     }
@@ -247,13 +243,22 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
             {(data.type === 'create_file' || data.type === 'attach_file') && (
               <>
                 <div className="text-xs text-muted-foreground mb-1">
-                  {t('flowBuilder.fields.file')}:{' '}
+                  {t('flowBuilder.fields.fileName')}:{' '}
                   {data.config?.fileName || t('flowBuilder.fields.notSet')}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground mb-1">
                   {t('flowBuilder.fields.format')}:{' '}
                   {data.config?.fileFormat || t('flowBuilder.fields.notSet')}
                 </div>
+                {data.type === 'create_file' && (
+                  <div className="text-xs text-muted-foreground truncate">
+                    {t('flowBuilder.fields.fileContent')}: "
+                    {data.config?.content
+                      ? data.config.content.substring(0, 30) + '...'
+                      : t('flowBuilder.fields.notSet')}
+                    "
+                  </div>
+                )}
               </>
             )}
 
