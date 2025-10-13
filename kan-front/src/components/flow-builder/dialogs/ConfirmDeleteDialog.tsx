@@ -51,7 +51,7 @@ export function ConfirmDeleteDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-w-md w-[90vw]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-destructive">
             <AlertTriangle className="h-5 w-5" />
@@ -83,27 +83,27 @@ export function ConfirmDeleteDialog({
         </DialogHeader>
 
         {/* Чекбокс "Не спрашивать снова" */}
-        <div className="flex items-center space-x-2 px-6 pb-2">
+        <div className="flex items-start space-x-2 px-1 pb-2">
           <input
             id="dont-ask-again"
             type="checkbox"
             checked={dontAskAgain}
             onChange={(e) => setDontAskAgain(e.target.checked)}
-            className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+            className="h-4 w-4 mt-0.5 rounded border-border text-primary focus:ring-primary flex-shrink-0"
           />
           <label
             htmlFor="dont-ask-again"
-            className="text-sm text-muted-foreground cursor-pointer"
+            className="text-sm text-muted-foreground cursor-pointer leading-5"
           >
             Не спрашивать подтверждение при удалении блоков
           </label>
         </div>
 
-        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end pt-4">
           <Button
             variant="outline"
             onClick={handleCancel}
-            className="flex-1 sm:flex-none"
+            className="w-full sm:w-auto"
           >
             Отмена
           </Button>
@@ -112,7 +112,7 @@ export function ConfirmDeleteDialog({
             <Button
               variant="secondary"
               onClick={handleConfirmWithoutAsking}
-              className="flex-1 sm:flex-none bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
+              className="w-full sm:w-auto bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
             >
               <Zap className="h-4 w-4 mr-2" />
               Включить быстрое удаление
@@ -122,7 +122,7 @@ export function ConfirmDeleteDialog({
           <Button
             variant="destructive"
             onClick={handleConfirm}
-            className="flex-1 sm:flex-none"
+            className="w-full sm:w-auto"
           >
             <Trash2 className="h-4 w-4 mr-2" />
             Удалить

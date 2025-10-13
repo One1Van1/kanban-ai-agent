@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Clock, Timer, CheckCircle, Pencil, Trash2 } from 'lucide-react';
 import { useLanguage } from '@/src/lib/i18n/LanguageContext';
+import { useBlockEdit } from '@/src/hooks/useBlockEdit';
 
 interface WaitBlockProps {
   data: {
@@ -26,7 +27,7 @@ export function WaitBlock({
   onDeleteBlock,
 }: WaitBlockProps) {
   const { t } = useLanguage();
-  const [isEditing, setIsEditing] = useState(false);
+  const { isEditing, toggleEdit, saveEdit, cancelEdit } = useBlockEdit(id);
 
   const getIcon = () => {
     switch (data.type) {
@@ -62,44 +63,49 @@ export function WaitBlock({
 
       <CardHeader className="pb-2">
         <CardTitle className="flex items-start gap-2 text-sm">
-          {getIcon()}
           <span className="flex-1 min-w-0">
             {t('flowBuilder.blockPalette.categories.wait')}
           </span>
           <div className="flex items-center gap-1">
-            <Badge
-              variant="secondary"
-              className="text-xs px-2 py-1 max-w-[100px] text-center leading-tight whitespace-normal"
-            >
-              {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
-            </Badge>
             <Button
               variant="outline"
               size="sm"
-              className="h-6 w-6 p-0 border border-border/40 hover:border-border hover:bg-background/50"
+              className="h-7 w-7 p-0 border border-border/40 hover:border-border hover:bg-background/50"
               onClick={(e) => {
                 e.stopPropagation();
-                setIsEditing(!isEditing);
+                toggleEdit(e);
               }}
             >
-              <Pencil className="h-3 w-3" />
+              <Pencil className="h-3.5 w-3.5" />
             </Button>
             {onDeleteBlock && (
               <Button
                 variant="outline"
                 size="sm"
-                className="h-6 w-6 p-0 border border-red-200 hover:border-red-400 hover:bg-red-50 text-red-600 hover:text-red-700"
+                className="h-7 w-7 p-0 border border-red-200 hover:border-red-400 hover:bg-red-50 text-red-600 hover:text-red-700"
                 onClick={(e) => {
                   e.stopPropagation();
                   onDeleteBlock?.(id);
                 }}
               >
-                <Trash2 className="h-3 w-3" />
+                <Trash2 className="h-3.5 w-3.5" />
               </Button>
             )}
           </div>
         </CardTitle>
+
+        {/* Иконка и название действия под заголовком */}
+        <div className="flex items-center gap-2 mt-2">
+          {getIcon()}
+          <Badge
+            variant="secondary"
+            className="text-xs px-2 py-1 max-w-[150px] text-center leading-tight whitespace-normal"
+          >
+            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+          </Badge>
+        </div>
       </CardHeader>
+
       <CardContent className="pt-0">
         {isEditing ? (
           <div className="space-y-2">
@@ -199,7 +205,7 @@ export function WaitBlock({
                 className="text-xs h-6 px-2"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsEditing(false);
+                  saveEdit(e);
                   // TODO: Сохранить изменения
                 }}
               >
@@ -211,7 +217,7 @@ export function WaitBlock({
                 className="text-xs h-6 px-2"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setIsEditing(false);
+                  cancelEdit(e);
                 }}
               >
                 {t('flowBuilder.cancel')}
