@@ -76,7 +76,7 @@ function FlowCanvasInner({
   isPropertiesOpen: externalIsPropertiesOpen = false,
   isMainSidebarOpen = true,
 }: FlowCanvasProps) {
-  const { screenToFlowPosition, getZoom } = useReactFlow();
+  const { screenToFlowPosition, getZoom, setCenter } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
@@ -261,6 +261,173 @@ function FlowCanvasInner({
       console.log('Block added:', newBlock);
     },
     [setNodes, getSmartPosition],
+  );
+
+  // Функция для центрирования блока в видимой области канваса
+  const centerBlock = useCallback(
+    (blockId: string) => {
+      const node = nodes.find((n) => n.id === blockId);
+      if (node) {
+        // Центрируем канвас на позиции блока
+        setCenter(node.position.x + 140, node.position.y + 60, {
+          zoom: getZoom(),
+          duration: 500, // Плавная анимация
+        });
+        console.log('Block centered:', blockId, node.position);
+      }
+    },
+    [nodes, setCenter, getZoom],
+  );
+
+  // Функция для получения центральной позиции видимого канваса
+  const getCenterPosition = useCallback(() => {
+    // Получаем размеры контейнера канваса
+    const canvasElement = document.querySelector('.react-flow');
+    if (!canvasElement) {
+      return { x: 300, y: 200 }; // Fallback позиция
+    }
+
+    const rect = canvasElement.getBoundingClientRect();
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    // Конвертируем экранные координаты в координаты канваса
+    const flowPosition = screenToFlowPosition({ x: centerX, y: centerY });
+
+    // Смещаем на половину размера блока, чтобы блок был точно по центру
+    return {
+      x: flowPosition.x - 140, // половина ширины блока
+      y: flowPosition.y - 60, // половина высоты блока
+    };
+  }, [screenToFlowPosition]);
+
+  // Функция для проверки, занята ли позиция
+  const isPositionOccupied = useCallback(
+    (position: { x: number; y: number }, excludeId?: string) => {
+      const BLOCK_WIDTH = 280;
+      const BLOCK_HEIGHT = 120;
+      const PADDING = 20; // Дополнительный отступ между блоками
+
+      return nodes.some((node) => {
+        if (excludeId && node.id === excludeId) return false;
+
+        const nodeLeft = node.position.x - PADDING;
+        const nodeRight = node.position.x + BLOCK_WIDTH + PADDING;
+        const nodeTop = node.position.y - PADDING;
+        const nodeBottom = node.position.y + BLOCK_HEIGHT + PADDING;
+
+        const posLeft = position.x;
+        const posRight = position.x + BLOCK_WIDTH;
+        const posTop = position.y;
+        const posBottom = position.y + BLOCK_HEIGHT;
+
+        // Проверяем пересечение прямоугольников
+        return !(
+          posRight < nodeLeft ||
+          posLeft > nodeRight ||
+          posBottom < nodeTop ||
+          posTop > nodeBottom
+        );
+      });
+    },
+    [nodes],
+  );
+
+  // Функция для поиска свободной позиции рядом с центром
+  const findFreePositionNearCenter = useCallback(() => {
+    const centerPos = getCenterPosition();
+    const BLOCK_WIDTH = 280;
+    const BLOCK_HEIGHT = 120;
+    const HORIZONTAL_OFFSET = 60; // Шаг смещения по горизонтали
+    const VERTICAL_OFFSET = 100; // Увеличенный шаг смещения по вертикали
+
+    // Сначала проверяем центр
+    if (!isPositionOccupied(centerPos)) {
+      return centerPos;
+    }
+
+    // Ищем свободную позицию по спирали от центра
+    for (let radius = 1; radius <= 10; radius++) {
+      const positions = [
+        // Справа от центра
+        {
+          x: centerPos.x + (BLOCK_WIDTH + HORIZONTAL_OFFSET) * radius,
+          y: centerPos.y,
+        },
+        // Слева от центра
+        {
+          x: centerPos.x - (BLOCK_WIDTH + HORIZONTAL_OFFSET) * radius,
+          y: centerPos.y,
+        },
+        // Снизу от центра
+        {
+          x: centerPos.x,
+          y: centerPos.y + (BLOCK_HEIGHT + VERTICAL_OFFSET) * radius,
+        },
+        // Сверху от центра
+        {
+          x: centerPos.x,
+          y: centerPos.y - (BLOCK_HEIGHT + VERTICAL_OFFSET) * radius,
+        },
+        // По диагоналям
+        {
+          x: centerPos.x + (BLOCK_WIDTH + HORIZONTAL_OFFSET) * radius,
+          y: centerPos.y + (BLOCK_HEIGHT + VERTICAL_OFFSET) * radius,
+        },
+        {
+          x: centerPos.x - (BLOCK_WIDTH + HORIZONTAL_OFFSET) * radius,
+          y: centerPos.y - (BLOCK_HEIGHT + VERTICAL_OFFSET) * radius,
+        },
+        {
+          x: centerPos.x + (BLOCK_WIDTH + HORIZONTAL_OFFSET) * radius,
+          y: centerPos.y - (BLOCK_HEIGHT + VERTICAL_OFFSET) * radius,
+        },
+        {
+          x: centerPos.x - (BLOCK_WIDTH + HORIZONTAL_OFFSET) * radius,
+          y: centerPos.y + (BLOCK_HEIGHT + VERTICAL_OFFSET) * radius,
+        },
+      ];
+
+      for (const pos of positions) {
+        if (!isPositionOccupied(pos)) {
+          return pos;
+        }
+      }
+    }
+
+    // Если не нашли свободную позицию, возвращаем центр со случайным смещением
+    return {
+      x: centerPos.x + Math.random() * 200 - 100,
+      y: centerPos.y + Math.random() * 200 - 100,
+    };
+  }, [getCenterPosition, isPositionOccupied]);
+
+  // Обработчик клика на блок в палитре - добавляет блок в свободной позиции рядом с центром
+  const handleBlockPaletteClick = useCallback(
+    (blockType: string, blockCategory: string) => {
+      // Находим свободную позицию рядом с центром
+      const position = snapToGrid(findFreePositionNearCenter());
+
+      const newBlock: Node = {
+        id: `${blockType}-${Date.now()}`,
+        type: blockCategory,
+        position,
+        data: {
+          type: blockType,
+          name: getBlockDisplayName(blockType),
+          config: getDefaultConfig(blockType),
+        },
+      };
+
+      setNodes((nds) => nds.concat(newBlock));
+
+      // Автоматически открываем панель свойств для нового блока
+      setSelectedBlock(newBlock.id);
+      setIsPropertiesOpen(true);
+
+      console.log('Block added at position:', newBlock.position, newBlock);
+    },
+    [setNodes, findFreePositionNearCenter, snapToGrid],
   );
 
   // Получение правильного названия блока
@@ -517,7 +684,11 @@ function FlowCanvasInner({
         className={`${isSidebarOpen ? (isMainSidebarOpen ? 'w-96' : 'w-[26rem]') : 'w-0'} bg-card border-l border-border shadow-sm transition-all duration-300 ease-in-out ${isSidebarOpen ? '' : 'overflow-hidden'}`}
       >
         {isSidebarOpen && (
-          <BlockPalette onAddBlock={onAddBlock} getZoom={getZoom} />
+          <BlockPalette
+            onAddBlock={onAddBlock}
+            onBlockClick={handleBlockPaletteClick}
+            getZoom={getZoom}
+          />
         )}
       </div>
 
