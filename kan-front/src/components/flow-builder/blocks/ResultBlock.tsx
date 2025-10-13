@@ -35,24 +35,30 @@ export function ResultBlock({ data, id, selected }: ResultBlockProps) {
       <CardHeader className="pb-2">
         <CardTitle className="flex items-start gap-2 text-sm">
           <FileOutput className="w-4 h-4" />
-          <span className="flex-1 min-w-0">AI Result</span>
+          <span className="flex-1 min-w-0">
+            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+          </span>
           <Badge
             variant="secondary"
             className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
           >
-            Result
+            {t('flowBuilder.blockTypes.result')}
           </Badge>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">AI Response Branch</div>
+        <div className="text-xs font-medium mb-2">
+          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+        </div>
         {data.config?.responseVariable && (
           <div className="text-xs text-muted-foreground mb-1">
-            Var: {data.config.responseVariable}
+            {t('flowBuilder.fields.responseVariable')}:{' '}
+            {data.config.responseVariable}
           </div>
         )}
         <div className="text-xs text-muted-foreground">
-          Branches: text / empty / error
+          {t('flowBuilder.fields.branches')}: {t('flowBuilder.states.success')}{' '}
+          / {t('flowBuilder.states.empty')} / {t('flowBuilder.states.error')}
         </div>
       </CardContent>
 
@@ -79,9 +85,15 @@ export function ResultBlock({ data, id, selected }: ResultBlockProps) {
         className="w-3 h-3 bg-red-500 border-2 border-white"
       />
       <div className="absolute bottom-0 left-0 right-0 flex justify-between text-xs px-2 pb-1">
-        <span className="text-green-600 font-medium">text</span>
-        <span className="text-gray-600 font-medium">empty</span>
-        <span className="text-red-600 font-medium">error</span>
+        <span className="text-green-600 font-medium">
+          {t('flowBuilder.states.success')}
+        </span>
+        <span className="text-gray-600 font-medium">
+          {t('flowBuilder.states.empty')}
+        </span>
+        <span className="text-red-600 font-medium">
+          {t('flowBuilder.states.error')}
+        </span>
       </div>
     </Card>
   );

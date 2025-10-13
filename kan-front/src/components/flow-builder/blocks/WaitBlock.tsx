@@ -92,7 +92,7 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
                 <>
                   <input
                     type="number"
-                    placeholder="Duration (seconds)"
+                    placeholder={t('flowBuilder.fields.duration')}
                     defaultValue={data.config?.duration || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
@@ -102,9 +102,15 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <option value="seconds">Seconds</option>
-                    <option value="minutes">Minutes</option>
-                    <option value="hours">Hours</option>
+                    <option value="seconds">
+                      {t('flowBuilder.fields.seconds')}
+                    </option>
+                    <option value="minutes">
+                      {t('flowBuilder.fields.minutes')}
+                    </option>
+                    <option value="hours">
+                      {t('flowBuilder.fields.hours')}
+                    </option>
                   </select>
                 </>
               )}
@@ -113,14 +119,14 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
                 <>
                   <input
                     type="text"
-                    placeholder="Response Variable"
+                    placeholder={t('flowBuilder.fields.responseVariable')}
                     defaultValue={data.config?.responseVariable || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                   />
                   <input
                     type="number"
-                    placeholder="Timeout (seconds)"
+                    placeholder={t('flowBuilder.fields.timeoutSeconds')}
                     defaultValue={data.config?.timeout || '30'}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
@@ -130,11 +136,21 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <option value="">Wait Condition</option>
-                    <option value="not_empty">Variable is not empty</option>
-                    <option value="equals">Variable equals value</option>
-                    <option value="contains">Variable contains text</option>
-                    <option value="api_success">API call succeeds</option>
+                    <option value="">
+                      {t('flowBuilder.fields.waitCondition')}
+                    </option>
+                    <option value="not_empty">
+                      {t('flowBuilder.fields.variableNotEmpty')}
+                    </option>
+                    <option value="equals">
+                      {t('flowBuilder.fields.variableEquals')}
+                    </option>
+                    <option value="contains">
+                      {t('flowBuilder.fields.variableContains')}
+                    </option>
+                    <option value="api_success">
+                      {t('flowBuilder.fields.apiSuccess')}
+                    </option>
                   </select>
                 </>
               )}
@@ -189,17 +205,62 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
               {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
             </div>
 
-            <div className="text-xs text-muted-foreground mb-1">
-              {t('flowBuilder.fields.waitFor')}:{' '}
-              {data.config?.waitFor || t('flowBuilder.fields.notSet')}
-            </div>
+            {/* Конфигурация для ожидания времени */}
+            {data.type === 'wait_time' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.duration')}:{' '}
+                  {data.config?.duration ||
+                    data.config?.waitFor ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.unit')}:{' '}
+                  {data.config?.unit
+                    ? t(`flowBuilder.fields.${data.config.unit}`)
+                    : data.config?.timeout
+                      ? 'секунды'
+                      : t('flowBuilder.fields.notSet')}
+                </div>
+              </>
+            )}
 
-            <div className="text-xs text-muted-foreground">
-              {t('flowBuilder.fields.timeout')}:{' '}
-              {data.config?.timeout
-                ? formatTimeout(data.config.timeout)
-                : t('flowBuilder.fields.notSet')}
-            </div>
+            {/* Конфигурация для ожидания ответа */}
+            {data.type === 'wait_response' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.responseVariable')}:{' '}
+                  {data.config?.responseVariable ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.timeout')}:{' '}
+                  {data.config?.timeout || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.condition')}:{' '}
+                  {data.config?.condition
+                    ? t(`flowBuilder.fields.${data.config.condition}`)
+                    : t('flowBuilder.fields.notSet')}
+                </div>
+              </>
+            )}
+
+            {/* Конфигурация для других типов ожидания */}
+            {data.type !== 'wait_time' && data.type !== 'wait_response' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.waitFor')}:{' '}
+                  {data.config?.waitFor || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.timeout')}:{' '}
+                  {data.config?.timeout
+                    ? formatTimeout(data.config.timeout)
+                    : t('flowBuilder.fields.notSet')}
+                </div>
+              </>
+            )}
           </div>
         )}
       </CardContent>

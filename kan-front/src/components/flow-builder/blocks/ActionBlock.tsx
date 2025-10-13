@@ -8,10 +8,13 @@ import { Button } from '@/components/ui/button';
 import {
   MessageSquare,
   Brain,
+  Globe,
   FileText,
   Paperclip,
   Bell,
   Pencil,
+  Move,
+  Edit,
 } from 'lucide-react';
 import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
@@ -35,12 +38,18 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
         return <MessageSquare className="w-4 h-4" />;
       case 'ai_request':
         return <Brain className="w-4 h-4" />;
+      case 'api_call':
+        return <Globe className="w-4 h-4" />;
       case 'create_file':
         return <FileText className="w-4 h-4" />;
       case 'attach_file':
         return <Paperclip className="w-4 h-4" />;
       case 'send_notification':
         return <Bell className="w-4 h-4" />;
+      case 'move_card':
+        return <Move className="w-4 h-4" />;
+      case 'update_field':
+        return <Edit className="w-4 h-4" />;
       default:
         return <MessageSquare className="w-4 h-4" />;
     }
@@ -98,7 +107,7 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
               {data.type === 'comment' && (
                 <input
                   type="text"
-                  placeholder="Comment text"
+                  placeholder={t('flowBuilder.fields.commentText')}
                   defaultValue={data.config?.commentText || ''}
                   className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
@@ -111,14 +120,16 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <option value="">Select AI Model</option>
+                    <option value="">
+                      {t('flowBuilder.fields.selectAiModel')}
+                    </option>
                     <option value="gpt-4">GPT-4</option>
                     <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                     <option value="claude-3">Claude 3</option>
                     <option value="gemini-pro">Gemini Pro</option>
                   </select>
                   <textarea
-                    placeholder="Enter your prompt here..."
+                    placeholder={t('flowBuilder.fields.promptPlaceholder')}
                     defaultValue={data.config?.prompt || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[60px] resize-none"
                     onClick={(e) => e.stopPropagation()}
@@ -126,7 +137,7 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                   />
                   <input
                     type="text"
-                    placeholder="Response Variable Name"
+                    placeholder={t('flowBuilder.fields.responseVariable')}
                     defaultValue={data.config?.responseVariable || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
@@ -165,19 +176,110 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                   />
                 </>
               )}
+              {data.type === 'api_call' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.apiUrl')}
+                    defaultValue={data.config?.url || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    defaultValue={data.config?.method || 'GET'}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="GET">GET</option>
+                    <option value="POST">POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                    <option value="PATCH">PATCH</option>
+                  </select>
+                  <textarea
+                    placeholder={t('flowBuilder.fields.headersPlaceholder')}
+                    defaultValue={data.config?.headers || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[40px] resize-none"
+                    onClick={(e) => e.stopPropagation()}
+                    rows={2}
+                  />
+                  <textarea
+                    placeholder={t('flowBuilder.fields.bodyPlaceholder')}
+                    defaultValue={data.config?.body || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
+                    onClick={(e) => e.stopPropagation()}
+                    rows={3}
+                  />
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.responseVariable')}
+                    defaultValue={data.config?.responseVariable || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
               {data.type === 'send_notification' && (
                 <>
                   <input
                     type="text"
-                    placeholder="Recipient"
+                    placeholder={t('flowBuilder.fields.recipient')}
                     defaultValue={data.config?.recipient || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                   />
                   <input
                     type="text"
-                    placeholder="Message"
+                    placeholder={t('flowBuilder.fields.message')}
                     defaultValue={data.config?.message || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
+              {data.type === 'move_card' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.cardId')}
+                    defaultValue={data.config?.cardId || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    defaultValue={data.config?.targetColumn || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="">
+                      {t('flowBuilder.fields.selectTargetColumn')}
+                    </option>
+                    <option value="todo">To Do</option>
+                    <option value="inprogress">In Progress</option>
+                    <option value="done">Done</option>
+                  </select>
+                </>
+              )}
+              {data.type === 'update_field' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.cardId')}
+                    defaultValue={data.config?.cardId || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.fieldName')}
+                    defaultValue={data.config?.fieldName || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.newValue')}
+                    defaultValue={data.config?.newValue || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                   />
@@ -218,7 +320,9 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
             {/* Конфигурация для комментариев */}
             {data.type === 'comment' && (
               <div className="text-xs text-muted-foreground truncate">
-                "{data.config?.commentText || t('flowBuilder.fields.notSet')}"
+                &quot;
+                {data.config?.commentText || t('flowBuilder.fields.notSet')}
+                &quot;
               </div>
             )}
 
@@ -230,11 +334,11 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                   {data.config?.aiModel || t('flowBuilder.fields.notSet')}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">
-                  {t('flowBuilder.fields.prompt')}: "
+                  {t('flowBuilder.fields.prompt')}: &quot;
                   {data.config?.prompt
                     ? data.config.prompt.substring(0, 30) + '...'
                     : t('flowBuilder.fields.notSet')}
-                  "
+                  &quot;
                 </div>
               </>
             )}
@@ -252,13 +356,32 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                 </div>
                 {data.type === 'create_file' && (
                   <div className="text-xs text-muted-foreground truncate">
-                    {t('flowBuilder.fields.fileContent')}: "
+                    {t('flowBuilder.fields.fileContent')}: &quot;
                     {data.config?.content
                       ? data.config.content.substring(0, 30) + '...'
                       : t('flowBuilder.fields.notSet')}
-                    "
+                    &quot;
                   </div>
                 )}
+              </>
+            )}
+
+            {/* Конфигурация для API вызовов */}
+            {data.type === 'api_call' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1 truncate">
+                  {t('flowBuilder.fields.apiUrl')}:{' '}
+                  {data.config?.url || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.method')}:{' '}
+                  {data.config?.method || 'GET'}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.responseVariable')}:{' '}
+                  {data.config?.responseVariable ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
               </>
             )}
 
@@ -270,11 +393,43 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
                   {data.config?.recipient || t('flowBuilder.fields.notSet')}
                 </div>
                 <div className="text-xs text-muted-foreground truncate">
-                  {t('flowBuilder.fields.message')}: "
+                  {t('flowBuilder.fields.message')}: &quot;
                   {data.config?.message
                     ? data.config.message.substring(0, 30) + '...'
                     : t('flowBuilder.fields.notSet')}
-                  "
+                  &quot;
+                </div>
+              </>
+            )}
+
+            {/* Конфигурация для перемещения карточки */}
+            {data.type === 'move_card' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.cardId')}:{' '}
+                  {data.config?.cardId || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.targetColumn')}:{' '}
+                  {data.config?.targetColumn || t('flowBuilder.fields.notSet')}
+                </div>
+              </>
+            )}
+
+            {/* Конфигурация для обновления поля */}
+            {data.type === 'update_field' && (
+              <>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.cardId')}:{' '}
+                  {data.config?.cardId || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.fieldName')}:{' '}
+                  {data.config?.fieldName || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.newValue')}:{' '}
+                  {data.config?.newValue || t('flowBuilder.fields.notSet')}
                 </div>
               </>
             )}
