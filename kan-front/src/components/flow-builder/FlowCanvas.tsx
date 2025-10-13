@@ -20,7 +20,6 @@ import '@xyflow/react/dist/style.css';
 
 import { FlowDefinition, FlowNode, FlowEdge } from '@/src/types/flow-builder';
 import { BlockPalette } from './sidebar/BlockPalette';
-import { PropertiesPanel } from './properties/PropertiesPanel';
 import { FlowToolbar } from './toolbar/FlowToolbar';
 import { TriggerBlock } from './blocks/TriggerBlock';
 import { ContextBlock } from './blocks/ContextBlock';
@@ -42,7 +41,6 @@ interface FlowCanvasProps {
   onFlowChange?: (flow: FlowDefinition) => void;
   readonly?: boolean;
   isSidebarOpen?: boolean;
-  isPropertiesOpen?: boolean;
   isMainSidebarOpen?: boolean;
 }
 
@@ -51,7 +49,6 @@ export function FlowCanvas({
   onFlowChange,
   readonly = false,
   isSidebarOpen = true,
-  isPropertiesOpen: externalIsPropertiesOpen = false,
   isMainSidebarOpen = true,
 }: FlowCanvasProps) {
   return (
@@ -61,7 +58,6 @@ export function FlowCanvas({
         onFlowChange={onFlowChange}
         readonly={readonly}
         isSidebarOpen={isSidebarOpen}
-        isPropertiesOpen={externalIsPropertiesOpen}
         isMainSidebarOpen={isMainSidebarOpen}
       />
     </ReactFlowProvider>
@@ -73,16 +69,12 @@ function FlowCanvasInner({
   onFlowChange,
   readonly = false,
   isSidebarOpen = true,
-  isPropertiesOpen: externalIsPropertiesOpen = false,
   isMainSidebarOpen = true,
 }: FlowCanvasProps) {
   const { screenToFlowPosition, getZoom, setCenter } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
-  const [selectedBlock, setSelectedBlock] = useState<string | null>(null);
-  const [isPropertiesOpen, setIsPropertiesOpen] = useState(
-    externalIsPropertiesOpen,
-  );
+  // Удалили selectedBlock и isPropertiesOpen - больше не используем панель свойств
 
   // Snap to grid utility
   const snapToGrid = useCallback((position: { x: number; y: number }) => {
@@ -175,10 +167,9 @@ function FlowCanvasInner({
     }
   };
 
-  // Обработка клика по блоку
+  // Обработка клика по блоку - больше не открываем панель свойств
   const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
-    setSelectedBlock(node.id);
-    setIsPropertiesOpen(true);
+    // Теперь клик по блоку не делает ничего, так как редактирование будет inline
   }, []);
 
   // Умное позиционирование блоков
@@ -253,10 +244,6 @@ function FlowCanvasInner({
       };
 
       setNodes((nds) => nds.concat(newBlock));
-
-      // Автоматически открываем панель свойств для нового блока
-      setSelectedBlock(newBlock.id);
-      setIsPropertiesOpen(true);
 
       console.log('Block added:', newBlock);
     },
@@ -420,10 +407,6 @@ function FlowCanvasInner({
       };
 
       setNodes((nds) => nds.concat(newBlock));
-
-      // Автоматически открываем панель свойств для нового блока
-      setSelectedBlock(newBlock.id);
-      setIsPropertiesOpen(true);
 
       console.log('Block added at position:', newBlock.position, newBlock);
     },
@@ -692,27 +675,7 @@ function FlowCanvasInner({
         )}
       </div>
 
-      {/* Панель свойств - крайняя справа, также расширяется */}
-      {isPropertiesOpen && selectedBlock && (
-        <div
-          className={`${isMainSidebarOpen ? 'w-96' : 'w-[28rem]'} bg-card border-l border-border shadow-sm transition-all duration-300`}
-        >
-          <PropertiesPanel
-            blockId={selectedBlock}
-            nodes={nodes}
-            onUpdateNode={(nodeId, data) => {
-              setNodes((nds) =>
-                nds.map((node) =>
-                  node.id === nodeId
-                    ? { ...node, data: { ...node.data, ...data } }
-                    : node,
-                ),
-              );
-            }}
-            onClose={() => setIsPropertiesOpen(false)}
-          />
-        </div>
-      )}
+      {/* Панель свойств удалена - теперь редактирование inline */}
     </div>
   );
 }

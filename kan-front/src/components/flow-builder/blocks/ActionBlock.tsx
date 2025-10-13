@@ -1,10 +1,18 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Brain, FileText, Paperclip, Bell } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  MessageSquare,
+  Brain,
+  FileText,
+  Paperclip,
+  Bell,
+  Pencil,
+} from 'lucide-react';
 import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface ActionBlockProps {
@@ -19,6 +27,7 @@ interface ActionBlockProps {
 
 export function ActionBlock({ data, id, selected }: ActionBlockProps) {
   const { t } = useLanguage();
+  const [isEditing, setIsEditing] = useState(false);
 
   const getIcon = () => {
     switch (data.type) {
@@ -58,72 +67,213 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
           <span className="flex-1 min-w-0">
             {t('flowBuilder.blockPalette.categories.action')}
           </span>
-          <Badge
-            variant="secondary"
-            className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
-          >
-            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <Badge
+              variant="secondary"
+              className="text-xs px-2 py-1 max-w-[100px] text-center leading-tight whitespace-normal"
+            >
+              {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 w-6 p-0 border border-border/40 hover:border-border hover:bg-background/50"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(!isEditing);
+              }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">
-          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
-        </div>
-
-        {/* Конфигурация для комментариев */}
-        {data.type === 'comment' && data.config?.commentText && (
-          <div className="text-xs text-muted-foreground truncate">
-            "{data.config.commentText}"
+        {isEditing ? (
+          <div className="space-y-2">
+            <div className="text-xs font-medium mb-2">
+              {t('flowBuilder.editMode')}
+            </div>
+            <div className="space-y-1">
+              {data.type === 'comment' && (
+                <input
+                  type="text"
+                  placeholder="Comment text"
+                  defaultValue={data.config?.commentText || ''}
+                  className="w-full text-xs px-2 py-1 border rounded bg-background"
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
+              {data.type === 'ai_request' && (
+                <>
+                  <select
+                    defaultValue={data.config?.aiModel || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="">Select AI Model</option>
+                    <option value="gpt-4">GPT-4</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="claude-3">Claude 3</option>
+                    <option value="gemini-pro">Gemini Pro</option>
+                  </select>
+                  <textarea
+                    placeholder="Enter your prompt here..."
+                    defaultValue={data.config?.prompt || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[60px] resize-none"
+                    onClick={(e) => e.stopPropagation()}
+                    rows={3}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Response Variable Name"
+                    defaultValue={data.config?.responseVariable || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
+              {(data.type === 'create_file' || data.type === 'attach_file') && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="File name"
+                    defaultValue={data.config?.fileName || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    defaultValue={data.config?.fileFormat || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="">Select File Format</option>
+                    <option value="txt">Text (.txt)</option>
+                    <option value="json">JSON (.json)</option>
+                    <option value="csv">CSV (.csv)</option>
+                    <option value="pdf">PDF (.pdf)</option>
+                    <option value="doc">Document (.doc)</option>
+                  </select>
+                  <textarea
+                    placeholder={
+                      data.type === 'create_file'
+                        ? 'File content...'
+                        : 'File path or source...'
+                    }
+                    defaultValue={
+                      data.config?.content || data.config?.path || ''
+                    }
+                    className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
+                    onClick={(e) => e.stopPropagation()}
+                    rows={2}
+                  />
+                </>
+              )}
+              {data.type === 'send_notification' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Recipient"
+                    defaultValue={data.config?.recipient || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Message"
+                    defaultValue={data.config?.message || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
+            </div>
+            <div className="flex gap-1 pt-1">
+              <Button
+                size="sm"
+                className="text-xs h-6 px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                  // TODO: Сохранить изменения
+                }}
+              >
+                {t('flowBuilder.save')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-6 px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                }}
+              >
+                {t('flowBuilder.cancel')}
+              </Button>
+            </div>
           </div>
-        )}
+        ) : (
+          <div>
+            <div className="text-xs font-medium mb-2">
+              {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+            </div>
 
-        {/* Конфигурация для AI запросов */}
-        {data.type === 'ai_request' && (
-          <>
-            {data.config?.aiModel && (
-              <div className="text-xs text-muted-foreground mb-1">
-                Model: {data.config.aiModel}
-              </div>
-            )}
-            {data.config?.prompt && (
+            {/* Конфигурация для комментариев */}
+            {data.type === 'comment' && data.config?.commentText && (
               <div className="text-xs text-muted-foreground truncate">
-                Prompt: "{data.config.prompt.substring(0, 30)}..."
+                "{data.config.commentText}"
               </div>
             )}
-          </>
-        )}
 
-        {/* Конфигурация для файлов */}
-        {(data.type === 'create_file' || data.type === 'attach_file') && (
-          <>
-            {data.config?.fileName && (
-              <div className="text-xs text-muted-foreground mb-1">
-                File: {data.config.fileName}
-              </div>
+            {/* Конфигурация для AI запросов */}
+            {data.type === 'ai_request' && (
+              <>
+                {data.config?.aiModel && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Model: {data.config.aiModel}
+                  </div>
+                )}
+                {data.config?.prompt && (
+                  <div className="text-xs text-muted-foreground truncate">
+                    Prompt: "{data.config.prompt.substring(0, 30)}..."
+                  </div>
+                )}
+              </>
             )}
-            {data.config?.fileFormat && (
-              <div className="text-xs text-muted-foreground">
-                Format: {data.config.fileFormat}
-              </div>
-            )}
-          </>
-        )}
 
-        {/* Конфигурация для уведомлений */}
-        {data.type === 'send_notification' && (
-          <>
-            {data.config?.recipient && (
-              <div className="text-xs text-muted-foreground mb-1">
-                To: {data.config.recipient}
-              </div>
+            {/* Конфигурация для файлов */}
+            {(data.type === 'create_file' || data.type === 'attach_file') && (
+              <>
+                {data.config?.fileName && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    File: {data.config.fileName}
+                  </div>
+                )}
+                {data.config?.fileFormat && (
+                  <div className="text-xs text-muted-foreground">
+                    Format: {data.config.fileFormat}
+                  </div>
+                )}
+              </>
             )}
-            {data.config?.message && (
-              <div className="text-xs text-muted-foreground truncate">
-                "{data.config.message.substring(0, 30)}..."
-              </div>
+
+            {/* Конфигурация для уведомлений */}
+            {data.type === 'send_notification' && (
+              <>
+                {data.config?.recipient && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    To: {data.config.recipient}
+                  </div>
+                )}
+                {data.config?.message && (
+                  <div className="text-xs text-muted-foreground truncate">
+                    "{data.config.message.substring(0, 30)}..."
+                  </div>
+                )}
+              </>
             )}
-          </>
+          </div>
         )}
       </CardContent>
 

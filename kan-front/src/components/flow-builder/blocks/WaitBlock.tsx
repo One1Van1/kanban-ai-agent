@@ -1,10 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Clock, Timer, CheckCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Clock, Timer, CheckCircle, Pencil } from 'lucide-react';
 import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface WaitBlockProps {
@@ -19,6 +20,7 @@ interface WaitBlockProps {
 
 export function WaitBlock({ data, id, selected }: WaitBlockProps) {
   const { t } = useLanguage();
+  const [isEditing, setIsEditing] = useState(false);
 
   const getIcon = () => {
     switch (data.type) {
@@ -58,29 +60,147 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
           <span className="flex-1 min-w-0">
             {t('flowBuilder.blockPalette.categories.wait')}
           </span>
-          <Badge
-            variant="secondary"
-            className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
-          >
-            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <Badge
+              variant="secondary"
+              className="text-xs px-2 py-1 max-w-[100px] text-center leading-tight whitespace-normal"
+            >
+              {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 w-6 p-0 border border-border/40 hover:border-border hover:bg-background/50"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(!isEditing);
+              }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">
-          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
-        </div>
+        {isEditing ? (
+          <div className="space-y-2">
+            <div className="text-xs font-medium mb-2">
+              {t('flowBuilder.editMode')}
+            </div>
+            <div className="space-y-1">
+              {data.type === 'wait_time' && (
+                <>
+                  <input
+                    type="number"
+                    placeholder="Duration (seconds)"
+                    defaultValue={data.config?.duration || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    defaultValue={data.config?.unit || 'seconds'}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="seconds">Seconds</option>
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                  </select>
+                </>
+              )}
 
-        {data.config?.waitFor && (
-          <div className="text-xs text-muted-foreground mb-1">
-            {t('flowBuilder.fields.waitFor')}: {data.config.waitFor}
+              {data.type === 'wait_response' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Response Variable"
+                    defaultValue={data.config?.responseVariable || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Timeout (seconds)"
+                    defaultValue={data.config?.timeout || '30'}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    defaultValue={data.config?.condition || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="">Wait Condition</option>
+                    <option value="not_empty">Variable is not empty</option>
+                    <option value="equals">Variable equals value</option>
+                    <option value="contains">Variable contains text</option>
+                    <option value="api_success">API call succeeds</option>
+                  </select>
+                </>
+              )}
+
+              {data.type !== 'wait_time' && data.type !== 'wait_response' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.waitFor')}
+                    defaultValue={data.config?.waitFor || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="number"
+                    placeholder={t('flowBuilder.fields.timeout')}
+                    defaultValue={data.config?.timeout || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
+            </div>
+            <div className="flex gap-1 pt-1">
+              <Button
+                size="sm"
+                className="text-xs h-6 px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                  // TODO: Сохранить изменения
+                }}
+              >
+                {t('flowBuilder.save')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-6 px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                }}
+              >
+                {t('flowBuilder.cancel')}
+              </Button>
+            </div>
           </div>
-        )}
+        ) : (
+          <div>
+            <div className="text-xs font-medium mb-2">
+              {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+            </div>
 
-        {data.config?.timeout && (
-          <div className="text-xs text-muted-foreground">
-            {t('flowBuilder.fields.timeout')}:{' '}
-            {formatTimeout(data.config.timeout)}
+            {data.config?.waitFor && (
+              <div className="text-xs text-muted-foreground mb-1">
+                {t('flowBuilder.fields.waitFor')}: {data.config.waitFor}
+              </div>
+            )}
+
+            {data.config?.timeout && (
+              <div className="text-xs text-muted-foreground">
+                {t('flowBuilder.fields.timeout')}:{' '}
+                {formatTimeout(data.config.timeout)}
+              </div>
+            )}
           </div>
         )}
       </CardContent>

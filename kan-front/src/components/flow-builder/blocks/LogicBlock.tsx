@@ -1,10 +1,17 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { GitBranch, RotateCcw, AlertTriangle, Brain } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  GitBranch,
+  RotateCcw,
+  AlertTriangle,
+  Brain,
+  Pencil,
+} from 'lucide-react';
 import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface LogicBlockProps {
@@ -15,6 +22,7 @@ interface LogicBlockProps {
 
 export function LogicBlock({ data, id, selected }: LogicBlockProps) {
   const { t } = useLanguage();
+  const [isEditing, setIsEditing] = useState(false);
 
   const renderIcon = () => {
     switch (data.type) {
@@ -49,37 +57,247 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
           <span className="flex-1 min-w-0">
             {t('flowBuilder.blockPalette.categories.logic')}
           </span>
-          <Badge
-            variant="secondary"
-            className="text-xs px-2 py-1 max-w-[120px] text-center leading-tight whitespace-normal"
-          >
-            {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
-          </Badge>
+          <div className="flex items-center gap-1">
+            <Badge
+              variant="secondary"
+              className="text-xs px-2 py-1 max-w-[100px] text-center leading-tight whitespace-normal"
+            >
+              {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+            </Badge>
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-6 w-6 p-0 border border-border/40 hover:border-border hover:bg-background/50"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsEditing(!isEditing);
+              }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <div className="text-xs font-medium mb-2">
-          {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
-        </div>
-        {data.type !== 'ai_result' && data.config?.condition?.variable && (
-          <div className="text-xs text-muted-foreground mb-1">
-            {t('flowBuilder.fields.variable')}: {data.config.condition.variable}
+        {isEditing ? (
+          <div className="space-y-2">
+            <div className="text-xs font-medium mb-2">
+              {t('flowBuilder.editMode')}
+            </div>
+            <div className="space-y-1">
+              {/* Поля для if_else */}
+              {data.type === 'if_else' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.variable')}
+                    defaultValue={data.config?.condition?.variable || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    defaultValue={data.config?.condition?.operator || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="">
+                      {t('flowBuilder.fields.condition')}
+                    </option>
+                    <option value="equals">Equals (==)</option>
+                    <option value="not_equals">Not Equals (!=)</option>
+                    <option value="greater">Greater (&gt;)</option>
+                    <option value="less">Less (&lt;)</option>
+                    <option value="contains">Contains</option>
+                  </select>
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.value')}
+                    defaultValue={data.config?.condition?.value || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
+
+              {/* Поля для loop */}
+              {data.type === 'loop' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Collection/Array"
+                    defaultValue={data.config?.collection || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="text"
+                    placeholder="Item Variable"
+                    defaultValue={data.config?.itemVariable || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max Iterations"
+                    defaultValue={data.config?.maxIterations || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
+
+              {/* Поля для try_catch */}
+              {data.type === 'try_catch' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder="Error Variable"
+                    defaultValue={data.config?.errorVariable || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <select
+                    defaultValue={data.config?.errorType || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <option value="">Error Type</option>
+                    <option value="all">All Errors</option>
+                    <option value="api">API Errors</option>
+                    <option value="validation">Validation Errors</option>
+                    <option value="timeout">Timeout Errors</option>
+                  </select>
+                </>
+              )}
+
+              {/* Поля для ai_result */}
+              {data.type === 'ai_result' && (
+                <>
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.variable')}
+                    defaultValue={data.config?.responseVariable || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <input
+                    type="text"
+                    placeholder="AI Model"
+                    defaultValue={data.config?.aiModel || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </>
+              )}
+            </div>
+            <div className="flex gap-1 pt-1">
+              <Button
+                size="sm"
+                className="text-xs h-6 px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                  // TODO: Сохранить изменения
+                }}
+              >
+                {t('flowBuilder.save')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-6 px-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsEditing(false);
+                }}
+              >
+                {t('flowBuilder.cancel')}
+              </Button>
+            </div>
           </div>
-        )}
-        {data.type !== 'ai_result' && data.config?.condition?.operator && (
-          <div className="text-xs text-muted-foreground mb-1">
-            {t('flowBuilder.fields.condition')}:{' '}
-            {data.config.condition.operator}
-          </div>
-        )}
-        {data.type !== 'ai_result' && data.config?.condition?.value && (
-          <div className="text-xs text-muted-foreground">
-            {t('flowBuilder.fields.value')}: {data.config.condition.value}
-          </div>
-        )}
-        {data.type === 'ai_result' && data.config?.responseVariable && (
-          <div className="text-xs text-muted-foreground mb-1">
-            {t('flowBuilder.fields.variable')}: {data.config.responseVariable}
+        ) : (
+          <div>
+            <div className="text-xs font-medium mb-2">
+              {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
+            </div>
+
+            {/* Отображение для if_else */}
+            {data.type === 'if_else' && (
+              <>
+                {data.config?.condition?.variable && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.variable')}:{' '}
+                    {data.config.condition.variable}
+                  </div>
+                )}
+                {data.config?.condition?.operator && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.condition')}:{' '}
+                    {data.config.condition.operator}
+                  </div>
+                )}
+                {data.config?.condition?.value && (
+                  <div className="text-xs text-muted-foreground">
+                    {t('flowBuilder.fields.value')}:{' '}
+                    {data.config.condition.value}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Отображение для loop */}
+            {data.type === 'loop' && (
+              <>
+                {data.config?.collection && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Collection: {data.config.collection}
+                  </div>
+                )}
+                {data.config?.itemVariable && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Item Variable: {data.config.itemVariable}
+                  </div>
+                )}
+                {data.config?.maxIterations && (
+                  <div className="text-xs text-muted-foreground">
+                    Max Iterations: {data.config.maxIterations}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Отображение для try_catch */}
+            {data.type === 'try_catch' && (
+              <>
+                {data.config?.errorVariable && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    Error Variable: {data.config.errorVariable}
+                  </div>
+                )}
+                {data.config?.errorType && (
+                  <div className="text-xs text-muted-foreground">
+                    Error Type: {data.config.errorType}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Отображение для ai_result */}
+            {data.type === 'ai_result' && (
+              <>
+                {data.config?.responseVariable && (
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.variable')}:{' '}
+                    {data.config.responseVariable}
+                  </div>
+                )}
+                {data.config?.aiModel && (
+                  <div className="text-xs text-muted-foreground">
+                    AI Model: {data.config.aiModel}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         )}
       </CardContent>
