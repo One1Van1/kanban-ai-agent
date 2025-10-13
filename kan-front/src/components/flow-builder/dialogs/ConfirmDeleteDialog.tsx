@@ -1,0 +1,134 @@
+'use client';
+
+import React, { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle, Trash2, Zap } from 'lucide-react';
+import { useLanguage } from '@/src/lib/i18n/LanguageContext';
+
+interface ConfirmDeleteDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  onConfirmWithoutAsking?: () => void;
+  blockName?: string;
+  blockType?: string;
+}
+
+export function ConfirmDeleteDialog({
+  isOpen,
+  onClose,
+  onConfirm,
+  onConfirmWithoutAsking,
+  blockName,
+  blockType,
+}: ConfirmDeleteDialogProps) {
+  const { t } = useLanguage();
+  const [dontAskAgain, setDontAskAgain] = useState(false);
+
+  const handleConfirm = () => {
+    onConfirm();
+    onClose();
+  };
+
+  const handleConfirmWithoutAsking = () => {
+    if (onConfirmWithoutAsking) {
+      onConfirmWithoutAsking();
+      onClose();
+    }
+  };
+
+  const handleCancel = () => {
+    onClose();
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2 text-destructive">
+            <AlertTriangle className="h-5 w-5" />
+            Удалить блок?
+          </DialogTitle>
+          <DialogDescription className="text-left pt-2">
+            Вы уверены, что хотите удалить этот блок?
+            {blockName && (
+              <>
+                <br />
+                <span className="font-medium text-foreground">{blockName}</span>
+              </>
+            )}
+            {blockType && (
+              <>
+                <br />
+                <span className="text-sm text-muted-foreground">
+                  Тип: {blockType}
+                </span>
+              </>
+            )}
+            <br />
+            <br />
+            <span className="text-sm text-muted-foreground">
+              Это действие нельзя отменить. Все связи с этим блоком также будут
+              удалены.
+            </span>
+          </DialogDescription>
+        </DialogHeader>
+
+        {/* Чекбокс "Не спрашивать снова" */}
+        <div className="flex items-center space-x-2 px-6 pb-2">
+          <input
+            id="dont-ask-again"
+            type="checkbox"
+            checked={dontAskAgain}
+            onChange={(e) => setDontAskAgain(e.target.checked)}
+            className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+          />
+          <label
+            htmlFor="dont-ask-again"
+            className="text-sm text-muted-foreground cursor-pointer"
+          >
+            Не спрашивать подтверждение при удалении блоков
+          </label>
+        </div>
+
+        <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
+          <Button
+            variant="outline"
+            onClick={handleCancel}
+            className="flex-1 sm:flex-none"
+          >
+            Отмена
+          </Button>
+
+          {dontAskAgain && onConfirmWithoutAsking && (
+            <Button
+              variant="secondary"
+              onClick={handleConfirmWithoutAsking}
+              className="flex-1 sm:flex-none bg-orange-100 hover:bg-orange-200 text-orange-800 border-orange-300"
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Включить быстрое удаление
+            </Button>
+          )}
+
+          <Button
+            variant="destructive"
+            onClick={handleConfirm}
+            className="flex-1 sm:flex-none"
+          >
+            <Trash2 className="h-4 w-4 mr-2" />
+            Удалить
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -5,7 +5,7 @@ import { Handle, Position } from '@xyflow/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Zap, GitBranch, Database, Pencil } from 'lucide-react';
+import { Zap, GitBranch, Database, Pencil, Trash2 } from 'lucide-react';
 import { useLanguage } from '@/src/lib/i18n/LanguageContext';
 
 interface TriggerBlockProps {
@@ -16,9 +16,15 @@ interface TriggerBlockProps {
   };
   id: string;
   selected: boolean;
+  onDeleteBlock?: (nodeId: string) => void;
 }
 
-export function TriggerBlock({ data, id, selected }: TriggerBlockProps) {
+export function TriggerBlock({
+  data,
+  id,
+  selected,
+  onDeleteBlock,
+}: TriggerBlockProps) {
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
 
@@ -67,6 +73,19 @@ export function TriggerBlock({ data, id, selected }: TriggerBlockProps) {
             >
               <Pencil className="h-3 w-3" />
             </Button>
+            {onDeleteBlock && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-6 w-6 p-0 border border-red-200 hover:border-red-400 hover:bg-red-50 text-red-600 hover:text-red-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDeleteBlock?.(id);
+                }}
+              >
+                <Trash2 className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </CardTitle>
       </CardHeader>
