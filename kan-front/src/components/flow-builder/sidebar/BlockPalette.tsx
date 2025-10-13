@@ -357,6 +357,26 @@ const createExactBlockPreview = (
     blockCategory,
   });
 
+  // Получаем переводы точно как в настоящих блоках
+  const { translations } = require('../../../lib/i18n/translations');
+  const currentLang =
+    typeof window !== 'undefined'
+      ? localStorage.getItem('language') || 'ru'
+      : 'ru';
+
+  const t = (key: string) => {
+    const keys = key.split('.');
+    let current = translations[currentLang];
+    for (const k of keys) {
+      if (current && typeof current === 'object' && k in current) {
+        current = current[k];
+      } else {
+        return key;
+      }
+    }
+    return current || key;
+  };
+
   const blockInfo = getBlockInfo(blockType, blockCategory);
   const mockConfig = getDefaultBlockConfig(blockType);
 
@@ -515,7 +535,7 @@ const createExactBlockPreview = (
           ${iconSVG}
         </div>
         <span style="flex: 1; min-width: 0;">
-          ${blockInfo.categoryName}
+          ${t(`flowBuilder.blockPalette.categories.${blockCategory}`)}
         </span>
         <span style="
           background: ${badgeBackground};
@@ -528,7 +548,7 @@ const createExactBlockPreview = (
           text-align: center;
           line-height: 1.2;
         ">
-          ${blockInfo.name}
+          ${t(`flowBuilder.blockPalette.blocks.${blockType}.name`)}
         </span>
       </div>
     </div>
@@ -536,13 +556,22 @@ const createExactBlockPreview = (
     <!-- CardContent -->
     <div style="padding: 0 ${scaledPadding}px ${scaledPadding}px ${scaledPadding}px;">
       <div style="font-size: ${scaledContentFontSize}px; font-weight: 500; margin-bottom: ${scaledPaddingSmall}px; color: ${textColor};">
-        ${blockInfo.name}
+        ${t(`flowBuilder.blockPalette.blocks.${blockType}.name`)}
       </div>
       ${
         mockConfig?.boardType
           ? `
         <div style="font-size: ${scaledContentFontSize}px; color: ${mutedText}; margin-bottom: ${scaledBadgePadding}px;">
-          Board: ${mockConfig.boardType.toUpperCase()}
+          ${t('flowBuilder.fields.board')}: ${mockConfig.boardType.toUpperCase()}
+        </div>
+      `
+          : ''
+      }
+      ${
+        mockConfig?.targetColumn
+          ? `
+        <div style="font-size: ${scaledContentFontSize}px; color: ${mutedText}; margin-bottom: ${scaledBadgePadding}px;">
+          ${t('flowBuilder.fields.column')}: ${mockConfig.targetColumn}
         </div>
       `
           : ''
@@ -551,7 +580,7 @@ const createExactBlockPreview = (
         mockConfig?.event
           ? `
         <div style="font-size: ${scaledContentFontSize}px; color: ${mutedText};">
-          Event: ${mockConfig.event.replace('_', ' ')}
+          ${t('flowBuilder.fields.event')}: ${t(`flowBuilder.events.${mockConfig.event}`)}
         </div>
       `
           : ''
