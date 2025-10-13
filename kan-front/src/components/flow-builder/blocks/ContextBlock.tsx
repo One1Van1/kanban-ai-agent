@@ -134,22 +134,19 @@ export function ContextBlock({ data, id, selected }: ContextBlockProps) {
             <div className="text-xs font-medium mb-2">
               {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
             </div>
-            {data.config?.variableName && (
-              <div className="text-xs text-muted-foreground mb-1">
-                {t('flowBuilder.fields.variable')}: {data.config.variableName}
-              </div>
-            )}
-            {data.config?.source && (
-              <div className="text-xs text-muted-foreground mb-1">
-                {t('flowBuilder.fields.source')}: {data.config.source}
-              </div>
-            )}
-            {data.config?.filter?.fileType && (
-              <div className="text-xs text-muted-foreground">
-                {t('flowBuilder.fields.types')}:{' '}
-                {data.config.filter.fileType.join(', ')}
-              </div>
-            )}
+            <div className="text-xs text-muted-foreground mb-1">
+              {t('flowBuilder.fields.variable')}:{' '}
+              {data.config?.variableName || t('flowBuilder.fields.notSet')}
+            </div>
+            <div className="text-xs text-muted-foreground mb-1">
+              {t('flowBuilder.fields.source')}:{' '}
+              {data.config?.source || t('flowBuilder.fields.notSet')}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {t('flowBuilder.fields.types')}:{' '}
+              {data.config?.filter?.fileType?.join(', ') ||
+                t('flowBuilder.fields.notSet')}
+            </div>
           </div>
         )}
       </CardContent>

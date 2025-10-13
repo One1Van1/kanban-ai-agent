@@ -189,18 +189,17 @@ export function WaitBlock({ data, id, selected }: WaitBlockProps) {
               {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
             </div>
 
-            {data.config?.waitFor && (
-              <div className="text-xs text-muted-foreground mb-1">
-                {t('flowBuilder.fields.waitFor')}: {data.config.waitFor}
-              </div>
-            )}
+            <div className="text-xs text-muted-foreground mb-1">
+              {t('flowBuilder.fields.waitFor')}:{' '}
+              {data.config?.waitFor || t('flowBuilder.fields.notSet')}
+            </div>
 
-            {data.config?.timeout && (
-              <div className="text-xs text-muted-foreground">
-                {t('flowBuilder.fields.timeout')}:{' '}
-                {formatTimeout(data.config.timeout)}
-              </div>
-            )}
+            <div className="text-xs text-muted-foreground">
+              {t('flowBuilder.fields.timeout')}:{' '}
+              {data.config?.timeout
+                ? formatTimeout(data.config.timeout)
+                : t('flowBuilder.fields.notSet')}
+            </div>
           </div>
         )}
       </CardContent>

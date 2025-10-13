@@ -224,24 +224,21 @@ export function LogicBlock({ data, id, selected }: LogicBlockProps) {
             {/* Отображение для if_else */}
             {data.type === 'if_else' && (
               <>
-                {data.config?.condition?.variable && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.variable')}:{' '}
-                    {data.config.condition.variable}
-                  </div>
-                )}
-                {data.config?.condition?.operator && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.condition')}:{' '}
-                    {data.config.condition.operator}
-                  </div>
-                )}
-                {data.config?.condition?.value && (
-                  <div className="text-xs text-muted-foreground">
-                    {t('flowBuilder.fields.value')}:{' '}
-                    {data.config.condition.value}
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.variable')}:{' '}
+                  {data.config?.condition?.variable ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  {t('flowBuilder.fields.condition')}:{' '}
+                  {data.config?.condition?.operator ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.value')}:{' '}
+                  {data.config?.condition?.value ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
               </>
             )}
 

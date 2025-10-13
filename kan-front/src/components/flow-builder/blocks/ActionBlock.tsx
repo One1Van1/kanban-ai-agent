@@ -220,25 +220,26 @@ export function ActionBlock({ data, id, selected }: ActionBlockProps) {
             </div>
 
             {/* Конфигурация для комментариев */}
-            {data.type === 'comment' && data.config?.commentText && (
+            {data.type === 'comment' && (
               <div className="text-xs text-muted-foreground truncate">
-                "{data.config.commentText}"
+                "{data.config?.commentText || t('flowBuilder.fields.notSet')}"
               </div>
             )}
 
             {/* Конфигурация для AI запросов */}
             {data.type === 'ai_request' && (
               <>
-                {data.config?.aiModel && (
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Model: {data.config.aiModel}
-                  </div>
-                )}
-                {data.config?.prompt && (
-                  <div className="text-xs text-muted-foreground truncate">
-                    Prompt: "{data.config.prompt.substring(0, 30)}..."
-                  </div>
-                )}
+                <div className="text-xs text-muted-foreground mb-1">
+                  Model:{' '}
+                  {data.config?.aiModel || t('flowBuilder.fields.notSet')}
+                </div>
+                <div className="text-xs text-muted-foreground truncate">
+                  Prompt: "
+                  {data.config?.prompt
+                    ? data.config.prompt.substring(0, 30) + '...'
+                    : t('flowBuilder.fields.notSet')}
+                  "
+                </div>
               </>
             )}
 
