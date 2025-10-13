@@ -204,6 +204,8 @@ export const translations = {
       createDemo: 'Создать демо',
       test: 'Тест',
       save: 'Сохранить',
+      cancel: 'Отменить',
+      editMode: 'Редактирование',
 
       // Block Palette
       blockPalette: {
@@ -390,6 +392,8 @@ export const translations = {
       fields: {
         board: 'Доска',
         column: 'Колонка',
+        sourceColumn: 'Из колонки',
+        targetColumn: 'В колонку',
         event: 'Событие',
         variable: 'Переменная',
         condition: 'Условие',
@@ -398,6 +402,7 @@ export const translations = {
         types: 'Типы',
         waitFor: 'Ожидать',
         timeout: 'Таймаут',
+        notSet: 'не задано',
       },
 
       // Events
@@ -660,6 +665,8 @@ export const translations = {
       createDemo: 'Create Demo',
       test: 'Test',
       save: 'Save',
+      cancel: 'Cancel',
+      editMode: 'Editing',
 
       // Block Palette
       blockPalette: {
@@ -845,6 +852,8 @@ export const translations = {
       fields: {
         board: 'Board',
         column: 'Column',
+        sourceColumn: 'From Column',
+        targetColumn: 'To Column',
         event: 'Event',
         variable: 'Variable',
         condition: 'Condition',
@@ -853,6 +862,7 @@ export const translations = {
         types: 'Types',
         waitFor: 'Wait for',
         timeout: 'Timeout',
+        notSet: 'not set',
       },
 
       // Events

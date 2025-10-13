@@ -129,23 +129,22 @@ export function TriggerBlock({ data, id, selected }: TriggerBlockProps) {
             <div className="text-xs font-medium mb-2">
               {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
             </div>
-            {data.config?.boardType && (
-              <div className="text-xs text-muted-foreground mb-1">
-                {t('flowBuilder.fields.board')}:{' '}
-                {data.config.boardType.toUpperCase()}
-              </div>
-            )}
-            {data.config?.targetColumn && (
-              <div className="text-xs text-muted-foreground mb-1">
-                {t('flowBuilder.fields.column')}: {data.config.targetColumn}
-              </div>
-            )}
-            {data.config?.event && (
-              <div className="text-xs text-muted-foreground">
-                {t('flowBuilder.fields.event')}:{' '}
-                {t(`flowBuilder.events.${data.config.event}`)}
-              </div>
-            )}
+            <div className="text-xs text-muted-foreground mb-1">
+              {t('flowBuilder.fields.board')}:{' '}
+              {data.config?.boardType
+                ? data.config.boardType.toUpperCase()
+                : t('flowBuilder.fields.notSet')}
+            </div>
+            <div className="text-xs text-muted-foreground mb-1">
+              {t('flowBuilder.fields.column')}:{' '}
+              {data.config?.targetColumn || t('flowBuilder.fields.notSet')}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {t('flowBuilder.fields.event')}:{' '}
+              {data.config?.event
+                ? t(`flowBuilder.events.${data.config.event}`)
+                : t('flowBuilder.fields.notSet')}
+            </div>
           </div>
         )}
       </CardContent>

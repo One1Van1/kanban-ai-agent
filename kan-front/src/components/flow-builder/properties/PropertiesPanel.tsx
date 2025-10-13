@@ -39,10 +39,15 @@ export function PropertiesPanel({
     );
   }
 
+  const getConfig = (key?: string): any => {
+    const config = (node.data.config || {}) as Record<string, any>;
+    return key ? config[key] : config;
+  };
+
   const updateConfig = (key: string, value: any) => {
     onUpdateNode(blockId, {
       config: {
-        ...node.data.config,
+        ...(node.data.config || {}),
         [key]: value,
       },
     });
@@ -215,7 +220,7 @@ export function PropertiesPanel({
             <Label htmlFor="variableName">Variable Name</Label>
             <Input
               id="variableName"
-              value={node.data.config.variableName || ''}
+              value={getConfig('variableName') || ''}
               onChange={(e) => updateConfig('variableName', e.target.value)}
               placeholder="Enter variable name"
             />
@@ -224,7 +229,7 @@ export function PropertiesPanel({
           <div>
             <Label htmlFor="source">Source</Label>
             <Select
-              value={node.data.config.source || 'card_attachments'}
+              value={getConfig('source') || 'card_attachments'}
               onValueChange={(value) => updateConfig('source', value)}
             >
               <SelectTrigger>
@@ -244,14 +249,14 @@ export function PropertiesPanel({
             <Label htmlFor="fileType">File Types (comma separated)</Label>
             <Input
               id="fileType"
-              value={node.data.config.filter?.fileType?.join(', ') || ''}
+              value={getConfig('filter')?.fileType?.join(', ') || ''}
               onChange={(e) => {
                 const types = e.target.value
                   .split(',')
                   .map((t) => t.trim())
                   .filter(Boolean);
                 updateConfig('filter', {
-                  ...node.data.config.filter,
+                  ...(getConfig('filter') || {}),
                   fileType: types,
                 });
               }}
@@ -263,10 +268,10 @@ export function PropertiesPanel({
             <Label htmlFor="uploadedBy">Uploaded By (optional)</Label>
             <Input
               id="uploadedBy"
-              value={node.data.config.filter?.uploadedBy || ''}
+              value={getConfig('filter')?.uploadedBy || ''}
               onChange={(e) =>
                 updateConfig('filter', {
-                  ...node.data.config.filter,
+                  ...(getConfig('filter') || {}),
                   uploadedBy: e.target.value,
                 })
               }
@@ -287,10 +292,10 @@ export function PropertiesPanel({
             <Label htmlFor="variable">Variable to Check</Label>
             <Input
               id="variable"
-              value={node.data.config.condition?.variable || ''}
+              value={getConfig('condition')?.variable || ''}
               onChange={(e) =>
                 updateConfig('condition', {
-                  ...node.data.config.condition,
+                  ...getConfig('condition'),
                   variable: e.target.value,
                 })
               }
@@ -301,10 +306,10 @@ export function PropertiesPanel({
           <div>
             <Label htmlFor="operator">Operator</Label>
             <Select
-              value={node.data.config.condition?.operator || 'exists'}
+              value={getConfig('condition')?.operator || 'exists'}
               onValueChange={(value) =>
                 updateConfig('condition', {
-                  ...node.data.config.condition,
+                  ...getConfig('condition'),
                   operator: value,
                 })
               }
@@ -324,16 +329,16 @@ export function PropertiesPanel({
           </div>
 
           {['equals', 'contains', 'greater', 'less'].includes(
-            node.data.config.condition?.operator,
+            getConfig('condition')?.operator,
           ) && (
             <div>
               <Label htmlFor="value">Value</Label>
               <Input
                 id="value"
-                value={node.data.config.condition?.value || ''}
+                value={getConfig('condition')?.value || ''}
                 onChange={(e) =>
                   updateConfig('condition', {
-                    ...node.data.config.condition,
+                    ...getConfig('condition'),
                     value: e.target.value,
                   })
                 }
@@ -355,7 +360,7 @@ export function PropertiesPanel({
             <Label htmlFor="commentText">Comment Text</Label>
             <Textarea
               id="commentText"
-              value={node.data.config.commentText || ''}
+              value={getConfig('commentText') || ''}
               onChange={(e) => updateConfig('commentText', e.target.value)}
               placeholder="Enter comment text"
               rows={4}
@@ -371,7 +376,7 @@ export function PropertiesPanel({
           <div>
             <Label htmlFor="aiModel">AI Model</Label>
             <Select
-              value={node.data.config.aiModel || 'claude'}
+              value={getConfig('aiModel') || 'claude'}
               onValueChange={(value) => updateConfig('aiModel', value)}
             >
               <SelectTrigger>
@@ -389,7 +394,7 @@ export function PropertiesPanel({
             <Label htmlFor="prompt">Prompt</Label>
             <Textarea
               id="prompt"
-              value={node.data.config.prompt || ''}
+              value={getConfig('prompt') || ''}
               onChange={(e) => updateConfig('prompt', e.target.value)}
               placeholder="Enter AI prompt"
               rows={6}
@@ -402,7 +407,7 @@ export function PropertiesPanel({
             </Label>
             <Input
               id="attachments"
-              value={node.data.config.attachments?.join(', ') || ''}
+              value={getConfig('attachments')?.join(', ') || ''}
               onChange={(e) => {
                 const attachments = e.target.value
                   .split(',')
@@ -424,7 +429,7 @@ export function PropertiesPanel({
             <Label htmlFor="fileName">File Name</Label>
             <Input
               id="fileName"
-              value={node.data.config.fileName || ''}
+              value={getConfig('fileName') || ''}
               onChange={(e) => updateConfig('fileName', e.target.value)}
               placeholder="report.docx"
             />
@@ -433,7 +438,7 @@ export function PropertiesPanel({
           <div>
             <Label htmlFor="fileFormat">File Format</Label>
             <Select
-              value={node.data.config.fileFormat || 'docx'}
+              value={getConfig('fileFormat') || 'docx'}
               onValueChange={(value) => updateConfig('fileFormat', value)}
             >
               <SelectTrigger>
@@ -452,7 +457,7 @@ export function PropertiesPanel({
             <Label htmlFor="fileContent">File Content</Label>
             <Textarea
               id="fileContent"
-              value={node.data.config.fileContent || ''}
+              value={getConfig('fileContent') || ''}
               onChange={(e) => updateConfig('fileContent', e.target.value)}
               placeholder="{{aiResponse}} or static content"
               rows={4}
@@ -472,7 +477,7 @@ export function PropertiesPanel({
           <div>
             <Label htmlFor="waitFor">Wait For</Label>
             <Select
-              value={node.data.config.waitFor || 'ai_response'}
+              value={getConfig('waitFor') || 'ai_response'}
               onValueChange={(value) => updateConfig('waitFor', value)}
             >
               <SelectTrigger>
@@ -491,7 +496,7 @@ export function PropertiesPanel({
             <Input
               id="timeout"
               type="number"
-              value={node.data.config.timeout || 300000}
+              value={getConfig('timeout') || 300000}
               onChange={(e) =>
                 updateConfig('timeout', parseInt(e.target.value))
               }
@@ -534,7 +539,7 @@ export function PropertiesPanel({
               <Label htmlFor="blockName">Name</Label>
               <Input
                 id="blockName"
-                value={node.data.name || ''}
+                value={(node.data.name as string) || ''}
                 onChange={(e) => updateName(e.target.value)}
                 placeholder="Block name"
               />
@@ -542,7 +547,7 @@ export function PropertiesPanel({
             <div>
               <Label>Type</Label>
               <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                {node.data.type}
+                {node.data.type as string}
               </div>
             </div>
             <div>

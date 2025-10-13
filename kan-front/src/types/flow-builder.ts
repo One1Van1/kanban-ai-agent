@@ -1,9 +1,15 @@
 // Types for Visual Flow Builder
+export interface FlowNodeData {
+  type: string;
+  name: string;
+  config: Record<string, any>;
+}
+
 export interface FlowNode {
   id: string;
   type: 'trigger' | 'context' | 'logic' | 'action' | 'wait';
   position: { x: number; y: number };
-  data: any;
+  data: FlowNodeData;
 }
 
 export interface FlowEdge {

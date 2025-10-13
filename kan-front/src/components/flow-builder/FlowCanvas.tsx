@@ -42,6 +42,7 @@ interface FlowCanvasProps {
   readonly?: boolean;
   isSidebarOpen?: boolean;
   isMainSidebarOpen?: boolean;
+  isPropertiesOpen?: boolean;
 }
 
 export function FlowCanvas({
@@ -50,6 +51,7 @@ export function FlowCanvas({
   readonly = false,
   isSidebarOpen = true,
   isMainSidebarOpen = true,
+  isPropertiesOpen = false,
 }: FlowCanvasProps) {
   return (
     <ReactFlowProvider>
@@ -59,6 +61,7 @@ export function FlowCanvas({
         readonly={readonly}
         isSidebarOpen={isSidebarOpen}
         isMainSidebarOpen={isMainSidebarOpen}
+        isPropertiesOpen={isPropertiesOpen}
       />
     </ReactFlowProvider>
   );
@@ -70,6 +73,7 @@ function FlowCanvasInner({
   readonly = false,
   isSidebarOpen = true,
   isMainSidebarOpen = true,
+  isPropertiesOpen = false,
 }: FlowCanvasProps) {
   const { screenToFlowPosition, getZoom, setCenter } = useReactFlow();
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
