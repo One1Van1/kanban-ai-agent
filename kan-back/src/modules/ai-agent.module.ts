@@ -17,6 +17,10 @@ import { ExecuteAgentActionController } from '../features/ai-agent/execute-agent
 import { GetAgentActivityController } from '../features/ai-agent/get-agent-activity/get-agent-activity.controller';
 import { ExecuteFlowController } from '../features/ai-agent/execute-flow/execute-flow.controller';
 import { GetAvailableModelsController } from '../features/ai-agent/get-available-models/get-available-models.controller';
+import { GetFlowExecutionStatusController } from '../features/ai-agent/get-flow-execution-status/get-flow-execution-status.controller';
+import { PauseFlowExecutionController } from '../features/ai-agent/pause-flow-execution/pause-flow-execution.controller';
+import { ResumeFlowExecutionController } from '../features/ai-agent/resume-flow-execution/resume-flow-execution.controller';
+import { CancelFlowExecutionController } from '../features/ai-agent/cancel-flow-execution/cancel-flow-execution.controller';
 
 // New Agent Retrieval Controllers
 import { GetAllAgentsController } from '../features/ai-agent/get-all-agents/get-all-agents.controller';
@@ -35,6 +39,10 @@ import { ExecuteAgentActionService } from '../features/ai-agent/execute-agent-ac
 import { GetAgentActivityService } from '../features/ai-agent/get-agent-activity/get-agent-activity.service';
 import { ExecuteFlowService } from '../features/ai-agent/execute-flow/execute-flow.service';
 import { GetAvailableModelsService } from '../features/ai-agent/get-available-models/get-available-models.service';
+import { GetFlowExecutionStatusService } from '../features/ai-agent/get-flow-execution-status/get-flow-execution-status.service';
+import { PauseFlowExecutionService } from '../features/ai-agent/pause-flow-execution/pause-flow-execution.service';
+import { ResumeFlowExecutionService } from '../features/ai-agent/resume-flow-execution/resume-flow-execution.service';
+import { CancelFlowExecutionService } from '../features/ai-agent/cancel-flow-execution/cancel-flow-execution.service';
 
 // New Agent Retrieval Services
 import { GetAllAgentsService } from '../features/ai-agent/get-all-agents/get-all-agents.service';
@@ -67,6 +75,10 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     TrackAgentInTaskController,
     ExecuteFlowController, // 🚀 Новый Flow Execution Controller
     GetAvailableModelsController, // 🤖 Получение доступных AI моделей
+    GetFlowExecutionStatusController, // 📊 Мониторинг статуса выполнения Flow
+    PauseFlowExecutionController, // ⏸️ Приостановка выполнения Flow
+    ResumeFlowExecutionController, // ▶️ Возобновление выполнения Flow
+    CancelFlowExecutionController, // ❌ Отмена выполнения Flow
     // New Agent Retrieval Controllers
     GetAllAgentsController,
     GetAgentByIdController,
@@ -84,6 +96,10 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     TrackAgentInTaskService,
     ExecuteFlowService, // 🚀 Новый Flow Execution Service
     GetAvailableModelsService, // 🤖 Сервис получения доступных AI моделей
+    GetFlowExecutionStatusService, // 📊 Сервис мониторинга статуса Flow
+    PauseFlowExecutionService, // ⏸️ Сервис приостановки выполнения Flow
+    ResumeFlowExecutionService, // ▶️ Сервис возобновления выполнения Flow
+    CancelFlowExecutionService, // ❌ Сервис отмены выполнения Flow
     // New Agent Retrieval Services
     GetAllAgentsService,
     GetAgentByIdService,
@@ -104,6 +120,10 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     TrackAgentInTaskService,
     ExecuteFlowService, // 🚀 Экспорт Flow Execution Service
     GetAvailableModelsService, // 🤖 Экспорт сервиса доступных AI моделей
+    GetFlowExecutionStatusService, // 📊 Экспорт сервиса мониторинга статуса
+    PauseFlowExecutionService, // ⏸️ Экспорт сервиса приостановки Flow
+    ResumeFlowExecutionService, // ▶️ Экспорт сервиса возобновления Flow
+    CancelFlowExecutionService, // ❌ Экспорт сервиса отмены Flow
     InstructionExecutorService,
     // 🧠 Экспортируем новые сервисы для использования в других модулях
     IntelligentAgentService,

@@ -17,6 +17,7 @@ import { ProcessWebhookBeforeAfterController } from '../features/jira-integratio
 import { SearchTasksController } from '../features/jira-integration/search-tasks-correct/search-tasks.controller';
 import { TimeValidationWebhookController } from '../features/jira-integration/time-validation-webhook-correct/time-validation-webhook.controller';
 import { GetBoardColumnsController } from '../features/jira-integration/get-board-columns/get-board-columns.controller';
+import { GetTaskFilesByUserController } from '../features/jira-integration/get-task-files-by-user/get-task-files-by-user.controller';
 
 // Services
 import { AddTaskCommentService } from '../features/jira-integration/add-task-comment/add-task-comment.service';
@@ -31,6 +32,7 @@ import { ProcessWebhookBeforeAfterService } from '../features/jira-integration/p
 import { SearchTasksService } from '../features/jira-integration/search-tasks-correct/search-tasks.service';
 import { TimeValidationWebhookService } from '../features/jira-integration/time-validation-webhook-correct/time-validation-webhook.service';
 import { GetBoardColumnsService } from '../features/jira-integration/get-board-columns/get-board-columns.service';
+import { GetTaskFilesByUserService } from '../features/jira-integration/get-task-files-by-user/get-task-files-by-user.service';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([Agent, AgentInstruction])],
@@ -47,6 +49,7 @@ import { GetBoardColumnsService } from '../features/jira-integration/get-board-c
     SearchTasksController,
     TimeValidationWebhookController,
     GetBoardColumnsController, // 🚀 Новый контроллер для получения колонок
+    GetTaskFilesByUserController, // 📁 Получение файлов задачи по пользователю
   ],
   providers: [
     AddTaskCommentService,
@@ -61,6 +64,7 @@ import { GetBoardColumnsService } from '../features/jira-integration/get-board-c
     SearchTasksService,
     TimeValidationWebhookService,
     GetBoardColumnsService, // 🚀 Новый сервис для получения колонок
+    GetTaskFilesByUserService, // 📁 Сервис получения файлов задачи по пользователю
   ],
   exports: [
     AddTaskCommentService,
@@ -75,6 +79,7 @@ import { GetBoardColumnsService } from '../features/jira-integration/get-board-c
     SearchTasksService,
     TimeValidationWebhookService,
     GetBoardColumnsService, // 🚀 Экспорт нового сервиса
+    GetTaskFilesByUserService, // 📁 Экспорт сервиса файлов задачи
   ],
 })
 export class JiraIntegrationModule {}
