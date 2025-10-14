@@ -19,6 +19,7 @@ import {
   ExecuteAgentActionResponseDto,
   AgentActionResult,
 } from '../execute-agent-action/execute-agent-action.response.dto';
+import { FlowConverterService } from './flow-converter.service';
 
 @Injectable()
 export class ExecuteFlowService {
@@ -26,6 +27,7 @@ export class ExecuteFlowService {
 
   constructor(
     private readonly executeAgentActionService: ExecuteAgentActionService,
+    private readonly flowConverterService: FlowConverterService,
   ) {}
 
   async execute(
@@ -39,13 +41,22 @@ export class ExecuteFlowService {
     );
 
     try {
-      // 1. Конвертируем Flow в Agent Instructions
-      const agentInstructions = this.convertFlowToAgentInstructions(
-        requestDto.flowDefinition,
-      );
+      // 1. Используем умную конвертацию Flow в Agent Instructions
+      const smartInstructions =
+        await this.flowConverterService.convertFlowToInstructions(
+          requestDto.flowDefinition,
+          requestDto.taskKey,
+          requestDto.triggerContext || {},
+        );
+
+      // 2. Генерируем финальный текст инструкций
+      const agentInstructions =
+        this.flowConverterService.generateFinalInstructionText(
+          smartInstructions,
+        );
 
       this.logger.log(
-        `🧠 Converted Flow to Agent Instructions: ${agentInstructions}`,
+        `🧠 Generated ${smartInstructions.length} smart instructions for Flow execution`,
       );
 
       // 2. Создаем Agent Request

@@ -21,6 +21,7 @@ import { GetFlowExecutionStatusController } from '../features/ai-agent/get-flow-
 import { PauseFlowExecutionController } from '../features/ai-agent/pause-flow-execution/pause-flow-execution.controller';
 import { ResumeFlowExecutionController } from '../features/ai-agent/resume-flow-execution/resume-flow-execution.controller';
 import { CancelFlowExecutionController } from '../features/ai-agent/cancel-flow-execution/cancel-flow-execution.controller';
+import { TestFlowController } from '../features/ai-agent/execute-flow/test-flow.controller';
 
 // New Agent Retrieval Controllers
 import { GetAllAgentsController } from '../features/ai-agent/get-all-agents/get-all-agents.controller';
@@ -38,6 +39,7 @@ import { CreateAgentService } from '../features/ai-agent/create-agent/create-age
 import { ExecuteAgentActionService } from '../features/ai-agent/execute-agent-action/execute-agent-action.service';
 import { GetAgentActivityService } from '../features/ai-agent/get-agent-activity/get-agent-activity.service';
 import { ExecuteFlowService } from '../features/ai-agent/execute-flow/execute-flow.service';
+import { FlowConverterService } from '../features/ai-agent/execute-flow/flow-converter.service';
 import { GetAvailableModelsService } from '../features/ai-agent/get-available-models/get-available-models.service';
 import { GetFlowExecutionStatusService } from '../features/ai-agent/get-flow-execution-status/get-flow-execution-status.service';
 import { PauseFlowExecutionService } from '../features/ai-agent/pause-flow-execution/pause-flow-execution.service';
@@ -72,20 +74,17 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     CreateAgentController,
     ExecuteAgentActionController,
     GetAgentActivityController,
-    TrackAgentInTaskController,
-    ExecuteFlowController, // 🚀 Новый Flow Execution Controller
-    GetAvailableModelsController, // 🤖 Получение доступных AI моделей
-    GetFlowExecutionStatusController, // 📊 Мониторинг статуса выполнения Flow
-    PauseFlowExecutionController, // ⏸️ Приостановка выполнения Flow
-    ResumeFlowExecutionController, // ▶️ Возобновление выполнения Flow
-    CancelFlowExecutionController, // ❌ Отмена выполнения Flow
-    // New Agent Retrieval Controllers
+    ExecuteFlowController,
+    TestFlowController,
+    GetAvailableModelsController,
+    GetFlowExecutionStatusController,
+    PauseFlowExecutionController,
+    ResumeFlowExecutionController,
+    CancelFlowExecutionController,
     GetAllAgentsController,
     GetAgentByIdController,
     GetAgentsByBoardTypeController,
-    // 🧠 Новые контроллеры для интеллектуальных функций
-    AgentLearningController, // Обучение и метрики производительности
-    AgentRoleController, // Управление ролями и специализацией
+    TrackAgentInTaskController,
   ],
   providers: [
     ConfigureAgentService,
@@ -95,6 +94,7 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     GetAgentActivityService,
     TrackAgentInTaskService,
     ExecuteFlowService, // 🚀 Новый Flow Execution Service
+    FlowConverterService, // 🧠 Умная конвертация Flow → AI Instructions
     GetAvailableModelsService, // 🤖 Сервис получения доступных AI моделей
     GetFlowExecutionStatusService, // 📊 Сервис мониторинга статуса Flow
     PauseFlowExecutionService, // ⏸️ Сервис приостановки выполнения Flow
@@ -119,6 +119,7 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     GetAgentActivityService,
     TrackAgentInTaskService,
     ExecuteFlowService, // 🚀 Экспорт Flow Execution Service
+    FlowConverterService, // 🧠 Экспорт умной конвертации Flow
     GetAvailableModelsService, // 🤖 Экспорт сервиса доступных AI моделей
     GetFlowExecutionStatusService, // 📊 Экспорт сервиса мониторинга статуса
     PauseFlowExecutionService, // ⏸️ Экспорт сервиса приостановки Flow
