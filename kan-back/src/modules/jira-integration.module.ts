@@ -16,6 +16,7 @@ import { MoveTaskController } from '../features/jira-integration/move-task-corre
 import { ProcessWebhookBeforeAfterController } from '../features/jira-integration/process-webhook-before-after/process-webhook-before-after.controller';
 import { SearchTasksController } from '../features/jira-integration/search-tasks-correct/search-tasks.controller';
 import { TimeValidationWebhookController } from '../features/jira-integration/time-validation-webhook-correct/time-validation-webhook.controller';
+import { GetBoardColumnsController } from '../features/jira-integration/get-board-columns/get-board-columns.controller';
 
 // Services
 import { AddTaskCommentService } from '../features/jira-integration/add-task-comment/add-task-comment.service';
@@ -29,6 +30,7 @@ import { MoveTaskService } from '../features/jira-integration/move-task-correct/
 import { ProcessWebhookBeforeAfterService } from '../features/jira-integration/process-webhook-before-after/process-webhook-before-after.service';
 import { SearchTasksService } from '../features/jira-integration/search-tasks-correct/search-tasks.service';
 import { TimeValidationWebhookService } from '../features/jira-integration/time-validation-webhook-correct/time-validation-webhook.service';
+import { GetBoardColumnsService } from '../features/jira-integration/get-board-columns/get-board-columns.service';
 
 @Module({
   imports: [ConfigModule, TypeOrmModule.forFeature([Agent, AgentInstruction])],
@@ -44,6 +46,7 @@ import { TimeValidationWebhookService } from '../features/jira-integration/time-
     ProcessWebhookBeforeAfterController,
     SearchTasksController,
     TimeValidationWebhookController,
+    GetBoardColumnsController, // 🚀 Новый контроллер для получения колонок
   ],
   providers: [
     AddTaskCommentService,
@@ -57,6 +60,7 @@ import { TimeValidationWebhookService } from '../features/jira-integration/time-
     ProcessWebhookBeforeAfterService,
     SearchTasksService,
     TimeValidationWebhookService,
+    GetBoardColumnsService, // 🚀 Новый сервис для получения колонок
   ],
   exports: [
     AddTaskCommentService,
@@ -70,6 +74,7 @@ import { TimeValidationWebhookService } from '../features/jira-integration/time-
     ProcessWebhookBeforeAfterService,
     SearchTasksService,
     TimeValidationWebhookService,
+    GetBoardColumnsService, // 🚀 Экспорт нового сервиса
   ],
 })
 export class JiraIntegrationModule {}

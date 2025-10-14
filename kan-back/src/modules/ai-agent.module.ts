@@ -15,6 +15,8 @@ import { ConfigureColumnInstructionsController } from '../features/ai-agent/conf
 import { CreateAgentController } from '../features/ai-agent/create-agent/create-agent.controller';
 import { ExecuteAgentActionController } from '../features/ai-agent/execute-agent-action/execute-agent-action.controller';
 import { GetAgentActivityController } from '../features/ai-agent/get-agent-activity/get-agent-activity.controller';
+import { ExecuteFlowController } from '../features/ai-agent/execute-flow/execute-flow.controller';
+import { GetAvailableModelsController } from '../features/ai-agent/get-available-models/get-available-models.controller';
 
 // New Agent Retrieval Controllers
 import { GetAllAgentsController } from '../features/ai-agent/get-all-agents/get-all-agents.controller';
@@ -31,6 +33,8 @@ import { ConfigureColumnInstructionsService } from '../features/ai-agent/configu
 import { CreateAgentService } from '../features/ai-agent/create-agent/create-agent.service';
 import { ExecuteAgentActionService } from '../features/ai-agent/execute-agent-action/execute-agent-action.service';
 import { GetAgentActivityService } from '../features/ai-agent/get-agent-activity/get-agent-activity.service';
+import { ExecuteFlowService } from '../features/ai-agent/execute-flow/execute-flow.service';
+import { GetAvailableModelsService } from '../features/ai-agent/get-available-models/get-available-models.service';
 
 // New Agent Retrieval Services
 import { GetAllAgentsService } from '../features/ai-agent/get-all-agents/get-all-agents.service';
@@ -61,6 +65,8 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     ExecuteAgentActionController,
     GetAgentActivityController,
     TrackAgentInTaskController,
+    ExecuteFlowController, // 🚀 Новый Flow Execution Controller
+    GetAvailableModelsController, // 🤖 Получение доступных AI моделей
     // New Agent Retrieval Controllers
     GetAllAgentsController,
     GetAgentByIdController,
@@ -76,6 +82,8 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     ExecuteAgentActionService,
     GetAgentActivityService,
     TrackAgentInTaskService,
+    ExecuteFlowService, // 🚀 Новый Flow Execution Service
+    GetAvailableModelsService, // 🤖 Сервис получения доступных AI моделей
     // New Agent Retrieval Services
     GetAllAgentsService,
     GetAgentByIdService,
@@ -94,6 +102,8 @@ import { TrackAgentInTaskService } from '../features/kanban-management/POST/trac
     ExecuteAgentActionService,
     GetAgentActivityService,
     TrackAgentInTaskService,
+    ExecuteFlowService, // 🚀 Экспорт Flow Execution Service
+    GetAvailableModelsService, // 🤖 Экспорт сервиса доступных AI моделей
     InstructionExecutorService,
     // 🧠 Экспортируем новые сервисы для использования в других модулях
     IntelligentAgentService,
