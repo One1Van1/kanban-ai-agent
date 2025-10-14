@@ -22,10 +22,16 @@ import {
   BackgroundVariant,
   useReactFlow,
   ReactFlowProvider,
+  ConnectionLineType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 
-import { FlowDefinition, FlowNode, FlowEdge } from '@/src/types/flow-builder';
+import {
+  FlowDefinition,
+  FlowNode,
+  FlowEdge,
+  FlowConnection,
+} from '@/src/types/flow-builder';
 import { BlockPalette } from './sidebar/BlockPalette';
 import { FlowToolbar } from './toolbar/FlowToolbar';
 import { TriggerBlock } from './blocks/TriggerBlock';
@@ -34,6 +40,8 @@ import { LogicBlock } from './blocks/LogicBlock';
 import { ActionBlock } from './blocks/ActionBlock';
 import { WaitBlock } from './blocks/WaitBlock';
 import { ConfirmDeleteDialog } from './dialogs/ConfirmDeleteDialog';
+import { DynamicConnectionLine } from './components/DynamicConnectionLine';
+import { StyledSmoothStepEdge } from './components/StyledSmoothStepEdge';
 
 // Регистрируем кастомные типы блоков
 const nodeTypes = {
@@ -42,6 +50,11 @@ const nodeTypes = {
   logic: LogicBlock,
   action: ActionBlock,
   wait: WaitBlock,
+};
+
+// Регистрируем кастомные типы соединений
+const edgeTypes = {
+  styledSmoothStep: StyledSmoothStepEdge,
 };
 
 export interface FlowCanvasRef {
@@ -154,8 +167,12 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
             id: connection.id || `edge-${index}`,
             source: connection.from,
             target: connection.to,
-            type: 'smoothstep',
+            type: 'styledSmoothStep',
             animated: true,
+            style: {
+              strokeWidth: 3,
+              stroke: 'hsl(var(--foreground) / 0.6)',
+            },
             label: connection.label,
           }),
         );
@@ -214,14 +231,79 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       };
     }, []);
 
-    // Обработка соединения блоков с валидацией
+    // Упрощенная валидация соединений - разрешаем все соединения
+    const validateConnection = useCallback(
+      (sourceNode: Node, targetNode: Node, sourceHandle?: string | null) => {
+        // Проверяем, что нет циклических соединений (блок к самому себе)
+        if (sourceNode.id === targetNode.id) {
+          console.warn('Cannot connect node to itself');
+          return false;
+        }
+
+        // Проверяем, что соединение еще не существует
+        const existingConnection = edges.find(
+          (edge) =>
+            edge.source === sourceNode.id &&
+            edge.target === targetNode.id &&
+            edge.sourceHandle === sourceHandle,
+        );
+        if (existingConnection) {
+          console.warn('Connection already exists');
+          return false;
+        }
+
+        // ✅ Разрешаем ВСЕ остальные соединения между разными блоками
+        console.log(
+          `✅ Valid connection: ${sourceNode.type} -> ${targetNode.type} via ${sourceHandle || 'default'}`,
+        );
+        return true;
+      },
+      [edges],
+    );
+
+    // Цвет соединения в зависимости от типа
+    const getConnectionColor = useCallback(
+      (sourceNode: Node, sourceHandle?: string | null) => {
+        if (sourceHandle === 'true') return '#10b981'; // green
+        if (sourceHandle === 'false') return '#ef4444'; // red
+
+        switch (sourceNode.type) {
+          case 'trigger':
+            return '#10b981'; // green
+          case 'context':
+            return '#3b82f6'; // blue
+          case 'logic':
+            return '#f59e0b'; // yellow
+          case 'action':
+            return '#8b5cf6'; // purple
+          case 'wait':
+            return '#f97316'; // orange
+          default:
+            return '#6b7280'; // gray
+        }
+      },
+      [],
+    );
+
+    // Улучшенная обработка соединения блоков
     const onConnect = useCallback(
       (params: Connection | Edge) => {
+        console.log('🔗 Connection attempt:', params);
+
         // Валидация соединений
         const sourceNode = nodes.find((n) => n.id === params.source);
         const targetNode = nodes.find((n) => n.id === params.target);
 
-        if (!sourceNode || !targetNode) return;
+        if (!sourceNode || !targetNode) {
+          console.error('❌ Source or target node not found');
+          return;
+        }
+
+        console.log('🔍 Validating connection:', {
+          source: sourceNode.type,
+          target: targetNode.type,
+          handle: params.sourceHandle,
+        });
 
         // Правила валидации соединений
         const isValidConnection = validateConnection(
@@ -231,70 +313,67 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         );
 
         if (isValidConnection) {
-          setEdges((eds) => addEdge(params, eds));
+          // Создаем новое соединение с улучшенными параметрами
+          const edgeId = 'id' in params ? params.id : `edge-${Date.now()}`;
+          const newEdge: Edge = {
+            ...params,
+            id: edgeId,
+            type: 'styledSmoothStep',
+            animated: true,
+            style: {
+              strokeWidth: 3,
+              stroke: getConnectionColor(sourceNode, params.sourceHandle),
+            },
+            label: params.sourceHandle ? `${params.sourceHandle}` : undefined,
+          };
+
+          setEdges((eds) => addEdge(newEdge, eds));
+
+          // Синхронизируем с внешним flow, если есть callback
+          if (onFlowChange && flow) {
+            const newConnection: FlowConnection = {
+              id: newEdge.id,
+              from: params.source!,
+              to: params.target!,
+              label:
+                typeof newEdge.label === 'string' ? newEdge.label : undefined,
+              condition: params.sourceHandle as FlowConnection['condition'],
+            };
+
+            const updatedConnections = [
+              ...(flow.connections || []),
+              newConnection,
+            ];
+
+            const updatedFlow = {
+              ...flow,
+              connections: updatedConnections,
+              updated: new Date(),
+            };
+
+            onFlowChange(updatedFlow);
+          }
+
+          console.log('✅ Connection created successfully');
         } else {
-          // Показать уведомление о неверном соединении
+          // TODO: Показать пользователю уведомление о неверном соединении
           console.warn(
-            'Invalid connection:',
+            '❌ Invalid connection:',
             sourceNode.type,
             '->',
             targetNode.type,
           );
         }
       },
-      [setEdges, nodes],
+      [
+        setEdges,
+        nodes,
+        validateConnection,
+        getConnectionColor,
+        onFlowChange,
+        flow,
+      ],
     );
-
-    // Валидация правильности соединений
-    const validateConnection = (
-      sourceNode: Node,
-      targetNode: Node,
-      sourceHandle?: string | null,
-    ) => {
-      const sourceType = sourceNode.type;
-      const targetType = targetNode.type;
-
-      // Правила последовательности: trigger -> context -> logic -> action -> wait
-      const typeHierarchy = {
-        trigger: 1,
-        context: 2,
-        logic: 3,
-        action: 4,
-        wait: 5,
-      };
-
-      const sourceLevel =
-        typeHierarchy[sourceType as keyof typeof typeHierarchy] || 0;
-      const targetLevel =
-        typeHierarchy[targetType as keyof typeof typeHierarchy] || 0;
-
-      // Разрешаем соединения в правильном порядке или на том же уровне
-      return sourceLevel <= targetLevel;
-    };
-
-    // Цвет соединения в зависимости от типа
-    const getConnectionColor = (
-      sourceNode: Node,
-      sourceHandle?: string | null,
-    ) => {
-      if (sourceHandle === 'true') return '#10b981'; // green
-      if (sourceHandle === 'false') return '#ef4444'; // red
-
-      switch (sourceNode.type) {
-        case 'trigger':
-          return '#10b981'; // green
-        case 'context':
-          return '#3b82f6'; // blue
-        case 'logic':
-          return '#f59e0b'; // yellow
-        case 'action':
-          return '#8b5cf6'; // purple
-        case 'wait':
-          return '#f97316'; // orange
-        default:
-          return '#6b7280'; // gray
-      }
-    };
 
     // Обработка клика по блоку - больше не открываем панель свойств
     const onNodeClick = useCallback((event: React.MouseEvent, node: Node) => {
@@ -885,16 +964,26 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
             onConnect={onConnect}
             onNodeClick={onNodeClick}
             nodeTypes={dynamicNodeTypes}
+            edgeTypes={edgeTypes}
             fitView={false}
             fitViewOptions={{
               padding: 0.3,
             }}
             defaultEdgeOptions={{
-              style: { strokeWidth: 2, stroke: 'hsl(var(--foreground) / 0.4)' },
+              type: 'styledSmoothStep',
+              style: {
+                strokeWidth: 3,
+                stroke: 'hsl(var(--foreground) / 0.6)',
+              },
               animated: true,
             }}
+            // Динамическая линия соединения с цветом блока-источника
+            connectionLineComponent={DynamicConnectionLine}
             snapToGrid={true}
             snapGrid={[20, 20]}
+            nodesDraggable={!readonly}
+            nodesConnectable={!readonly}
+            elementsSelectable={!readonly}
             attributionPosition="bottom-left"
           >
             <Controls

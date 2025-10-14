@@ -1,0 +1,86 @@
+/* Убираем все глобальные стили ReactFlow - теперь всё контролируется через компонент */ /* Файл очищен - всё управление теперь через ConnectionHandle.tsx */
+
+/* Top handles - ПРИНУДИТЕЛЬНО НА ВЕРХНИЙ КРАЙ */
+.react-flow__handle-top,
+.react-flow .react-flow__handle-top,
+.react-flow .react-flow__node .react-flow__handle-top,
+.react-flow__pane .react-flow__handle-top,
+div[data-testid='rf__wrapper'] .react-flow__handle-top,
+[class*='react-flow__handle-top'] {
+  /* АБСОЛЮТНОЕ позиционирование на верх - НА ГРАНИЦЕ */
+  top: -7px !important;
+  left: calc(50% - 6px) !important;
+  bottom: unset !important;
+  right: unset !important;
+  transform: none !important;
+  margin: 0 !important;
+  position: absolute !important;
+}
+
+/* Bottom handles - ПРИНУДИТЕЛЬНО НА НИЖНИЙ КРАЙ */
+.react-flow__handle-bottom,
+.react-flow .react-flow__handle-bottom,
+.react-flow .react-flow__node .react-flow__handle-bottom,
+.react-flow__pane .react-flow__handle-bottom,
+div[data-testid='rf__wrapper'] .react-flow__handle-bottom,
+[class*='react-flow__handle-bottom'] {
+  /* АБСОЛЮТНОЕ позиционирование на низ - НА ГРАНИЦЕ */
+  bottom: -7px !important; /* Увеличили отступ для точного позиционирования на границе */
+  left: calc(50% - 6px) !important;
+  top: unset !important;
+  right: unset !important;
+  transform: none !important;
+  margin: 0 !important;
+  position: absolute !important;
+}
+
+/* Left handles - ПРИНУДИТЕЛЬНО НА ЛЕВЫЙ КРАЙ */
+.react-flow__handle-left,
+.react-flow .react-flow__handle-left,
+.react-flow .react-flow__node .react-flow__handle-left,
+.react-flow__pane .react-flow__handle-left,
+div[data-testid='rf__wrapper'] .react-flow__handle-left,
+[class*='react-flow__handle-left'] {
+  /* АБСОЛЮТНОЕ позиционирование на лево - ТОЧНО НА ГРАНИЦЕ */
+  left: -6px !important; /* Уменьшили с -8px до -6px */
+  top: calc(50% - 6px) !important; /* Уменьшили с -8px до -6px */
+  right: unset !important;
+  bottom: unset !important;
+  transform: none !important;
+  margin: 0 !important;
+  position: absolute !important;
+}
+
+/* Right handles - ПРИНУДИТЕЛЬНО НА ПРАВЫЙ КРАЙ */
+.react-flow__handle-right,
+.react-flow .react-flow__handle-right,
+.react-flow .react-flow__node .react-flow__handle-right,
+.react-flow__pane .react-flow__handle-right,
+div[data-testid='rf__wrapper'] .react-flow__handle-right,
+[class*='react-flow__handle-right'] {
+  /* АБСОЛЮТНОЕ позиционирование на право - ТОЧНО НА ГРАНИЦЕ */
+  right: -6px !important; /* Уменьшили с -8px до -6px */
+  top: calc(50% - 6px) !important; /* Уменьшили с -8px до -6px */
+  left: unset !important;
+  bottom: unset !important;
+  transform: none !important;
+  margin: 0 !important;
+  position: absolute !important;
+}
+
+/* ПРОСТЫЕ hover эффекты БЕЗ transform конфликтов */
+.react-flow__handle:hover,
+.react-flow .react-flow__handle:hover,
+.react-flow .react-flow__node .react-flow__handle:hover,
+.react-flow__pane .react-flow__handle:hover,
+div[data-testid='rf__wrapper'] .react-flow__handle:hover,
+[class*='react-flow__handle']:hover {
+  background: #2563eb !important;
+  border-color: #60a5fa !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+  width: 18px !important;
+  height: 18px !important;
+  /* Корректируем позицию при увеличении */
+  margin-top: -1px !important;
+  margin-left: -1px !important;
+}
