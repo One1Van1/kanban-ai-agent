@@ -4,6 +4,7 @@ import { Agent } from '../entities/agent.entity';
 import { AgentInstruction } from '../entities/agent-instruction.entity';
 import { TaskHistory } from '../entities/task-history.entity';
 import { NotificationLog } from '../entities/notification-log.entity';
+import { Flow } from '../entities/flow.entity';
 
 export default registerAs(
   'database',
@@ -14,7 +15,7 @@ export default registerAs(
     username: process.env.DB_USERNAME || 'postgres',
     password: process.env.DB_PASSWORD || 'postgres',
     database: process.env.DB_NAME || 'kanban_ai_agent',
-    entities: [Agent, AgentInstruction, TaskHistory, NotificationLog],
+    entities: [Agent, AgentInstruction, TaskHistory, NotificationLog, Flow],
     synchronize: process.env.NODE_ENV !== 'production',
     logging: process.env.NODE_ENV === 'development',
     ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false,

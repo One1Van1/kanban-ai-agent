@@ -23,6 +23,7 @@ import { ContextManagementModule } from './modules/context-management.module';
 import { DatabaseModule } from './modules/database.module';
 import { DatabaseManagementModule } from './modules/database-management.module';
 import { CacheManagementModule } from './modules/cache-management.module';
+import { FlowManagementModule } from './modules/flow-management.module';
 import { KanbanManagementModule } from './features/kanban-management/kanban-management.module';
 import { BoardIntegrationsModule } from './features/board-integrations/board-integrations.module';
 
@@ -53,6 +54,7 @@ import { BoardIntegrationsModule } from './features/board-integrations/board-int
     JiraIntegrationModule, // Все Jira интеграции
     PhotoAnalysisModule, // Claude анализ фотографий
     AiReportingModule, // AI отчеты
+    FlowManagementModule, // Flow Management система для визуальных потоков
     KanbanManagementModule, // Kanban управление задачами
     BoardIntegrationsModule, // Универсальные интеграции с досками
   ],
