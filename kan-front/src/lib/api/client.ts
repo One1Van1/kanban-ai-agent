@@ -1,5 +1,12 @@
 import axios from 'axios';
-import { GetAllAgentsResponse, FlowBuilderSaveResponse } from '../types';
+import {
+  GetAllAgentsResponse,
+  FlowBuilderSaveResponse,
+  FlowManagementResponse,
+  ListFlowsResponse,
+  FlowExecutionResponse,
+  FlowCloneResponse,
+} from '../types';
 
 export class APIClient {
   private baseURL: string;
@@ -78,7 +85,84 @@ export class APIClient {
     getActivity: (agentId: string) => this.get(`/ai-agent/${agentId}/activity`),
   };
 
-  // Flow Builder API
+  // Flow Management API
+  flowManagement = {
+    // Create flow
+    createFlow: (data: {
+      name: string;
+      description?: string;
+      definition: any;
+      createdBy: string;
+      metadata?: any;
+    }): Promise<FlowManagementResponse> =>
+      this.post('/flow-management/create-flow', data),
+
+    // Get flow by ID
+    getFlow: (flowId: string): Promise<FlowManagementResponse> =>
+      this.get(`/flow-management/${flowId}`),
+
+    // List flows with pagination and filters
+    listFlows: (params?: {
+      page?: number;
+      limit?: number;
+      status?: string;
+      createdBy?: string;
+      category?: string;
+      search?: string;
+    }): Promise<ListFlowsResponse> => {
+      const queryParams = new URLSearchParams();
+      if (params?.page) queryParams.append('page', params.page.toString());
+      if (params?.limit) queryParams.append('limit', params.limit.toString());
+      if (params?.status) queryParams.append('status', params.status);
+      if (params?.createdBy) queryParams.append('createdBy', params.createdBy);
+      if (params?.category) queryParams.append('category', params.category);
+      if (params?.search) queryParams.append('search', params.search);
+
+      const query = queryParams.toString();
+      return this.get(`/flow-management${query ? `?${query}` : ''}`);
+    },
+
+    // Update flow
+    updateFlow: (
+      flowId: string,
+      data: {
+        name?: string;
+        description?: string;
+        definition?: any;
+        status?: 'draft' | 'active' | 'archived';
+        metadata?: any;
+        updatedBy: string;
+      },
+    ): Promise<FlowManagementResponse> =>
+      this.patch(`/flow-management/${flowId}`, data),
+
+    // Delete flow
+    deleteFlow: (flowId: string): Promise<{ message: string }> =>
+      this.delete(`/flow-management/${flowId}`),
+
+    // Clone flow
+    cloneFlow: (
+      flowId: string,
+      data: {
+        name: string;
+        description?: string;
+        clonedBy: string;
+      },
+    ): Promise<FlowCloneResponse> =>
+      this.post(`/flow-management/${flowId}/clone`, data),
+
+    // Execute flow
+    executeFlow: (
+      flowId: string,
+      data: {
+        context?: any;
+        executedBy: string;
+      },
+    ): Promise<FlowExecutionResponse> =>
+      this.post(`/flow-management/${flowId}/execute`, data),
+  };
+
+  // Legacy Flow Builder API (deprecated - use flowManagement instead)
   flowBuilder = {
     saveFlow: (flowDefinition: any): Promise<FlowBuilderSaveResponse> =>
       this.post('/ai-agent/flow-builder/save-flow', { flowDefinition }),

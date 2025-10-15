@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import FlowCanvas, {
   FlowCanvasRef,
 } from '../../../src/components/flow-builder/FlowCanvas';
@@ -19,15 +20,19 @@ import { FlowDefinition } from '../../../src/types/flow-builder';
 import { useTranslation } from '../../../src/lib/i18n';
 import { Sidebar as AppSidebar } from '../../../components/ui/sidebar';
 import { useSidebar } from '../../../src/lib/SidebarContext';
+import { useFlowBuilderStore } from '../../../src/lib/stores/flow-builder-store';
 import Link from 'next/link';
 import { ConfirmCascadeDeleteDialog } from '../../../src/components/flow-builder/dialogs/ConfirmCascadeDeleteDialog';
 
 export default function FlowBuilderPage() {
   const { t } = useTranslation();
   const { isOpen: isSidebarOpen, toggle: toggleSidebar } = useSidebar();
-  const [currentFlow, setCurrentFlow] = useState<FlowDefinition | undefined>(
-    undefined,
-  );
+  const searchParams = useSearchParams();
+  const flowId = searchParams.get('flowId');
+
+  const { currentFlow, setCurrentFlow, loadFlow, isLoading, error } =
+    useFlowBuilderStore();
+
   const [isPaletteOpen, setIsPaletteOpen] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(false);
 
@@ -39,6 +44,16 @@ export default function FlowBuilderPage() {
 
   // Ref для доступа к функциям FlowCanvas
   const flowCanvasRef = useRef<FlowCanvasRef>(null);
+
+  // Load flow if flowId is provided
+  useEffect(() => {
+    if (flowId) {
+      loadFlow(flowId).catch((error) => {
+        console.error('Failed to load flow:', error);
+        alert(`Failed to load flow: ${error.message}`);
+      });
+    }
+  }, [flowId, loadFlow]);
 
   const handleSaveFlow = async () => {
     if (flowCanvasRef.current) {
@@ -225,7 +240,7 @@ export default function FlowBuilderPage() {
             <div className="flex-1 bg-background overflow-hidden">
               <FlowCanvas
                 ref={flowCanvasRef}
-                flow={currentFlow}
+                flow={currentFlow || undefined}
                 onFlowChange={setCurrentFlow}
                 isSidebarOpen={isPaletteOpen}
                 isPropertiesOpen={isPropertiesOpen}

@@ -4,6 +4,7 @@ import {
   FlowExecution,
   FlowVariable,
 } from '@/src/types/flow-builder';
+import { apiClient } from '@/src/lib/api/client';
 
 interface FlowBuilderStore {
   // Current flow
@@ -50,6 +51,15 @@ interface FlowBuilderStore {
   createNewFlow: () => FlowDefinition;
   saveFlow: (flow: FlowDefinition) => Promise<void>;
   loadFlow: (flowId: string) => Promise<void>;
+  loadFlows: (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  }) => Promise<{
+    flows: FlowDefinition[];
+    pagination: any;
+  }>;
   testFlow: (flowId: string) => Promise<FlowExecution>;
   deployFlow: (flowId: string) => Promise<void>;
   executeFlow: (flowId: string, trigger?: any) => Promise<FlowExecution>;
@@ -144,29 +154,81 @@ export const useFlowBuilderStore = create<FlowBuilderStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      // TODO: Implement API call to save flow
-      const response = await fetch('/api/flows', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(flow),
-      });
+      // Check if this is a new flow or existing one
+      const isNewFlow = !flow.id || flow.id.startsWith('flow-');
 
-      if (!response.ok) {
-        throw new Error('Failed to save flow');
+      let savedFlow;
+
+      if (isNewFlow) {
+        // Create new flow
+        savedFlow = await apiClient.flowManagement.createFlow({
+          name: flow.name,
+          description: flow.description,
+          definition: {
+            blocks: flow.blocks,
+            connections: flow.connections,
+            variables: flow.variables,
+            settings: flow.settings,
+            triggers: flow.triggers,
+          },
+          createdBy: 'current-user', // TODO: Get from auth context
+          metadata: {
+            version: flow.version,
+            category: 'workflow',
+          },
+        });
+      } else {
+        // Update existing flow
+        savedFlow = await apiClient.flowManagement.updateFlow(flow.id, {
+          name: flow.name,
+          description: flow.description,
+          definition: {
+            blocks: flow.blocks,
+            connections: flow.connections,
+            variables: flow.variables,
+            settings: flow.settings,
+            triggers: flow.triggers,
+          },
+          updatedBy: 'current-user', // TODO: Get from auth context
+          metadata: {
+            version: flow.version,
+            category: 'workflow',
+          },
+        });
       }
 
-      const savedFlow = await response.json();
+      // Convert backend response to frontend format
+      const frontendFlow: FlowDefinition = {
+        id: savedFlow.flowId,
+        name: savedFlow.name,
+        description: savedFlow.description || '',
+        version: String(savedFlow.metadata?.version || '1.0.0'),
+        created: new Date(savedFlow.createdAt),
+        updated: new Date(savedFlow.updatedAt),
+        triggers: savedFlow.definition.triggers || [],
+        blocks: savedFlow.definition.blocks || [],
+        connections: savedFlow.definition.connections || [],
+        variables: savedFlow.definition.variables || [],
+        settings: savedFlow.definition.settings || {
+          timeout: 600000,
+          retryAttempts: 3,
+          errorHandling: 'stop',
+          logging: 'detailed',
+        },
+      };
 
       set((state) => {
         const existingIndex = state.flows.findIndex((f) => f.id === flow.id);
         const updatedFlows =
           existingIndex >= 0
-            ? state.flows.map((f, i) => (i === existingIndex ? savedFlow : f))
-            : [...state.flows, savedFlow];
+            ? state.flows.map((f, i) =>
+                i === existingIndex ? frontendFlow : f,
+              )
+            : [...state.flows, frontendFlow];
 
         return {
           flows: updatedFlows,
-          currentFlow: savedFlow,
+          currentFlow: frontendFlow,
           isLoading: false,
         };
       });
@@ -183,15 +245,78 @@ export const useFlowBuilderStore = create<FlowBuilderStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      // TODO: Implement API call to load flow
-      const response = await fetch(`/api/flows/${flowId}`);
+      const savedFlow = await apiClient.flowManagement.getFlow(flowId);
 
-      if (!response.ok) {
-        throw new Error('Failed to load flow');
-      }
+      // Convert backend response to frontend format
+      const frontendFlow: FlowDefinition = {
+        id: savedFlow.flowId,
+        name: savedFlow.name,
+        description: savedFlow.description || '',
+        version: String(savedFlow.metadata?.version || '1.0.0'),
+        created: new Date(savedFlow.createdAt),
+        updated: new Date(savedFlow.updatedAt),
+        triggers: savedFlow.definition.triggers || [],
+        blocks: savedFlow.definition.blocks || [],
+        connections: savedFlow.definition.connections || [],
+        variables: savedFlow.definition.variables || [],
+        settings: savedFlow.definition.settings || {
+          timeout: 600000,
+          retryAttempts: 3,
+          errorHandling: 'stop',
+          logging: 'detailed',
+        },
+      };
 
-      const flow = await response.json();
-      set({ currentFlow: flow, isLoading: false });
+      set({ currentFlow: frontendFlow, isLoading: false });
+    } catch (error) {
+      set({
+        error: error instanceof Error ? error.message : 'Unknown error',
+        isLoading: false,
+      });
+      throw error;
+    }
+  },
+
+  loadFlows: async (params?: {
+    page?: number;
+    limit?: number;
+    status?: string;
+    search?: string;
+  }) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      const response = await apiClient.flowManagement.listFlows(params);
+
+      // Convert backend response to frontend format
+      const frontendFlows: FlowDefinition[] = response.items.map((item) => ({
+        id: item.flowId,
+        name: item.name,
+        description: item.description || '',
+        version: String(item.metadata?.version || '1.0.0'),
+        created: new Date(item.createdAt),
+        updated: new Date(item.updatedAt),
+        triggers: [], // Will be loaded when flow is opened
+        blocks: [], // Will be loaded when flow is opened
+        connections: [], // Will be loaded when flow is opened
+        variables: [], // Will be loaded when flow is opened
+        settings: {
+          timeout: 600000,
+          retryAttempts: 3,
+          errorHandling: 'stop',
+          logging: 'detailed',
+        },
+      }));
+
+      set({
+        flows: frontendFlows,
+        isLoading: false,
+      });
+
+      return {
+        flows: frontendFlows,
+        pagination: response.pagination,
+      };
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -255,20 +380,36 @@ export const useFlowBuilderStore = create<FlowBuilderStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      // TODO: Implement API call to execute flow
-      const response = await fetch(`/api/flows/${flowId}/execute`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ trigger }),
-      });
+      const executionResponse = await apiClient.flowManagement.executeFlow(
+        flowId,
+        {
+          context: trigger,
+          executedBy: 'current-user', // TODO: Get from auth context
+        },
+      );
 
-      if (!response.ok) {
-        throw new Error('Failed to execute flow');
-      }
+      // Convert backend response to frontend format
+      const execution: FlowExecution = {
+        id: executionResponse.executionId,
+        flowId: executionResponse.flowId,
+        status: executionResponse.status as any,
+        currentBlock: 'flow-start', // TODO: Track current block from instructions
+        variables: get().variables,
+        startedAt: new Date(executionResponse.startedAt),
+        completedAt: executionResponse.completedAt
+          ? new Date(executionResponse.completedAt)
+          : undefined,
+        error: executionResponse.error,
+        logs: executionResponse.instructions.map((instruction, index) => ({
+          timestamp: new Date(),
+          blockId: `step-${index + 1}`,
+          level: 'info' as const,
+          message: `Step ${index + 1}: ${instruction}`,
+          data: {},
+        })),
+      };
 
-      const execution = await response.json();
       get().addExecution(execution);
-
       set({ isLoading: false });
       return execution;
     } catch (error) {

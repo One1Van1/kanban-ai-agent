@@ -47,7 +47,7 @@ export interface AgentActivity {
   data?: any;
 }
 
-// Flow Builder API Types
+// Flow Builder API Types (Legacy)
 export interface FlowBuilderSaveResponse {
   success: boolean;
   message: string;
@@ -64,6 +64,73 @@ export interface FlowBuilderSaveResponse {
   };
   createdInstructions: any[];
   flowId: string;
+}
+
+// Flow Management API Types
+export interface FlowManagementResponse {
+  flowId: string;
+  name: string;
+  description?: string;
+  definition: any;
+  status: 'draft' | 'active' | 'archived';
+  agentId?: string;
+  metadata?: {
+    version?: number;
+    tags?: string[];
+    category?: string;
+    [key: string]: any;
+  };
+  createdBy: string;
+  updatedBy?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ListFlowsResponse {
+  items: Array<{
+    flowId: string;
+    name: string;
+    description?: string;
+    status: 'draft' | 'active' | 'archived';
+    agentId?: string;
+    blockCount: number;
+    metadata?: any;
+    createdBy: string;
+    updatedBy?: string;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface FlowExecutionResponse {
+  executionId: string;
+  flowId: string;
+  status: 'pending' | 'running' | 'completed' | 'failed' | 'cancelled';
+  instructions: string[];
+  context?: any;
+  variables?: any;
+  triggeredBy: string;
+  startedAt: string;
+  completedAt?: string;
+  error?: string;
+}
+
+export interface FlowCloneResponse {
+  flowId: string;
+  name: string;
+  description?: string;
+  definition: any;
+  status: 'draft';
+  metadata?: any;
+  clonedBy: string;
+  clonedFrom: string;
+  createdAt: string;
 }
 
 // Kanban Types

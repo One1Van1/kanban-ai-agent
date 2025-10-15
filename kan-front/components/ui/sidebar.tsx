@@ -73,6 +73,14 @@ export function Sidebar() {
           </Link>
 
           <Link
+            href="/flows"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
+          >
+            <Workflow className="h-4 w-4" />
+            {t('navigation.flows')}
+          </Link>
+
+          <Link
             href="/kanban"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
           >

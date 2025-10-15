@@ -7,6 +7,7 @@ export const translations = {
       allAgents: 'Все агенты',
       createAgent: 'Создать агента',
       flowBuilder: 'Flow Builder',
+      flows: 'Flows',
       kanban: 'Kanban',
     },
 
@@ -155,6 +156,79 @@ export const translations = {
         notion: 'Notion',
         github: 'GitHub Projects',
         custom: 'Пользовательский',
+      },
+    },
+
+    // Flows page
+    flows: {
+      title: 'Flow Management',
+      subtitle: 'Управляйте вашими автоматизированными потоками',
+      createFlow: 'Создать Flow',
+      noFlows: 'У вас пока нет flows',
+      noFlowsDescription:
+        'Создайте ваш первый flow для автоматизации процессов',
+
+      // Loading and error states
+      loading: 'Загрузка flows...',
+      errorTitle: 'Ошибка загрузки flows',
+      loadingError: 'Не удалось загрузить flows',
+
+      // Stats
+      stats: {
+        totalFlows: 'Всего Flows',
+        activeFlows: 'Активных',
+        drafts: 'Черновики',
+        avgBlocks: 'Среднее блоков',
+        blocks: 'блоков',
+      },
+
+      // Flow details
+      noDescription: 'Нет описания',
+      created: 'Создан',
+      updated: 'Обновлен',
+      createdBy: 'Создатель',
+
+      // Flow statuses
+      status: {
+        draft: 'Черновик',
+        active: 'Активен',
+        archived: 'Архивирован',
+      },
+
+      // Flow actions
+      actions: {
+        execute: 'Выполнить',
+        clone: 'Клонировать',
+        edit: 'Редактировать',
+        delete: 'Удалить',
+        view: 'Просмотр',
+        refresh: 'Обновить',
+      },
+
+      // Search and filters
+      search: {
+        placeholder: 'Поиск flows...',
+        status: 'Статус',
+        all: 'Все',
+      },
+
+      // Execution messages
+      execution: {
+        started: 'выполнение запущено!',
+        failed: 'Не удалось выполнить flow:',
+      },
+
+      // Clone messages
+      clone: {
+        success: 'клонирован успешно!',
+        failed: 'Не удалось клонировать flow:',
+      },
+
+      // Delete messages
+      delete: {
+        confirm: 'Вы уверены, что хотите удалить этот flow?',
+        success: 'удален успешно!',
+        failed: 'Не удалось удалить flow:',
       },
     },
 
@@ -510,6 +584,7 @@ export const translations = {
       allAgents: 'All Agents',
       createAgent: 'Create Agent',
       flowBuilder: 'Flow Builder',
+      flows: 'Flows',
       kanban: 'Kanban',
     },
 
@@ -656,6 +731,78 @@ export const translations = {
         notion: 'Notion',
         github: 'GitHub Projects',
         custom: 'Custom',
+      },
+    },
+
+    // Flows page
+    flows: {
+      title: 'Flow Management',
+      subtitle: 'Manage your automated workflows',
+      createFlow: 'Create Flow',
+      noFlows: 'You have no flows yet',
+      noFlowsDescription: 'Create your first flow to automate processes',
+
+      // Loading and error states
+      loading: 'Loading flows...',
+      errorTitle: 'Error loading flows',
+      loadingError: 'Failed to load flows',
+
+      // Stats
+      stats: {
+        totalFlows: 'Total Flows',
+        activeFlows: 'Active',
+        drafts: 'Drafts',
+        avgBlocks: 'Avg Blocks',
+        blocks: 'blocks',
+      },
+
+      // Flow details
+      noDescription: 'No description',
+      created: 'Created',
+      updated: 'Updated',
+      createdBy: 'Created by',
+
+      // Flow statuses
+      status: {
+        draft: 'Draft',
+        active: 'Active',
+        archived: 'Archived',
+      },
+
+      // Flow actions
+      actions: {
+        execute: 'Execute',
+        clone: 'Clone',
+        edit: 'Edit',
+        delete: 'Delete',
+        view: 'View',
+        refresh: 'Refresh',
+      },
+
+      // Search and filters
+      search: {
+        placeholder: 'Search flows...',
+        status: 'Status',
+        all: 'All',
+      },
+
+      // Execution messages
+      execution: {
+        started: 'execution started!',
+        failed: 'Failed to execute flow:',
+      },
+
+      // Clone messages
+      clone: {
+        success: 'cloned successfully!',
+        failed: 'Failed to clone flow:',
+      },
+
+      // Delete messages
+      delete: {
+        confirm: 'Are you sure you want to delete this flow?',
+        success: 'deleted successfully!',
+        failed: 'Failed to delete flow:',
       },
     },
 
