@@ -65,19 +65,19 @@ export function Sidebar() {
           </Link>
 
           <Link
-            href="/agents/flow-builder"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent ml-6"
-          >
-            <Workflow className="h-3 w-3" />
-            {t('navigation.flowBuilder')}
-          </Link>
-
-          <Link
             href="/flows"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
           >
             <Workflow className="h-4 w-4" />
             {t('navigation.flows')}
+          </Link>
+
+          <Link
+            href="/agents/flow-builder"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent ml-6"
+          >
+            <Workflow className="h-3 w-3" />
+            {t('navigation.flowBuilder')}
           </Link>
 
           <Link
