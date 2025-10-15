@@ -6,8 +6,8 @@ export const translations = {
       agents: 'Агенты',
       allAgents: 'Все агенты',
       createAgent: 'Создать агента',
-      flowBuilder: 'Flow Builder',
-      flows: 'Flows',
+      flowBuilder: 'Конструктор потока',
+      flows: 'Потоки',
       kanban: 'Kanban',
     },
 
@@ -161,41 +161,41 @@ export const translations = {
 
     // Flows page
     flows: {
-      title: 'Flow Management',
+      title: 'Управление потоками',
       subtitle: 'Управляйте вашими автоматизированными потоками',
-      createFlow: 'Создать Flow',
-      noFlows: 'У вас пока нет flows',
+      createFlow: 'Создать поток',
+      noFlows: 'У вас пока нет потоков',
       noFlowsDescription:
-        'Создайте ваш первый flow для автоматизации процессов',
+        'Создайте ваш первый поток для автоматизации процессов',
 
       // Loading and error states
-      loading: 'Загрузка flows...',
-      errorTitle: 'Ошибка загрузки flows',
-      loadingError: 'Не удалось загрузить flows',
+      loading: 'Загрузка потоков...',
+      errorTitle: 'Ошибка загрузки потоков',
+      loadingError: 'Не удалось загрузить потоки',
 
       // Stats
       stats: {
-        totalFlows: 'Всего Flows',
+        totalFlows: 'Всего потоков',
         activeFlows: 'Активных',
         drafts: 'Черновики',
         avgBlocks: 'Среднее блоков',
         blocks: 'блоков',
       },
 
-      // Flow details
+      // Детали потока
       noDescription: 'Нет описания',
       created: 'Создан',
       updated: 'Обновлен',
       createdBy: 'Создатель',
 
-      // Flow statuses
+      // Статусы потоков
       status: {
         draft: 'Черновик',
         active: 'Активен',
         archived: 'Архивирован',
       },
 
-      // Flow actions
+      // Действия с потоками
       actions: {
         execute: 'Выполнить',
         clone: 'Клонировать',
@@ -208,7 +208,7 @@ export const translations = {
 
       // Search and filters
       search: {
-        placeholder: 'Поиск flows...',
+        placeholder: 'Поиск потоков...',
         status: 'Статус',
         all: 'Все',
       },
@@ -216,26 +216,26 @@ export const translations = {
       // Execution messages
       execution: {
         started: 'выполнение запущено!',
-        failed: 'Не удалось выполнить flow:',
+        failed: 'Не удалось выполнить поток:',
       },
 
       // Clone messages
       clone: {
         success: 'клонирован успешно!',
-        failed: 'Не удалось клонировать flow:',
+        failed: 'Не удалось клонировать поток:',
       },
 
       // Delete messages
       delete: {
-        confirm: 'Вы уверены, что хотите удалить этот flow?',
+        confirm: 'Вы уверены, что хотите удалить этот поток?',
         success: 'удален успешно!',
-        failed: 'Не удалось удалить flow:',
+        failed: 'Не удалось удалить поток:',
       },
 
       // Deploy messages
       deploy: {
-        success: 'Flow успешно развернут в Agent',
-        failed: 'Не удалось развернуть flow в Agent:',
+        success: 'Поток успешно развернут в Agent',
+        failed: 'Не удалось развернуть поток в Agent:',
       },
     },
 
@@ -278,9 +278,9 @@ export const translations = {
       },
     },
 
-    // Flow Builder page
+    // Конструктор потоков
     flowBuilder: {
-      title: 'AI Flow Builder',
+      title: 'Конструктор ИИ потоков',
       subtitle: 'Создайте AI-агента с помощью визуального конструктора',
       createDemo: 'Создать демо',
       test: 'Тест',
@@ -409,7 +409,7 @@ export const translations = {
 
       demo: {
         name: 'Анализ фотографий стрижки',
-        description: 'Демо flow по требованиям тимлида',
+        description: 'Демо поток по требованиям тимлида',
       },
 
       beta: 'Beta',
@@ -436,10 +436,10 @@ export const translations = {
       },
 
       example: {
-        title: 'Пример: Универсальный Flow анализа фото',
+        title: 'Пример: Универсальный поток анализа фото',
         description:
           'Работает с ЛЮБОЙ системой досок - не только Jira! Ваш тимлид упомянул Jira как пример для тестирования.',
-        flowLogic: 'Универсальная логика Flow',
+        flowLogic: 'Универсальная логика потока',
         flowDescription:
           'Когда карточка перемещается в "В работе" на ЛЮБОЙ доске → Извлечь фото пользователей → Если фото существуют → Отправить в AI для анализа → Создать DOCX отчёт, иначе → Добавить комментарий с просьбой фото',
         compatibility: 'Работает с',
@@ -466,7 +466,7 @@ export const translations = {
         visualCanvas: 'Визуальный холст с React Flow',
         propertiesPanel: 'Панель свойств',
         blockPalette: 'Палитра блоков',
-        flowTesting: 'Тестирование и развертывание Flow',
+        flowTesting: 'Тестирование и развертывание потока',
       },
 
       // Fields
@@ -549,7 +549,7 @@ export const translations = {
       launchBuilder: 'Запустить Builder (Скоро)',
       technicalNote: 'Техническая заметка',
       technicalStatus:
-        'Все компоненты Flow Builder созданы и готовы. В данный момент решаем интеграцию React Flow TypeScript для визуального холста.',
+        'Все компоненты Конструктора потоков созданы и готовы. В данный момент решаем интеграцию React Flow TypeScript для визуального холста.',
     },
 
     // Common
