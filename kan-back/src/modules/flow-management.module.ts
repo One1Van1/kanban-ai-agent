@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Flow } from '../entities/flow.entity';
 import { Agent } from '../entities/agent.entity';
+import { AgentInstruction } from '../entities/agent-instruction.entity';
 
 // Controllers
 import { CreateFlowController } from '../features/flow-management/create-flow/create-flow.controller';
@@ -11,6 +12,7 @@ import { DeleteFlowController } from '../features/flow-management/delete-flow/de
 import { ListFlowsController } from '../features/flow-management/list-flows/list-flows.controller';
 import { CloneFlowController } from '../features/flow-management/clone-flow/clone-flow.controller';
 import { ExecuteFlowController } from '../features/flow-management/execute-flow/execute-flow.controller';
+import { DeployToAgentController } from '../features/flow-management/deploy-to-agent/deploy-to-agent.controller';
 
 // Services
 import { CreateFlowService } from '../features/flow-management/create-flow/create-flow.service';
@@ -20,9 +22,14 @@ import { DeleteFlowService } from '../features/flow-management/delete-flow/delet
 import { ListFlowsService } from '../features/flow-management/list-flows/list-flows.service';
 import { CloneFlowService } from '../features/flow-management/clone-flow/clone-flow.service';
 import { ExecuteFlowService } from '../features/flow-management/execute-flow/execute-flow.service';
+import { DeployToAgentService } from '../features/flow-management/deploy-to-agent/deploy-to-agent.service';
+
+// Import AI Agent services
+import { CreateAgentService } from '../features/ai-agent/create-agent/create-agent.service';
+import { ConfigureColumnInstructionsService } from '../features/ai-agent/configure-column-instructions/configure-column-instructions.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Flow, Agent])],
+  imports: [TypeOrmModule.forFeature([Flow, Agent, AgentInstruction])],
   controllers: [
     CreateFlowController,
     GetFlowController,
@@ -31,6 +38,7 @@ import { ExecuteFlowService } from '../features/flow-management/execute-flow/exe
     ListFlowsController,
     CloneFlowController,
     ExecuteFlowController,
+    DeployToAgentController,
   ],
   providers: [
     CreateFlowService,
@@ -40,6 +48,9 @@ import { ExecuteFlowService } from '../features/flow-management/execute-flow/exe
     ListFlowsService,
     CloneFlowService,
     ExecuteFlowService,
+    DeployToAgentService,
+    CreateAgentService,
+    ConfigureColumnInstructionsService,
   ],
   exports: [
     CreateFlowService,
@@ -49,6 +60,7 @@ import { ExecuteFlowService } from '../features/flow-management/execute-flow/exe
     ListFlowsService,
     CloneFlowService,
     ExecuteFlowService,
+    DeployToAgentService,
   ],
 })
 export class FlowManagementModule {}

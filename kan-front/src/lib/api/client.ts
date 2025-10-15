@@ -160,6 +160,28 @@ export class APIClient {
       },
     ): Promise<FlowExecutionResponse> =>
       this.post(`/flow-management/${flowId}/execute`, data),
+
+    // Deploy flow to agent
+    deployToAgent: (
+      flowId: string,
+      data: {
+        userId: string;
+        agentName?: string;
+        agentDescription?: string;
+      },
+    ): Promise<{
+      success: boolean;
+      message: string;
+      flowId: string;
+      agentId: string;
+      createdAgent: {
+        id: string;
+        name: string;
+        description: string;
+        isActive: boolean;
+      };
+      createdInstructions: any[];
+    }> => this.post(`/flow-management/${flowId}/deploy-to-agent`, data),
   };
 
   // Legacy Flow Builder API (deprecated - use flowManagement instead)

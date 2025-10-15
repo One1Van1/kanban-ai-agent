@@ -18,6 +18,7 @@ import {
   Filter,
   MoreVertical,
   Clock,
+  Bot,
   User,
   FileText,
   Zap,
@@ -129,6 +130,25 @@ export default function FlowsPage() {
           `${t('flows.delete.failed')} ${err instanceof Error ? err.message : 'Unknown error'}`,
         );
       }
+    }
+  };
+
+  const handleDeployToAgent = async (flowId: string, flowName: string) => {
+    try {
+      console.log('🤖 Deploying flow to agent:', flowName);
+      const result = await apiClient.flowManagement.deployToAgent(flowId, {
+        userId: 'current-user', // TODO: Get from auth
+        agentName: `${flowName} Agent`,
+        agentDescription: `Agent created from flow: ${flowName}`,
+      });
+
+      alert(`${t('flows.deploy.success')}: ${result.createdAgent.name}`);
+      loadFlows(); // Refresh list to show agentId
+    } catch (err) {
+      console.error('❌ Failed to deploy flow to agent:', err);
+      alert(
+        `${t('flows.deploy.failed')} ${err instanceof Error ? err.message : 'Unknown error'}`,
+      );
     }
   };
 
@@ -394,7 +414,7 @@ export default function FlowsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="opacity-70 hover:opacity-100 transition-opacity"
                       >
                         <MoreVertical className="h-4 w-4" />
                       </Button>
@@ -423,6 +443,17 @@ export default function FlowsPage() {
                         <Copy className="h-4 w-4 mr-2" />
                         {t('flows.actions.clone')}
                       </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() =>
+                          handleDeployToAgent(flow.flowId, flow.name)
+                        }
+                        disabled={flow.status !== 'active'}
+                      >
+                        <Bot className="h-4 w-4 mr-2" />
+                        {flow.agentId
+                          ? 'Update Agent'
+                          : t('flows.actions.deploy')}
+                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem
                         onClick={() => handleDeleteFlow(flow.flowId, flow.name)}
@@ -441,14 +472,14 @@ export default function FlowsPage() {
                   {/* Status Badge */}
                   <div className="flex items-center justify-between">
                     <Badge className={getStatusColor(flow.status)}>
-                      {getStatusIcon(flow.status)}
-                      <span className="ml-1 capitalize">
-                        {t(`flows.status.${flow.status}`)}
-                      </span>
+                      {t(`flows.status.${flow.status}`)}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">
-                      {flow.blockCount} {t('flows.stats.blocks')}
-                    </span>
+                    {flow.agentId && (
+                      <Badge variant="secondary" className="text-xs">
+                        <Bot className="h-3 w-3 mr-1" />
+                        Agent
+                      </Badge>
+                    )}
                   </div>
 
                   {/* Meta Info */}
@@ -473,6 +504,22 @@ export default function FlowsPage() {
                     >
                       <Play className="h-3 w-3 mr-1" />
                       {t('flows.actions.execute')}
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleDeployToAgent(flow.flowId, flow.name)
+                      }
+                      disabled={flow.status !== 'active'}
+                      title={
+                        flow.agentId
+                          ? 'Update Agent'
+                          : t('flows.actions.deploy')
+                      }
+                    >
+                      <Bot className="h-3 w-3" />
                     </Button>
 
                     <Button variant="outline" size="sm" asChild>

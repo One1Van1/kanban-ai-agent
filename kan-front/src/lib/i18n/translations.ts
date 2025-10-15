@@ -201,6 +201,7 @@ export const translations = {
         clone: 'Клонировать',
         edit: 'Редактировать',
         delete: 'Удалить',
+        deploy: 'Развернуть в Agent',
         view: 'Просмотр',
         refresh: 'Обновить',
       },
@@ -229,6 +230,12 @@ export const translations = {
         confirm: 'Вы уверены, что хотите удалить этот flow?',
         success: 'удален успешно!',
         failed: 'Не удалось удалить flow:',
+      },
+
+      // Deploy messages
+      deploy: {
+        success: 'Flow успешно развернут в Agent',
+        failed: 'Не удалось развернуть flow в Agent:',
       },
     },
 
@@ -775,6 +782,7 @@ export const translations = {
         clone: 'Clone',
         edit: 'Edit',
         delete: 'Delete',
+        deploy: 'Deploy to Agent',
         view: 'View',
         refresh: 'Refresh',
       },
@@ -803,6 +811,12 @@ export const translations = {
         confirm: 'Are you sure you want to delete this flow?',
         success: 'deleted successfully!',
         failed: 'Failed to delete flow:',
+      },
+
+      // Deploy messages
+      deploy: {
+        success: 'Flow successfully deployed to Agent',
+        failed: 'Failed to deploy flow to Agent:',
       },
     },
 
