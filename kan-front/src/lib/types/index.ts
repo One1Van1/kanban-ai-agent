@@ -47,6 +47,25 @@ export interface AgentActivity {
   data?: any;
 }
 
+// Flow Builder API Types
+export interface FlowBuilderSaveResponse {
+  success: boolean;
+  message: string;
+  createdAgent: {
+    id: string;
+    name: string;
+    description: string;
+    instructions: string;
+    model: string;
+    temperature: number;
+    maxTokens: number;
+    isActive: boolean;
+    createdAt: string;
+  };
+  createdInstructions: any[];
+  flowId: string;
+}
+
 // Kanban Types
 export interface Task {
   id: string;

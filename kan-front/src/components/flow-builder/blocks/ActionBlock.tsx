@@ -34,6 +34,7 @@ interface ActionBlockProps {
   id: string;
   selected: boolean;
   onDeleteBlock?: (nodeId: string) => void;
+  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
 export function ActionBlock({
@@ -41,9 +42,17 @@ export function ActionBlock({
   id,
   selected,
   onDeleteBlock,
+  onUpdateBlock,
 }: ActionBlockProps) {
   const { t } = useLanguage();
-  const { isEditing, toggleEdit, saveEdit, cancelEdit } = useBlockEdit(id);
+  const {
+    isEditing,
+    toggleEdit,
+    saveEdit,
+    cancelEdit,
+    updateFormData,
+    registerFieldRef,
+  } = useBlockEdit(id, onUpdateBlock);
 
   const getIcon = () => {
     switch (data.type) {
@@ -145,6 +154,10 @@ export function ActionBlock({
                     defaultValue={data.config?.commentText || ''}
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
+                    onChange={(e) =>
+                      updateFormData('commentText', e.target.value)
+                    }
+                    ref={(el) => registerFieldRef('commentText', el)}
                   />
                 )}
                 {data.type === 'ai_request' && (
@@ -153,6 +166,10 @@ export function ActionBlock({
                       defaultValue={data.config?.aiModel || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('aiModel', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('aiModel', el)}
                     >
                       <option value="">
                         {t('flowBuilder.fields.selectAiModel')}
@@ -167,6 +184,8 @@ export function ActionBlock({
                       defaultValue={data.config?.prompt || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[60px] resize-none"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('prompt', e.target.value)}
+                      ref={(el) => registerFieldRef('prompt', el)}
                       rows={3}
                     />
                     <input
@@ -175,6 +194,10 @@ export function ActionBlock({
                       defaultValue={data.config?.responseVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('responseVariable', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('responseVariable', el)}
                     />
                   </>
                 )}
@@ -187,11 +210,19 @@ export function ActionBlock({
                       defaultValue={data.config?.fileName || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('fileName', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('fileName', el)}
                     />
                     <select
                       defaultValue={data.config?.fileFormat || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('fileFormat', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('fileFormat', el)}
                     >
                       <option value="">{t('flowBuilder.fields.format')}</option>
                       <option value="txt">Text (.txt)</option>
@@ -207,6 +238,10 @@ export function ActionBlock({
                       }
                       className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('content', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('content', el)}
                       rows={2}
                     />
                   </>
@@ -219,11 +254,15 @@ export function ActionBlock({
                       defaultValue={data.config?.url || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('url', e.target.value)}
+                      ref={(el) => registerFieldRef('url', el)}
                     />
                     <select
                       defaultValue={data.config?.method || 'GET'}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('method', e.target.value)}
+                      ref={(el) => registerFieldRef('method', el)}
                     >
                       <option value="GET">GET</option>
                       <option value="POST">POST</option>
@@ -236,6 +275,10 @@ export function ActionBlock({
                       defaultValue={data.config?.headers || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[40px] resize-none"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('headers', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('headers', el)}
                       rows={2}
                     />
                     <textarea
@@ -243,6 +286,8 @@ export function ActionBlock({
                       defaultValue={data.config?.body || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('body', e.target.value)}
+                      ref={(el) => registerFieldRef('body', el)}
                       rows={3}
                     />
                     <input
@@ -251,6 +296,10 @@ export function ActionBlock({
                       defaultValue={data.config?.responseVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('responseVariable', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('responseVariable', el)}
                     />
                   </>
                 )}
@@ -262,6 +311,10 @@ export function ActionBlock({
                       defaultValue={data.config?.recipient || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('recipient', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('recipient', el)}
                     />
                     <input
                       type="text"
@@ -269,6 +322,10 @@ export function ActionBlock({
                       defaultValue={data.config?.message || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('message', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('message', el)}
                     />
                   </>
                 )}
@@ -280,11 +337,17 @@ export function ActionBlock({
                       defaultValue={data.config?.cardId || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('cardId', e.target.value)}
+                      ref={(el) => registerFieldRef('cardId', el)}
                     />
                     <select
                       defaultValue={data.config?.targetColumn || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('targetColumn', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('targetColumn', el)}
                     >
                       <option value="">
                         {t('flowBuilder.fields.selectTargetColumn')}
@@ -303,6 +366,8 @@ export function ActionBlock({
                       defaultValue={data.config?.cardId || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('cardId', e.target.value)}
+                      ref={(el) => registerFieldRef('cardId', el)}
                     />
                     <input
                       type="text"
@@ -310,6 +375,10 @@ export function ActionBlock({
                       defaultValue={data.config?.fieldName || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('fieldName', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('fieldName', el)}
                     />
                     <input
                       type="text"
@@ -317,6 +386,10 @@ export function ActionBlock({
                       defaultValue={data.config?.newValue || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('newValue', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('newValue', el)}
                     />
                   </>
                 )}
@@ -325,7 +398,7 @@ export function ActionBlock({
                 <Button
                   size="sm"
                   className="text-xs h-6 px-2"
-                  onClick={saveEdit}
+                  onClick={(e) => saveEdit(e, data.config)}
                 >
                   {t('flowBuilder.save')}
                 </Button>
@@ -361,12 +434,17 @@ export function ActionBlock({
                     {t('flowBuilder.fields.model')}:{' '}
                     {data.config?.aiModel || t('flowBuilder.fields.notSet')}
                   </div>
-                  <div className="text-xs text-muted-foreground truncate">
+                  <div className="text-xs text-muted-foreground mb-1 truncate">
                     {t('flowBuilder.fields.prompt')}: &quot;
                     {data.config?.prompt
                       ? data.config.prompt.substring(0, 30) + '...'
                       : t('flowBuilder.fields.notSet')}
                     &quot;
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.responseVariable')}:{' '}
+                    {data.config?.responseVariable ||
+                      t('flowBuilder.fields.notSet')}
                   </div>
                 </>
               )}
@@ -405,6 +483,22 @@ export function ActionBlock({
                     {t('flowBuilder.fields.method')}:{' '}
                     {data.config?.method || 'GET'}
                   </div>
+                  {data.config?.headers && (
+                    <div className="text-xs text-muted-foreground mb-1">
+                      {t('flowBuilder.fields.headers')}:{' '}
+                      {data.config.headers.length > 50
+                        ? `${data.config.headers.substring(0, 50)}...`
+                        : data.config.headers}
+                    </div>
+                  )}
+                  {data.config?.body && (
+                    <div className="text-xs text-muted-foreground mb-1">
+                      {t('flowBuilder.fields.body')}:{' '}
+                      {data.config.body.length > 50
+                        ? `${data.config.body.substring(0, 50)}...`
+                        : data.config.body}
+                    </div>
+                  )}
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.responseVariable')}:{' '}
                     {data.config?.responseVariable ||

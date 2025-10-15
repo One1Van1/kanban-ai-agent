@@ -20,6 +20,7 @@ interface TriggerBlockProps {
   id: string;
   selected: boolean;
   onDeleteBlock?: (nodeId: string) => void;
+  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
 export function TriggerBlock({
@@ -27,10 +28,17 @@ export function TriggerBlock({
   id,
   selected,
   onDeleteBlock,
+  onUpdateBlock,
 }: TriggerBlockProps) {
   const { t } = useLanguage();
-  const { isEditing, toggleEdit, saveEdit, cancelEdit } = useBlockEdit(id);
-
+  const {
+    isEditing,
+    toggleEdit,
+    saveEdit,
+    cancelEdit,
+    updateFormData,
+    registerFieldRef,
+  } = useBlockEdit(id, onUpdateBlock);
   console.log('🔄 TriggerBlock render:', {
     id,
     isEditing,
@@ -116,6 +124,8 @@ export function TriggerBlock({
                   defaultValue={data.config?.boardType || ''}
                   className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => updateFormData('boardType', e.target.value)}
+                  ref={(el) => registerFieldRef('boardType', el)}
                 />
                 <input
                   type="text"
@@ -123,6 +133,10 @@ export function TriggerBlock({
                   defaultValue={data.config?.targetColumn || ''}
                   className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
+                  onChange={(e) =>
+                    updateFormData('targetColumn', e.target.value)
+                  }
+                  ref={(el) => registerFieldRef('targetColumn', el)}
                 />
                 <input
                   type="text"
@@ -130,13 +144,15 @@ export function TriggerBlock({
                   defaultValue={data.config?.event || ''}
                   className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => updateFormData('event', e.target.value)}
+                  ref={(el) => registerFieldRef('event', el)}
                 />
               </div>
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"
                   className="text-xs h-6 px-2"
-                  onClick={saveEdit}
+                  onClick={(e) => saveEdit(e, data.config)}
                 >
                   {t('flowBuilder.save')}
                 </Button>

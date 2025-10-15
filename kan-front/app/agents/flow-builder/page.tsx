@@ -40,9 +40,11 @@ export default function FlowBuilderPage() {
   // Ref для доступа к функциям FlowCanvas
   const flowCanvasRef = useRef<FlowCanvasRef>(null);
 
-  const handleSaveFlow = () => {
-    if (currentFlow) {
-      console.log('Saving flow:', currentFlow);
+  const handleSaveFlow = async () => {
+    if (flowCanvasRef.current) {
+      await flowCanvasRef.current.saveFlow();
+    } else {
+      console.warn('FlowCanvas ref not available');
     }
   };
 

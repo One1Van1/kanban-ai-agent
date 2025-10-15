@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { GetAllAgentsResponse } from '../types';
+import { GetAllAgentsResponse, FlowBuilderSaveResponse } from '../types';
 
 export class APIClient {
   private baseURL: string;
@@ -76,6 +76,12 @@ export class APIClient {
       this.put(`/ai-agent/${id}/configure`, data),
     execute: (data: any) => this.post('/ai-agent/execute-action', data),
     getActivity: (agentId: string) => this.get(`/ai-agent/${agentId}/activity`),
+  };
+
+  // Flow Builder API
+  flowBuilder = {
+    saveFlow: (flowDefinition: any): Promise<FlowBuilderSaveResponse> =>
+      this.post('/ai-agent/flow-builder/save-flow', { flowDefinition }),
   };
 
   // Kanban API

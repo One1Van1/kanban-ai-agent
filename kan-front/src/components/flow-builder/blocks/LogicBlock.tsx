@@ -26,6 +26,7 @@ interface LogicBlockProps {
   id: string;
   selected: boolean;
   onDeleteBlock?: (nodeId: string) => void;
+  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
 export function LogicBlock({
@@ -33,10 +34,17 @@ export function LogicBlock({
   id,
   selected,
   onDeleteBlock,
+  onUpdateBlock,
 }: LogicBlockProps) {
   const { t } = useLanguage();
-  const { isEditing, toggleEdit, saveEdit, cancelEdit } = useBlockEdit(id);
-
+  const {
+    isEditing,
+    toggleEdit,
+    saveEdit,
+    cancelEdit,
+    updateFormData,
+    registerFieldRef,
+  } = useBlockEdit(id, onUpdateBlock);
   const renderIcon = () => {
     switch (data.type) {
       case 'if_else':
@@ -126,11 +134,25 @@ export function LogicBlock({
                       defaultValue={data.config?.condition?.variable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('condition', {
+                          ...data.config?.condition,
+                          variable: e.target.value,
+                        })
+                      }
+                      ref={(el) => registerFieldRef('condition.variable', el)}
                     />
                     <select
                       defaultValue={data.config?.condition?.operator || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('condition', {
+                          ...data.config?.condition,
+                          operator: e.target.value,
+                        })
+                      }
+                      ref={(el) => registerFieldRef('condition.operator', el)}
                     >
                       <option value="">
                         {t('flowBuilder.fields.condition')}
@@ -147,6 +169,13 @@ export function LogicBlock({
                       defaultValue={data.config?.condition?.value || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('condition', {
+                          ...data.config?.condition,
+                          value: e.target.value,
+                        })
+                      }
+                      ref={(el) => registerFieldRef('condition.value', el)}
                     />
                   </>
                 )}
@@ -160,6 +189,10 @@ export function LogicBlock({
                       defaultValue={data.config?.collection || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('collection', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('collection', el)}
                     />
                     <input
                       type="text"
@@ -167,6 +200,10 @@ export function LogicBlock({
                       defaultValue={data.config?.itemVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('itemVariable', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('itemVariable', el)}
                     />
                     <input
                       type="number"
@@ -174,6 +211,13 @@ export function LogicBlock({
                       defaultValue={data.config?.maxIterations || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData(
+                          'maxIterations',
+                          parseInt(e.target.value) || 0,
+                        )
+                      }
+                      ref={(el) => registerFieldRef('maxIterations', el)}
                     />
                   </>
                 )}
@@ -187,11 +231,19 @@ export function LogicBlock({
                       defaultValue={data.config?.errorVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('errorVariable', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('errorVariable', el)}
                     />
                     <select
                       defaultValue={data.config?.errorType || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('errorType', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('errorType', el)}
                     >
                       <option value="">Error Type</option>
                       <option value="all">All Errors</option>
@@ -211,13 +263,32 @@ export function LogicBlock({
                       defaultValue={data.config?.responseVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('responseVariable', e.target.value)}
+                      ref={(el) => registerFieldRef('responseVariable', el)}
                     />
-                    <input
-                      type="text"
-                      placeholder="AI Model"
+                    <select
                       defaultValue={data.config?.aiModel || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('aiModel', e.target.value)}
+                      ref={(el) => registerFieldRef('aiModel', el)}
+                    >
+                      <option value="">Выберите AI модель</option>
+                      <option value="gpt-4">GPT-4</option>
+                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                      <option value="claude-3">Claude 3</option>
+                      <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+                      <option value="gemini-pro">Gemini Pro</option>
+                      <option value="llama-2">Llama 2</option>
+                    </select>
+                    <textarea
+                      placeholder="AI Prompt (опционально)"
+                      defaultValue={data.config?.prompt || ''}
+                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[60px] resize-none"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('prompt', e.target.value)}
+                      ref={(el) => registerFieldRef('prompt', el)}
+                      rows={3}
                     />
                   </>
                 )}
@@ -226,7 +297,7 @@ export function LogicBlock({
                 <Button
                   size="sm"
                   className="text-xs h-6 px-2"
-                  onClick={saveEdit}
+                  onClick={(e) => saveEdit(e, data.config)}
                 >
                   {t('flowBuilder.save')}
                 </Button>
@@ -310,9 +381,19 @@ export function LogicBlock({
                     {data.config?.responseVariable ||
                       t('flowBuilder.fields.notSet')}
                   </div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.aiModel')}:{' '}
                     {data.config?.aiModel || t('flowBuilder.fields.notSet')}
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    Prompt:{' '}
+                    {data.config?.prompt ? 
+                      (data.config.prompt.length > 50 ? 
+                        data.config.prompt.substring(0, 50) + '...' : 
+                        data.config.prompt
+                      ) : 
+                      t('flowBuilder.fields.notSet')
+                    }
                   </div>
                 </>
               )}

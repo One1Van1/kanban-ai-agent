@@ -22,6 +22,7 @@ interface ContextBlockProps {
   id: string;
   selected: boolean;
   onDeleteBlock?: (nodeId: string) => void;
+  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
 export function ContextBlock({
@@ -29,9 +30,17 @@ export function ContextBlock({
   id,
   selected,
   onDeleteBlock,
+  onUpdateBlock,
 }: ContextBlockProps) {
   const { t } = useLanguage();
-  const { isEditing, toggleEdit, saveEdit, cancelEdit } = useBlockEdit(id);
+  const {
+    isEditing,
+    toggleEdit,
+    saveEdit,
+    cancelEdit,
+    updateFormData,
+    registerFieldRef,
+  } = useBlockEdit(id, onUpdateBlock);
 
   const getIcon = () => {
     switch (data.type) {
@@ -114,6 +123,10 @@ export function ContextBlock({
                   defaultValue={data.config?.variableName || ''}
                   className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
+                  onChange={(e) =>
+                    updateFormData('variableName', e.target.value)
+                  }
+                  ref={(el) => registerFieldRef('variableName', el)}
                 />
                 <input
                   type="text"
@@ -121,6 +134,8 @@ export function ContextBlock({
                   defaultValue={data.config?.source || ''}
                   className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
+                  onChange={(e) => updateFormData('source', e.target.value)}
+                  ref={(el) => registerFieldRef('source', el)}
                 />
 
                 {/* Поле типов только для extract_files */}
@@ -133,6 +148,16 @@ export function ContextBlock({
                     }
                     className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => {
+                      const types = e.target.value
+                        .split(',')
+                        .map((t) => t.trim());
+                      updateFormData('filter', {
+                        ...data.config?.filter,
+                        fileType: types,
+                      });
+                    }}
+                    ref={(el) => registerFieldRef('fileType', el)}
                   />
                 )}
               </div>
@@ -140,11 +165,7 @@ export function ContextBlock({
                 <Button
                   size="sm"
                   className="text-xs h-6 px-2"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    saveEdit(e);
-                    // TODO: Сохранить изменения
-                  }}
+                  onClick={(e) => saveEdit(e, data.config)}
                 >
                   {t('flowBuilder.save')}
                 </Button>
@@ -167,39 +188,23 @@ export function ContextBlock({
                 {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
               </div>
 
-              {/* Поля для extract_files */}
-              {data.type === 'extract_files' && (
-                <>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.variable')}:{' '}
-                    {data.config?.variableName ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.source')}:{' '}
-                    {data.config?.source || t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t('flowBuilder.fields.types')}:{' '}
-                    {data.config?.filter?.fileType?.join(', ') ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
-                </>
-              )}
+              {/* Общие поля для всех типов контекста */}
+              <div className="text-xs text-muted-foreground mb-1">
+                {t('flowBuilder.fields.variable')}:{' '}
+                {data.config?.variableName || t('flowBuilder.fields.notSet')}
+              </div>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t('flowBuilder.fields.source')}:{' '}
+                {data.config?.source || t('flowBuilder.fields.notSet')}
+              </div>
 
-              {/* Поля для get_card_data */}
-              {data.type === 'get_card_data' && (
-                <>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.variable')}:{' '}
-                    {data.config?.variableName ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t('flowBuilder.fields.source')}:{' '}
-                    {data.config?.source || t('flowBuilder.fields.notSet')}
-                  </div>
-                </>
+              {/* Дополнительные поля для extract_files */}
+              {data.type === 'extract_files' && (
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.types')}:{' '}
+                  {data.config?.filter?.fileType?.join(', ') ||
+                    t('flowBuilder.fields.notSet')}
+                </div>
               )}
             </div>
           )}

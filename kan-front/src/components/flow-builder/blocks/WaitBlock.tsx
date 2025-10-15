@@ -23,6 +23,7 @@ interface WaitBlockProps {
   id: string;
   selected: boolean;
   onDeleteBlock?: (nodeId: string) => void;
+  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
 export function WaitBlock({
@@ -30,9 +31,17 @@ export function WaitBlock({
   id,
   selected,
   onDeleteBlock,
+  onUpdateBlock,
 }: WaitBlockProps) {
   const { t } = useLanguage();
-  const { isEditing, toggleEdit, saveEdit, cancelEdit } = useBlockEdit(id);
+  const {
+    isEditing,
+    toggleEdit,
+    saveEdit,
+    cancelEdit,
+    updateFormData,
+    registerFieldRef,
+  } = useBlockEdit(id, onUpdateBlock);
 
   const getIcon = () => {
     switch (data.type) {
@@ -53,6 +62,27 @@ export function WaitBlock({
     const minutes = Math.floor(timeout / 60000);
     const seconds = Math.floor((timeout % 60000) / 1000);
     return `${minutes}m ${seconds}s`;
+  };
+
+  const getUnitSI = (unit: string) => {
+    // Если язык русский, используем СИ сокращения
+    if (
+      t('flowBuilder.fields.seconds') === 'Секунды' ||
+      t('flowBuilder.fields.seconds').includes('екунд')
+    ) {
+      switch (unit) {
+        case 'seconds':
+          return 'с';
+        case 'minutes':
+          return 'мин';
+        case 'hours':
+          return 'ч';
+        default:
+          return unit;
+      }
+    }
+    // Для английского и других языков используем переводы
+    return t(`flowBuilder.fields.${unit}`);
   };
 
   return (
@@ -115,19 +145,30 @@ export function WaitBlock({
                 {t('flowBuilder.editMode')}
               </div>
               <div className="space-y-1">
-                {data.type === 'wait_time' && (
+                {(data.type === 'wait_time' ||
+                  data.type === 'wait_timeout') && (
                   <>
                     <input
                       type="number"
-                      placeholder={t('flowBuilder.fields.duration')}
+                      placeholder={`${t('flowBuilder.fields.duration')} (${t('flowBuilder.fields.seconds')}/${t('flowBuilder.fields.minutes')}/${t('flowBuilder.fields.hours')})`}
                       defaultValue={data.config?.duration || ''}
+                      min="1"
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData(
+                          'duration',
+                          parseInt(e.target.value) || 0,
+                        )
+                      }
+                      ref={(el) => registerFieldRef('duration', el)}
                     />
                     <select
                       defaultValue={data.config?.unit || 'seconds'}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('unit', e.target.value)}
+                      ref={(el) => registerFieldRef('unit', el)}
                     >
                       <option value="seconds">
                         {t('flowBuilder.fields.seconds')}
@@ -142,7 +183,9 @@ export function WaitBlock({
                   </>
                 )}
 
-                {data.type === 'wait_response' && (
+                {(data.type === 'wait_response' ||
+                  data.type === 'wait_condition' ||
+                  data.type === 'wait') && (
                   <>
                     <input
                       type="text"
@@ -150,18 +193,34 @@ export function WaitBlock({
                       defaultValue={data.config?.responseVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('responseVariable', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('responseVariable', el)}
                     />
                     <input
                       type="number"
-                      placeholder={t('flowBuilder.fields.timeoutSeconds')}
+                      placeholder={`${t('flowBuilder.fields.timeoutSeconds')} (${t('flowBuilder.fields.seconds')})`}
                       defaultValue={data.config?.timeout || '30'}
+                      min="1"
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData(
+                          'timeout',
+                          parseInt(e.target.value) || 30,
+                        )
+                      }
+                      ref={(el) => registerFieldRef('timeout', el)}
                     />
                     <select
                       defaultValue={data.config?.condition || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('condition', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('condition', el)}
                     >
                       <option value="">
                         {t('flowBuilder.fields.waitCondition')}
@@ -182,24 +241,31 @@ export function WaitBlock({
                   </>
                 )}
 
-                {data.type !== 'wait_time' && data.type !== 'wait_response' && (
-                  <>
-                    <input
-                      type="text"
-                      placeholder={t('flowBuilder.fields.waitFor')}
-                      defaultValue={data.config?.waitFor || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                    <input
-                      type="number"
-                      placeholder={t('flowBuilder.fields.timeout')}
-                      defaultValue={data.config?.timeout || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                    />
-                  </>
-                )}
+                {data.type !== 'wait_time' &&
+                  data.type !== 'wait_timeout' &&
+                  data.type !== 'wait_response' &&
+                  data.type !== 'wait_condition' &&
+                  data.type !== 'wait' && (
+                    <>
+                      <input
+                        type="text"
+                        placeholder={t('flowBuilder.fields.waitFor')}
+                        defaultValue={data.config?.waitFor || ''}
+                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData('waitFor', e.target.value)
+                        }
+                      />
+                      <input
+                        type="number"
+                        placeholder={t('flowBuilder.fields.timeout')}
+                        defaultValue={data.config?.timeout || ''}
+                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                    </>
+                  )}
               </div>
               <div className="flex gap-1 pt-1">
                 <Button
@@ -207,8 +273,7 @@ export function WaitBlock({
                   className="text-xs h-6 px-2"
                   onClick={(e) => {
                     e.stopPropagation();
-                    saveEdit(e);
-                    // TODO: Сохранить изменения
+                    saveEdit(e, data.config);
                   }}
                 >
                   {t('flowBuilder.save')}
@@ -233,27 +298,23 @@ export function WaitBlock({
               </div>
 
               {/* Конфигурация для ожидания времени */}
-              {data.type === 'wait_time' && (
+              {(data.type === 'wait_time' || data.type === 'wait_timeout') && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.duration')}:{' '}
-                    {data.config?.duration ||
-                      data.config?.waitFor ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t('flowBuilder.fields.unit')}:{' '}
-                    {data.config?.unit
-                      ? t(`flowBuilder.fields.${data.config.unit}`)
-                      : data.config?.timeout
-                        ? 'секунды'
-                        : t('flowBuilder.fields.notSet')}
+                    {data.config?.duration && data.config?.unit
+                      ? `${data.config.duration} ${getUnitSI(data.config.unit)}`
+                      : data.config?.duration ||
+                        data.config?.waitFor ||
+                        t('flowBuilder.fields.notSet')}
                   </div>
                 </>
               )}
 
               {/* Конфигурация для ожидания ответа */}
-              {data.type === 'wait_response' && (
+              {(data.type === 'wait_response' ||
+                data.type === 'wait_condition' ||
+                data.type === 'wait') && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.responseVariable')}:{' '}
@@ -262,7 +323,9 @@ export function WaitBlock({
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.timeout')}:{' '}
-                    {data.config?.timeout || t('flowBuilder.fields.notSet')}
+                    {data.config?.timeout
+                      ? `${data.config.timeout} ${getUnitSI('seconds')}`
+                      : t('flowBuilder.fields.notSet')}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {t('flowBuilder.fields.condition')}:{' '}
@@ -274,20 +337,24 @@ export function WaitBlock({
               )}
 
               {/* Конфигурация для других типов ожидания */}
-              {data.type !== 'wait_time' && data.type !== 'wait_response' && (
-                <>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.waitFor')}:{' '}
-                    {data.config?.waitFor || t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t('flowBuilder.fields.timeout')}:{' '}
-                    {data.config?.timeout
-                      ? formatTimeout(data.config.timeout)
-                      : t('flowBuilder.fields.notSet')}
-                  </div>
-                </>
-              )}
+              {data.type !== 'wait_time' &&
+                data.type !== 'wait_timeout' &&
+                data.type !== 'wait_response' &&
+                data.type !== 'wait_condition' &&
+                data.type !== 'wait' && (
+                  <>
+                    <div className="text-xs text-muted-foreground mb-1">
+                      {t('flowBuilder.fields.waitFor')}:{' '}
+                      {data.config?.waitFor || t('flowBuilder.fields.notSet')}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {t('flowBuilder.fields.timeout')}:{' '}
+                      {data.config?.timeout
+                        ? formatTimeout(data.config.timeout)
+                        : t('flowBuilder.fields.notSet')}
+                    </div>
+                  </>
+                )}
             </div>
           )}
         </CardContent>

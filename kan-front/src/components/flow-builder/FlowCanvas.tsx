@@ -32,6 +32,11 @@ import {
   FlowEdge,
   FlowConnection,
 } from '@/src/types/flow-builder';
+import { apiClient } from '@/src/lib/api/client';
+import {
+  convertNodesToFlowDefinition,
+  validateFlowDefinition,
+} from '@/src/lib/utils/flow-converter';
 import { BlockPalette } from './sidebar/BlockPalette';
 import { FlowToolbar } from './toolbar/FlowToolbar';
 import { TriggerBlock } from './blocks/TriggerBlock';
@@ -59,6 +64,7 @@ const edgeTypes = {
 
 export interface FlowCanvasRef {
   triggerCascadeDelete: () => void;
+  saveFlow: () => Promise<void>;
 }
 
 interface FlowCanvasProps {
@@ -214,13 +220,7 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
     }, [nodes.length, edges.length, setNodes, setEdges, onFlowChange, flow]);
 
     // Предоставляем доступ к функциям через ref
-    useImperativeHandle(
-      ref,
-      () => ({
-        triggerCascadeDelete: handleDirectCascadeDelete,
-      }),
-      [handleDirectCascadeDelete],
-    );
+    // Expose methods via ref will be done after handleSaveFlow
 
     // Snap to grid utility
     const snapToGrid = useCallback((position: { x: number; y: number }) => {
@@ -457,6 +457,28 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         console.log('Block added:', newBlock);
       },
       [setNodes, getSmartPosition],
+    );
+
+    // Функция для обновления данных блока
+    const onUpdateBlock = useCallback(
+      (blockId: string, newData: Partial<any>) => {
+        setNodes((nds) =>
+          nds.map((node) =>
+            node.id === blockId
+              ? {
+                  ...node,
+                  data: {
+                    ...node.data,
+                    ...newData,
+                  },
+                }
+              : node,
+          ),
+        );
+
+        console.log('Block updated:', blockId, newData);
+      },
+      [setNodes],
     );
 
     // Функция для центрирования блока в видимой области канваса
@@ -731,12 +753,13 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
             onDeleteBlock={(nodeId: string) => {
               onDeleteBlock(nodeId);
             }}
+            onUpdateBlock={onUpdateBlock}
             onCascadeDelete={handleDirectCascadeDelete}
           />
         ));
       });
       return result;
-    }, [onDeleteBlock, handleDirectCascadeDelete]);
+    }, [onDeleteBlock, onUpdateBlock, handleDirectCascadeDelete]);
 
     // Получение правильного названия блока
     const getBlockDisplayName = (blockType: string) => {
@@ -852,30 +875,65 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
     };
 
     // Сохранение flow
-    const handleSaveFlow = useCallback(() => {
+    const handleSaveFlow = useCallback(async () => {
       if (!onFlowChange) return;
 
-      const flowDefinition: FlowDefinition = {
-        id: flow?.id || `flow-${Date.now()}`,
-        name: flow?.name || 'Untitled Flow',
-        description: flow?.description || '',
-        version: '1.0.0',
-        created: flow?.created || new Date(),
-        updated: new Date(),
-        triggers: [],
-        blocks: [],
-        connections: [],
-        variables: [],
-        settings: {
-          timeout: 600000,
-          retryAttempts: 3,
-          errorHandling: 'stop',
-          logging: 'detailed',
-        },
-      };
+      try {
+        console.log('Starting Flow save process...');
 
-      onFlowChange(flowDefinition);
+        // Конвертируем текущие nodes и edges в FlowDefinition
+        const flowDefinition = convertNodesToFlowDefinition(nodes, edges, {
+          id: flow?.id,
+          name: flow?.name || 'Untitled Flow',
+          description: flow?.description || 'Flow created with visual builder',
+        });
+
+        console.log('Converted FlowDefinition:', flowDefinition);
+
+        // Валидируем Flow перед отправкой
+        const validation = validateFlowDefinition(flowDefinition);
+        if (!validation.valid) {
+          console.error('Flow validation failed:', validation.errors);
+          alert(`Flow validation failed:\n${validation.errors.join('\n')}`);
+          return;
+        }
+
+        // Отправляем на бэкенд
+        console.log('Sending Flow to backend...');
+        const response = await apiClient.flowBuilder.saveFlow(flowDefinition);
+
+        console.log('Flow saved successfully:', response);
+
+        // Обновляем локальное состояние с данными от сервера
+        const updatedFlow: FlowDefinition = {
+          ...flowDefinition,
+          id: response.flowId,
+          updated: new Date(),
+        };
+
+        onFlowChange(updatedFlow);
+
+        // Показываем успешное сообщение
+        alert(
+          `✅ ${response.message}\n\nCreated Agent: ${response.createdAgent.name}\nAgent ID: ${response.createdAgent.id}`,
+        );
+      } catch (error) {
+        console.error('Failed to save Flow:', error);
+        alert(
+          `❌ Failed to save Flow: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        );
+      }
     }, [flow, onFlowChange, nodes, edges]);
+
+    // Expose methods via ref
+    useImperativeHandle(
+      ref,
+      () => ({
+        triggerCascadeDelete: handleDirectCascadeDelete,
+        saveFlow: handleSaveFlow,
+      }),
+      [handleDirectCascadeDelete, handleSaveFlow],
+    );
 
     // Обработчики drag & drop
     const handleDragOver = useCallback((e: React.DragEvent) => {
