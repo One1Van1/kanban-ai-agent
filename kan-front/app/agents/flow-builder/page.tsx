@@ -153,7 +153,7 @@ export default function FlowBuilderPage() {
               <div className="h-full flex items-center justify-between px-6">
                 <div className="flex items-center gap-4">
                   <Link
-                    href="/agents"
+                    href="/flows"
                     className="p-2 hover:bg-muted rounded-lg transition-colors"
                   >
                     <ArrowLeft className="h-4 w-4 text-muted-foreground" />
