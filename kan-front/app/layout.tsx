@@ -5,6 +5,7 @@ import { AppLayout } from '../components/ui/app-layout';
 import { LanguageProvider } from '@/src/lib/i18n';
 import { ThemeProvider } from '@/src/components/theme-provider';
 import { SidebarProvider } from '@/src/lib/SidebarContext';
+import { DialogProvider } from '@/src/hooks/use-dialog';
 import './globals.css';
 
 const geistSans = Geist({
@@ -40,7 +41,9 @@ export default function RootLayout({
         >
           <LanguageProvider>
             <SidebarProvider>
-              <AppLayout>{children}</AppLayout>
+              <DialogProvider>
+                <AppLayout>{children}</AppLayout>
+              </DialogProvider>
             </SidebarProvider>
             <Toaster />
           </LanguageProvider>

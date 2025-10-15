@@ -33,6 +33,7 @@ import {
 import { useTranslation } from '@/src/lib/i18n';
 import { apiClient } from '@/src/lib/api/client';
 import { useFlowBuilderStore } from '@/src/lib/stores/flow-builder-store';
+import { useDialog } from '@/src/hooks/use-dialog';
 
 interface FlowItem {
   flowId: string;
@@ -51,6 +52,7 @@ interface FlowItem {
 export default function FlowsPage() {
   const { t } = useTranslation();
   const { executeFlow } = useFlowBuilderStore();
+  const { showAlert, showConfirm } = useDialog();
 
   const [flows, setFlows] = useState<FlowItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,11 +92,15 @@ export default function FlowsPage() {
     try {
       console.log('🚀 Executing flow:', flowName);
       await executeFlow(flowId, { trigger: 'manual' });
-      alert(`Flow "${flowName}" ${t('flows.execution.started')}`);
+      showAlert(
+        `Flow "${flowName}" ${t('flows.execution.started')}`,
+        'success',
+      );
     } catch (err) {
       console.error('❌ Failed to execute flow:', err);
-      alert(
+      showAlert(
         `${t('flows.execution.failed')} ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'error',
       );
     }
   };
@@ -107,27 +113,33 @@ export default function FlowsPage() {
         description: `Cloned version of ${flowName}`,
         clonedBy: 'current-user', // TODO: Get from auth
       });
-      alert(`Flow "${flowName}" ${t('flows.clone.success')}`);
+      showAlert(`Flow "${flowName}" ${t('flows.clone.success')}`, 'success');
       loadFlows(); // Refresh list
     } catch (err) {
       console.error('❌ Failed to clone flow:', err);
-      alert(
+      showAlert(
         `${t('flows.clone.failed')} ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'error',
       );
     }
   };
 
   const handleDeleteFlow = async (flowId: string, flowName: string) => {
-    if (confirm(`${t('flows.delete.confirm')}`)) {
+    const confirmed = await showConfirm(
+      `${t('flows.delete.confirm')}`,
+      'Удалить Flow?',
+    );
+    if (confirmed) {
       try {
         console.log('🗑️ Deleting flow:', flowName);
         await apiClient.flowManagement.deleteFlow(flowId);
-        alert(`Flow "${flowName}" ${t('flows.delete.success')}`);
+        showAlert(`Flow "${flowName}" ${t('flows.delete.success')}`, 'success');
         loadFlows(); // Refresh list
       } catch (err) {
         console.error('❌ Failed to delete flow:', err);
-        alert(
+        showAlert(
           `${t('flows.delete.failed')} ${err instanceof Error ? err.message : 'Unknown error'}`,
+          'error',
         );
       }
     }
@@ -142,12 +154,16 @@ export default function FlowsPage() {
         agentDescription: `Agent created from flow: ${flowName}`,
       });
 
-      alert(`${t('flows.deploy.success')}: ${result.createdAgent.name}`);
+      showAlert(
+        `${t('flows.deploy.success')}: ${result.createdAgent.name}`,
+        'success',
+      );
       loadFlows(); // Refresh list to show agentId
     } catch (err) {
       console.error('❌ Failed to deploy flow to agent:', err);
-      alert(
+      showAlert(
         `${t('flows.deploy.failed')} ${err instanceof Error ? err.message : 'Unknown error'}`,
+        'error',
       );
     }
   };

@@ -21,12 +21,14 @@ import { useTranslation } from '../../../src/lib/i18n';
 import { Sidebar as AppSidebar } from '../../../components/ui/sidebar';
 import { useSidebar } from '../../../src/lib/SidebarContext';
 import { useFlowBuilderStore } from '../../../src/lib/stores/flow-builder-store';
+import { useDialog } from '../../../src/hooks/use-dialog';
 import Link from 'next/link';
 import { ConfirmCascadeDeleteDialog } from '../../../src/components/flow-builder/dialogs/ConfirmCascadeDeleteDialog';
 
 export default function FlowBuilderPage() {
   const { t } = useTranslation();
   const { isOpen: isSidebarOpen, toggle: toggleSidebar } = useSidebar();
+  const { showAlert, showConfirm } = useDialog();
   const searchParams = useSearchParams();
   const flowId = searchParams.get('flowId');
 
@@ -50,16 +52,33 @@ export default function FlowBuilderPage() {
     if (flowId) {
       loadFlow(flowId).catch((error) => {
         console.error('Failed to load flow:', error);
-        alert(`Failed to load flow: ${error.message}`);
+        showAlert(`Failed to load flow: ${error.message}`, 'error');
       });
     }
-  }, [flowId, loadFlow]);
+  }, [flowId, loadFlow, showAlert]);
 
   const handleSaveFlow = async () => {
-    if (flowCanvasRef.current) {
-      await flowCanvasRef.current.saveFlow();
-    } else {
+    // Проверяем, есть ли что сохранять
+    if (!flowCanvasRef.current) {
       console.warn('FlowCanvas ref not available');
+      return;
+    }
+
+    if (!flowCanvasRef.current.hasContent()) {
+      showAlert(
+        'Нечего сохранять. Добавьте блоки в ваш Flow перед сохранением.',
+        'warning',
+      );
+      return;
+    }
+
+    const confirmed = await showConfirm(
+      'Вы уверены, что хотите сохранить этот Flow?',
+      'Подтверждение сохранения',
+    );
+
+    if (confirmed) {
+      await flowCanvasRef.current.saveFlow();
     }
   };
 
@@ -248,6 +267,8 @@ export default function FlowBuilderPage() {
                 quickDeleteMode={quickDeleteMode}
                 onQuickDeleteModeChange={handleToggleQuickDelete}
                 onCascadeDelete={handleCascadeDelete}
+                showAlert={showAlert}
+                showConfirm={showConfirm}
               />
             </div>
           </div>

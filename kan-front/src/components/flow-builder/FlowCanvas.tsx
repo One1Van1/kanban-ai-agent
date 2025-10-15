@@ -65,6 +65,7 @@ const edgeTypes = {
 export interface FlowCanvasRef {
   triggerCascadeDelete: () => void;
   saveFlow: () => Promise<void>;
+  hasContent: () => boolean;
 }
 
 interface FlowCanvasProps {
@@ -77,6 +78,11 @@ interface FlowCanvasProps {
   quickDeleteMode?: boolean;
   onQuickDeleteModeChange?: (enabled: boolean) => void;
   onCascadeDelete?: (nodeId: string) => void;
+  showAlert?: (
+    message: string,
+    type?: 'success' | 'error' | 'info' | 'warning',
+  ) => void;
+  showConfirm?: (message: string, title?: string) => Promise<boolean>;
 }
 
 const FlowCanvas = forwardRef<FlowCanvasRef, FlowCanvasProps>(
@@ -91,6 +97,8 @@ const FlowCanvas = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       quickDeleteMode = false,
       onQuickDeleteModeChange,
       onCascadeDelete,
+      showAlert,
+      showConfirm,
     },
     ref,
   ) => {
@@ -107,6 +115,8 @@ const FlowCanvas = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           quickDeleteMode={quickDeleteMode}
           onQuickDeleteModeChange={onQuickDeleteModeChange}
           onCascadeDelete={onCascadeDelete}
+          showAlert={showAlert}
+          showConfirm={showConfirm}
         />
       </ReactFlowProvider>
     );
@@ -125,6 +135,8 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       quickDeleteMode: externalQuickDeleteMode,
       onQuickDeleteModeChange,
       onCascadeDelete,
+      showAlert,
+      showConfirm,
     },
     ref,
   ) => {
@@ -894,7 +906,10 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         const validation = validateFlowDefinition(flowDefinition);
         if (!validation.valid) {
           console.error('Flow validation failed:', validation.errors);
-          alert(`Flow validation failed:\n${validation.errors.join('\n')}`);
+          showAlert?.(
+            `Flow validation failed:\n${validation.errors.join('\n')}`,
+            'error',
+          );
           return;
         }
 
@@ -914,16 +929,23 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         onFlowChange(updatedFlow);
 
         // Показываем успешное сообщение
-        alert(
+        showAlert?.(
           `✅ ${response.message}\n\nCreated Agent: ${response.createdAgent.name}\nAgent ID: ${response.createdAgent.id}`,
+          'success',
         );
       } catch (error) {
         console.error('Failed to save Flow:', error);
-        alert(
+        showAlert?.(
           `❌ Failed to save Flow: ${error instanceof Error ? error.message : 'Unknown error'}`,
+          'error',
         );
       }
-    }, [flow, onFlowChange, nodes, edges]);
+    }, [flow, onFlowChange, nodes, edges, showAlert, showConfirm]);
+
+    // Проверка наличия контента для сохранения
+    const hasContent = useCallback(() => {
+      return nodes.length > 0;
+    }, [nodes]);
 
     // Expose methods via ref
     useImperativeHandle(
@@ -931,8 +953,9 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       () => ({
         triggerCascadeDelete: handleDirectCascadeDelete,
         saveFlow: handleSaveFlow,
+        hasContent,
       }),
-      [handleDirectCascadeDelete, handleSaveFlow],
+      [handleDirectCascadeDelete, handleSaveFlow, hasContent],
     );
 
     // Обработчики drag & drop
