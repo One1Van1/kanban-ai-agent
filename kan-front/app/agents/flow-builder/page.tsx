@@ -197,45 +197,29 @@ export default function FlowBuilderPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => setIsPaletteOpen(!isPaletteOpen)}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="h-8 w-8 p-0"
                   >
-                    <Sidebar className="h-4 w-4 mr-2" />
-                    Палитра блоков
+                    <Sidebar className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsPropertiesOpen(!isPropertiesOpen)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    <PanelRightOpen className="h-4 w-4 mr-2" />
-                    Свойства
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={createDemoFlow}
-                    className="text-primary border-primary/20 hover:bg-primary/10"
-                  >
-                    🚀 {t('flowBuilder.createDemo')}
-                  </Button>
+
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={handleTestFlow}
                     disabled={!currentFlow}
-                    className="text-muted-foreground border-border hover:bg-muted"
+                    className="h-8"
                   >
-                    <Play className="h-4 w-4 mr-2" />
+                    <Play className="h-4 w-4 mr-1" />
                     {t('flowBuilder.test')}
                   </Button>
+
                   <Button
+                    variant="outline"
                     size="sm"
                     onClick={handleSaveFlow}
-                    disabled={!currentFlow}
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                    className="h-8 hover:bg-primary hover:text-primary-foreground transition-colors"
                   >
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="h-4 w-4 mr-1" />
                     {t('flowBuilder.save')}
                   </Button>
                 </div>
@@ -245,11 +229,6 @@ export default function FlowBuilderPage() {
             {/* FlowToolbar с режимами удаления */}
             <div className="bg-card border-b border-border flex-shrink-0">
               <FlowToolbar
-                onSave={handleSaveFlow}
-                onToggleSidebar={() => setIsPaletteOpen(!isPaletteOpen)}
-                onToggleProperties={() =>
-                  setIsPropertiesOpen(!isPropertiesOpen)
-                }
                 quickDeleteMode={quickDeleteMode}
                 onToggleQuickDelete={handleToggleQuickDelete}
                 onCascadeDelete={handleCascadeDelete}

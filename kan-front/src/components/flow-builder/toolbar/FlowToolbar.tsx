@@ -2,27 +2,10 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Save,
-  Play,
-  Square,
-  Settings,
-  Sidebar,
-  PanelRightOpen,
-  Download,
-  Upload,
-  Trash2,
-  Zap,
-  Shield,
-  Layers3,
-} from 'lucide-react';
+import { Zap, Shield, Layers3 } from 'lucide-react';
 import { useTranslation } from '../../../lib/i18n';
-import { LanguageToggle } from '../../ui/language-toggle';
 
 interface FlowToolbarProps {
-  onSave: () => void;
-  onToggleSidebar: () => void;
-  onToggleProperties: () => void;
   readonly?: boolean;
   quickDeleteMode?: boolean;
   onToggleQuickDelete?: (enabled: boolean) => void;
@@ -30,9 +13,6 @@ interface FlowToolbarProps {
 }
 
 export function FlowToolbar({
-  onSave,
-  onToggleSidebar,
-  onToggleProperties,
   readonly = false,
   quickDeleteMode = false,
   onToggleQuickDelete,
@@ -42,61 +22,18 @@ export function FlowToolbar({
 
   return (
     <>
-      {/* Левая группа - основные действия */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleSidebar}
-          className="h-8 w-8 p-0"
-        >
-          <Sidebar className="h-4 w-4" />
-        </Button>
-
-        {!readonly && (
-          <>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={onSave}
-              className="h-8"
-            >
-              <Save className="h-4 w-4 mr-1" />
-              {t('flowBuilder.save')}
-            </Button>
-
-            <Button variant="outline" size="sm" className="h-8">
-              <Play className="h-4 w-4 mr-1" />
-              {t('flowBuilder.test')}
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Центральная группа - название flow */}
-      <div className="flex-1 flex justify-center">
-        <h1 className="text-sm font-medium text-foreground">
-          {t('flowBuilder.title')}
-        </h1>
-      </div>
-
       {/* Группа режимов удаления */}
       {!readonly && (
-        <div className="flex items-center gap-2 px-3 border-l border-r border-border">
-          <div className="flex items-center gap-1 mr-2">
-            <Trash2 className="h-3 w-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">Удаление:</span>
-          </div>
-
+        <div className="flex items-center justify-end gap-2 px-3 py-2 border-l border-r border-border">
           {/* Переключатель Безопасный/Быстрый режим */}
           <Button
             variant={quickDeleteMode ? 'default' : 'outline'}
             size="sm"
             onClick={() => onToggleQuickDelete?.(!quickDeleteMode)}
-            className={`h-7 text-xs transition-all ${
+            className={`h-7 text-xs transition-all active:scale-95 ${
               quickDeleteMode
-                ? 'bg-orange-500 hover:bg-orange-600 text-white border-orange-500'
-                : 'border-green-200 text-green-600 hover:bg-green-50'
+                ? 'bg-orange-400 hover:bg-orange-500 active:bg-orange-600 text-white border border-orange-400'
+                : 'border border-green-300 text-green-700 hover:bg-green-50 active:bg-green-100 dark:hover:bg-green-950/20 dark:active:bg-green-950/40 dark:border-green-600 dark:text-green-300'
             }`}
           >
             {quickDeleteMode ? (
@@ -117,61 +54,16 @@ export function FlowToolbar({
             variant="outline"
             size="sm"
             onClick={onCascadeDelete}
-            className="h-7 text-xs border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300"
+            className="h-7 text-xs border border-red-300 text-red-700 hover:bg-red-50 active:bg-red-100 active:scale-95 transition-all dark:hover:bg-red-950/20 dark:active:bg-red-950/40 dark:border-red-600 dark:text-red-300"
           >
             <Layers3 className="h-3 w-3 mr-1" />
             Каскадное удаление
           </Button>
-
-          {/* Статус */}
-          <div className="ml-2 text-xs">
-            {quickDeleteMode ? (
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full">
-                <Zap className="h-2 w-2" />
-                Быстрый
-              </span>
-            ) : (
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
-                <Shield className="h-2 w-2" />
-                Безопасный
-              </span>
-            )}
-          </div>
         </div>
       )}
 
-      {/* Правая группа - настройки и панели */}
-      <div className="flex items-center gap-2">
-        {!readonly && (
-          <>
-            <Button variant="ghost" size="sm" className="h-8">
-              <Download className="h-4 w-4 mr-1" />
-              {t('flowBuilder.toolbar.export')}
-            </Button>
-
-            <Button variant="ghost" size="sm" className="h-8">
-              <Upload className="h-4 w-4 mr-1" />
-              {t('flowBuilder.toolbar.import')}
-            </Button>
-          </>
-        )}
-
-        <Button variant="ghost" size="sm" className="h-8">
-          <Settings className="h-4 w-4 mr-1" />
-          {t('flowBuilder.toolbar.settings')}
-        </Button>
-
-        <LanguageToggle />
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onToggleProperties}
-          className="h-8 w-8 p-0"
-        >
-          <PanelRightOpen className="h-4 w-4" />
-        </Button>
-      </div>
+      {/* Правая группа - очищена */}
+      <div className="flex items-center gap-2"></div>
     </>
   );
 }
