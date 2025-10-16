@@ -167,14 +167,18 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         console.log('Syncing flow to nodes/edges:', flow);
         console.log('Flow blocks count:', flow.blocks?.length || 0);
 
-        // Конвертируем блоки в nodes (блоки не имеют position, используем случайную позицию)
+        // Конвертируем блоки в nodes
         const flowNodes: Node[] = (flow.blocks || []).map((block, index) => ({
           id: block.id,
           type: block.type || 'action',
-          position: { x: 100 + index * 200, y: 100 + (index % 3) * 150 }, // Расставляем в сетку
+          // Используем позицию из блока, если есть, иначе генерируем
+          position: (block as any).position || {
+            x: 100 + index * 200,
+            y: 100 + (index % 3) * 150,
+          },
           data: {
-            name: block.name,
-            config: block.config || {},
+            name: (block as any).name || block.id,
+            config: (block as any).config || {},
             type: block.type,
           },
         }));
@@ -892,45 +896,90 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
 
       try {
         console.log('Starting Flow save process...');
+        console.log('Current nodes:', nodes);
+        console.log('Current edges:', edges);
 
-        // Конвертируем текущие nodes и edges в FlowDefinition
-        const flowDefinition = convertNodesToFlowDefinition(nodes, edges, {
-          id: flow?.id,
+        // Конвертируем текущие nodes и edges в правильный формат для API
+        const flowBlocks = nodes.map((node) => ({
+          id: node.id,
+          type: node.type,
+          position: node.position,
+          config: node.data.config || {},
+          name: node.data.name || '',
+        }));
+
+        const flowConnections = edges.map((edge) => ({
+          id: edge.id,
+          source: edge.source, // Бэкенд ожидает source, а не from
+          target: edge.target, // Бэкенд ожидает target, а не to
+          label: typeof edge.label === 'string' ? edge.label : undefined,
+        }));
+
+        const flowData = {
           name: flow?.name || 'Untitled Flow',
           description: flow?.description || 'Flow created with visual builder',
-        });
+          definition: {
+            blocks: flowBlocks,
+            connections: flowConnections,
+            triggers: flow?.triggers || [],
+            variables: flow?.variables || [],
+            settings: flow?.settings || {
+              timeout: 600000,
+              retryAttempts: 3,
+              errorHandling: 'stop',
+              logging: 'detailed',
+            },
+          },
+          createdBy: 'current-user', // TODO: Get from auth context
+          metadata: {
+            version: flow?.version || '1.0.0',
+            category: 'workflow',
+          },
+        };
 
-        console.log('Converted FlowDefinition:', flowDefinition);
+        console.log('Sending Flow to backend:', flowData);
 
-        // Валидируем Flow перед отправкой
-        const validation = validateFlowDefinition(flowDefinition);
-        if (!validation.valid) {
-          console.error('Flow validation failed:', validation.errors);
-          showAlert?.(
-            `Flow validation failed:\n${validation.errors.join('\n')}`,
-            'error',
-          );
-          return;
+        // Проверяем, это новый flow или существующий
+        let response;
+        if (flow?.id && !flow.id.startsWith('flow-')) {
+          // Обновляем существующий flow
+          response = await apiClient.flowManagement.updateFlow(flow.id, {
+            ...flowData,
+            updatedBy: 'current-user',
+          });
+        } else {
+          // Создаем новый flow
+          response = await apiClient.flowManagement.createFlow(flowData);
         }
-
-        // Отправляем на бэкенд
-        console.log('Sending Flow to backend...');
-        const response = await apiClient.flowBuilder.saveFlow(flowDefinition);
 
         console.log('Flow saved successfully:', response);
 
         // Обновляем локальное состояние с данными от сервера
         const updatedFlow: FlowDefinition = {
-          ...flowDefinition,
           id: response.flowId,
-          updated: new Date(),
+          name: response.name,
+          description: response.description || '',
+          version: String(response.metadata?.version || '1.0.0'),
+          created: new Date(response.createdAt),
+          updated: new Date(response.updatedAt),
+          agentId: response.agentId,
+          triggers: response.definition?.triggers || [],
+          blocks: flowBlocks as any, // Временно используем any для совместимости
+          connections: flowConnections as any, // Временно используем any для совместимости с разными форматами
+          variables: response.definition?.variables || [],
+          settings: response.definition?.settings || {
+            timeout: 600000,
+            retryAttempts: 3,
+            errorHandling: 'stop',
+            logging: 'detailed',
+          },
         };
 
         onFlowChange(updatedFlow);
 
         // Показываем успешное сообщение
         showAlert?.(
-          `✅ ${response.message}\n\nCreated Agent: ${response.createdAgent.name}\nAgent ID: ${response.createdAgent.id}`,
+          `✅ Flow "${response.name}" saved successfully!\nFlow ID: ${response.flowId}`,
           'success',
         );
       } catch (error) {
@@ -940,7 +989,7 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           'error',
         );
       }
-    }, [flow, onFlowChange, nodes, edges, showAlert, showConfirm]);
+    }, [flow, onFlowChange, nodes, edges, showAlert]);
 
     // Проверка наличия контента для сохранения
     const hasContent = useCallback(() => {

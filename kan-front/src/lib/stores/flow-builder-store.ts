@@ -61,7 +61,19 @@ interface FlowBuilderStore {
     pagination: any;
   }>;
   testFlow: (flowId: string) => Promise<FlowExecution>;
-  deployFlow: (flowId: string) => Promise<void>;
+  deployFlow: (flowId: string) => Promise<{
+    success: boolean;
+    message: string;
+    flowId: string;
+    agentId: string;
+    createdAgent: {
+      id: string;
+      name: string;
+      description: string;
+      isActive: boolean;
+    };
+    createdInstructions: any[];
+  }>;
   executeFlow: (flowId: string, trigger?: any) => Promise<FlowExecution>;
 }
 
@@ -357,16 +369,27 @@ export const useFlowBuilderStore = create<FlowBuilderStore>((set, get) => ({
     set({ isLoading: true, error: null });
 
     try {
-      // TODO: Implement API call to deploy flow
-      const response = await fetch(`/api/flows/${flowId}/deploy`, {
-        method: 'POST',
+      const response = await apiClient.flowManagement.deployToAgent(flowId, {
+        userId: 'current-user', // TODO: Get from auth context
+        agentName: undefined, // Will use flow name
+        agentDescription: undefined, // Will use flow description
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to deploy flow');
-      }
+      console.log('Flow deployed to agent successfully:', response);
 
-      set({ isLoading: false });
+      // Update the flow with agent connection in local state
+      set((state) => ({
+        flows: state.flows.map((flow) =>
+          flow.id === flowId ? { ...flow, agentId: response.agentId } : flow,
+        ),
+        currentFlow:
+          state.currentFlow?.id === flowId
+            ? { ...state.currentFlow, agentId: response.agentId }
+            : state.currentFlow,
+        isLoading: false,
+      }));
+
+      return response;
     } catch (error) {
       set({
         error: error instanceof Error ? error.message : 'Unknown error',

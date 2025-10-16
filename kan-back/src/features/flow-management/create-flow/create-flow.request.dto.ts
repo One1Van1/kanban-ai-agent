@@ -29,7 +29,7 @@ export class CreateFlowRequestDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Flow definition with blocks and edges',
+    description: 'Flow definition with blocks and connections',
     example: {
       blocks: [
         {
@@ -39,7 +39,13 @@ export class CreateFlowRequestDto {
           configuration: { fileTypes: ['pdf', 'doc'] },
         },
       ],
-      edges: [{ id: 'edge-1', source: 'block-1', target: 'block-2' }],
+      connections: [{ id: 'conn-1', source: 'block-1', target: 'block-2' }],
+      triggers: [
+        {
+          type: 'board_move',
+          config: { targetColumn: 'In Progress', boardId: 'test-board' },
+        },
+      ],
     },
   })
   @IsObject()
@@ -49,15 +55,30 @@ export class CreateFlowRequestDto {
       id: string;
       type: string;
       position: { x: number; y: number };
-      configuration?: any;
+      config?: any;
+      configuration?: any; // Support legacy
     }>;
-    edges: Array<{
+    connections?: Array<{
       id: string;
       source: string;
       target: string;
       sourceHandle?: string;
       targetHandle?: string;
     }>;
+    edges?: Array<{
+      // Support legacy
+      id: string;
+      source: string;
+      target: string;
+      sourceHandle?: string;
+      targetHandle?: string;
+    }>;
+    triggers?: Array<{
+      type: string;
+      config: any;
+    }>;
+    variables?: any;
+    settings?: any;
   };
 
   @ApiProperty({

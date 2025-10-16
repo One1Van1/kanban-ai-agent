@@ -167,6 +167,7 @@ export interface FlowDefinition {
   version: string;
   created: Date;
   updated: Date;
+  agentId?: string; // ID связанного агента
   triggers: TriggerBlock[];
   blocks: (ContextBlock | LogicBlock | ActionBlock | WaitBlock)[];
   connections: FlowConnection[];

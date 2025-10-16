@@ -128,8 +128,12 @@ export class UpdateFlowService {
       );
     }
 
-    if (!Array.isArray(definition.edges)) {
-      throw new BadRequestException('Flow definition must contain edges array');
+    // Поддерживаем как edges (legacy), так и connections (новый формат)
+    const connections = definition.connections || definition.edges || [];
+    if (!Array.isArray(connections)) {
+      throw new BadRequestException(
+        'Flow definition must contain connections or edges array',
+      );
     }
 
     // Validate blocks
@@ -148,36 +152,36 @@ export class UpdateFlowService {
       }
     }
 
-    // Validate edges
-    for (const edge of definition.edges) {
-      if (!edge.id || !edge.source || !edge.target) {
+    // Validate connections/edges
+    for (const connection of connections) {
+      if (!connection.id || !connection.source || !connection.target) {
         throw new BadRequestException(
-          'Each edge must have id, source, and target',
+          'Each connection must have id, source, and target',
         );
       }
 
       // Check if source and target blocks exist
       const sourceExists = definition.blocks.some(
-        (block: any) => block.id === edge.source,
+        (block: any) => block.id === connection.source,
       );
       const targetExists = definition.blocks.some(
-        (block: any) => block.id === edge.target,
+        (block: any) => block.id === connection.target,
       );
 
       if (!sourceExists) {
         throw new BadRequestException(
-          `Edge source block ${edge.source} not found`,
+          `Connection source block ${connection.source} not found`,
         );
       }
       if (!targetExists) {
         throw new BadRequestException(
-          `Edge target block ${edge.target} not found`,
+          `Connection target block ${connection.target} not found`,
         );
       }
     }
 
     this.logger.log(
-      `Flow definition validated: ${definition.blocks.length} blocks, ${definition.edges.length} edges`,
+      `Flow definition validated: ${definition.blocks.length} blocks, ${connections.length} connections`,
     );
   }
 }

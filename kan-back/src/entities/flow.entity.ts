@@ -28,11 +28,12 @@ export class Flow {
 
   @Column({ type: 'jsonb' })
   definition: {
-    id: string;
-    name: string;
+    id?: string;
+    name?: string;
     description?: string;
     blocks: any[];
-    edges: any[];
+    edges?: any[]; // Поддерживаем legacy
+    connections?: any[]; // Новый формат
     triggers: any[];
     variables?: Record<string, any>;
     settings?: Record<string, any>;
