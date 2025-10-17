@@ -81,6 +81,14 @@ export function Sidebar() {
           </Link>
 
           <Link
+            href="/flows/editor"
+            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent ml-6"
+          >
+            <Workflow className="h-3 w-3" />
+            {t('navigation.flowEditor')}
+          </Link>
+
+          <Link
             href="/kanban"
             className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
           >
