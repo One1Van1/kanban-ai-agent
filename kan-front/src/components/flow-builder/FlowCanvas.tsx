@@ -7,6 +7,7 @@ import React, {
   useMemo,
   forwardRef,
   useImperativeHandle,
+  useEffect,
 } from 'react';
 import {
   ReactFlow,
@@ -48,19 +49,19 @@ import { ConfirmDeleteDialog } from './dialogs/ConfirmDeleteDialog';
 import { DynamicConnectionLine } from './components/DynamicConnectionLine';
 import { StyledSmoothStepEdge } from './components/StyledSmoothStepEdge';
 
-// Регистрируем кастомные типы блоков
+// Мемоизируем кастомные типы блоков вне компонента
 const nodeTypes = {
   trigger: TriggerBlock,
   context: ContextBlock,
   logic: LogicBlock,
   action: ActionBlock,
   wait: WaitBlock,
-};
+} as const;
 
-// Регистрируем кастомные типы соединений
+// Мемоизируем кастомные типы соединений вне компонента
 const edgeTypes = {
   styledSmoothStep: StyledSmoothStepEdge,
-};
+} as const;
 
 export interface FlowCanvasRef {
   triggerCascadeDelete: () => void;
@@ -143,6 +144,67 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
     const { screenToFlowPosition, getZoom, setCenter } = useReactFlow();
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+    // Ref для отслеживания, инициализированы ли уже nodes
+    const nodesInitialized = useRef(false);
+
+    // Флаг для блокировки автоматической синхронизации во время редактирования
+    const [isEditing, setIsEditing] = useState(false);
+
+    // Состояние для отслеживания изменений позиций
+    const [pendingPositionUpdate, setPendingPositionUpdate] =
+      useState<boolean>(false);
+
+    // useEffect для синхронизации позиций с flow (вызывается после рендера)
+    useEffect(() => {
+      if (pendingPositionUpdate && onFlowChange && flow) {
+        // Обновляем blocks в flow с новыми позициями из nodes
+        const updatedBlocks = (flow.blocks || []).map((block) => {
+          const node = nodes.find((n) => n.id === block.id);
+          if (node) {
+            return {
+              ...block,
+              position: node.position,
+            };
+          }
+          return block;
+        });
+
+        const updatedFlow = {
+          ...flow,
+          blocks: updatedBlocks,
+          updated: new Date(),
+        };
+
+        console.log(
+          'Syncing updated positions to flow:',
+          updatedBlocks.map((b) => ({
+            id: b.id,
+            position: (b as any).position,
+          })),
+        );
+
+        onFlowChange(updatedFlow);
+        setPendingPositionUpdate(false);
+      }
+    }, [pendingPositionUpdate, nodes, onFlowChange, flow]);
+
+    // Расширенный обработчик изменений nodes
+    const handleNodesChange = useCallback(
+      (changes: any[]) => {
+        onNodesChange(changes);
+
+        // Проверяем, есть ли изменения позиций
+        const hasPositionChanges = changes.some(
+          (change) => change.type === 'position' && change.position,
+        );
+
+        if (hasPositionChanges) {
+          setPendingPositionUpdate(true);
+        }
+      },
+      [onNodesChange],
+    );
     // Удалили selectedBlock и isPropertiesOpen - больше не используем панель свойств
 
     // Состояние для быстрого удаления без подтверждения
@@ -163,53 +225,115 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
 
     // Синхронизация внешнего flow с внутренними nodes и edges
     React.useEffect(() => {
+      console.log('=== FLOW SYNC TRIGGERED ===');
+      console.log('Flow object changed:', flow?.id, flow?.name);
+      console.log('Current nodes count:', nodes.length);
+      console.log('Is editing mode:', isEditing);
+
+      // НЕ синхронизируемся если пользователь активно редактирует
+      if (isEditing) {
+        console.log('⚠️ Skipping sync - user is editing');
+        return;
+      }
+
       if (flow) {
+        console.log('=== FLOW SYNC START ===');
         console.log('Syncing flow to nodes/edges:', flow);
         console.log('Flow blocks count:', flow.blocks?.length || 0);
+        console.log('Flow connections count:', flow.connections?.length || 0);
+        console.log('Flow connections details:', flow.connections);
 
-        // Конвертируем блоки в nodes
-        const flowNodes: Node[] = (flow.blocks || []).map((block, index) => ({
-          id: block.id,
-          type: block.type || 'action',
-          // Используем позицию из блока, если есть, иначе генерируем
-          position: (block as any).position || {
-            x: 100 + index * 200,
-            y: 100 + (index % 3) * 150,
-          },
-          data: {
-            name: (block as any).name || block.id,
-            config: (block as any).config || {},
-            type: block.type,
-          },
-        }));
+        // Конвертируем блоки в nodes, НО сохраняем текущие позиции если nodes уже существуют
+        const flowNodes: Node[] = (flow.blocks || []).map((block, index) => {
+          // Пытаемся найти существующий node с той же позицией ТОЛЬКО если nodes уже инициализированы
+          const existingNode = nodesInitialized.current
+            ? nodes.find((n) => n.id === block.id)
+            : null;
+
+          const position = existingNode?.position ||
+            (block as any).position || {
+              x: 100 + index * 200,
+              y: 100 + (index % 3) * 150,
+            };
+
+          console.log(
+            `Block ${block.id} position:`,
+            existingNode ? 'using existing position' : 'using flow position',
+            position,
+          );
+
+          console.log('🔍🔍🔍 ========== BLOCK DATA DEBUG ==========');
+          console.log(`🔍 Block ${block.id} data:`, {
+            originalBlock: block,
+            blockName: (block as any).name,
+            blockType: block.type,
+            blockConfig: (block as any).config,
+          });
+          console.log('🔍🔍🔍 =====================================');
+
+          // Извлекаем конкретный тип блока из ID (например: "board_move" из "board_move-1760670210929")
+          const specificBlockType = block.id.split('-')[0];
+
+          return {
+            id: block.id,
+            type: block.type || 'action',
+            position: position,
+            data: {
+              name: (block as any).name || block.id,
+              config: (block as any).config || {},
+              type: specificBlockType, // Используем конкретный тип блока вместо категории
+            },
+          };
+        });
 
         // Конвертируем соединения в edges
         const flowEdges: Edge[] = (flow.connections || []).map(
-          (connection, index) => ({
-            id: connection.id || `edge-${index}`,
-            source: connection.from,
-            target: connection.to,
-            type: 'styledSmoothStep',
-            animated: true,
-            style: {
-              strokeWidth: 3,
-              stroke: 'hsl(var(--foreground) / 0.6)',
-            },
-            label: connection.label,
-          }),
+          (connection, index) => {
+            console.log(`Converting connection ${index}:`, connection);
+            const edge = {
+              id: connection.id || `edge-${index}`,
+              source: (connection as any).source || (connection as any).from,
+              target: (connection as any).target || (connection as any).to,
+              sourceHandle: (connection as any).sourceHandle,
+              targetHandle: (connection as any).targetHandle,
+              type: 'styledSmoothStep',
+              animated: true,
+              style: {
+                strokeWidth: 3,
+                stroke: '#64748b', // Используем прямой цвет вместо CSS переменной
+              },
+              label: connection.label,
+            };
+            console.log(`Created edge:`, edge);
+            return edge;
+          },
         );
 
         console.log('Setting nodes:', flowNodes);
         console.log('Setting edges:', flowEdges);
+        console.log(
+          'Edges validation:',
+          flowEdges.map((edge) => ({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            hasSourceNode: flowNodes.some((n) => n.id === edge.source),
+            hasTargetNode: flowNodes.some((n) => n.id === edge.target),
+          })),
+        );
+        console.log('=== FLOW SYNC END ===');
 
         setNodes(flowNodes);
         setEdges(flowEdges);
+
+        // Отмечаем, что nodes были инициализированы
+        nodesInitialized.current = true;
       } else {
         console.log('No flow provided, clearing nodes and edges');
         setNodes([]);
         setEdges([]);
       }
-    }, [flow, setNodes, setEdges]);
+    }, [flow, isEditing]); // Добавляем isEditing в зависимости
 
     // Функция прямого каскадного удаления (очистка nodes/edges)
     const handleDirectCascadeDelete = useCallback(() => {
@@ -347,13 +471,14 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
 
           // Синхронизируем с внешним flow, если есть callback
           if (onFlowChange && flow) {
-            const newConnection: FlowConnection = {
+            const newConnection: any = {
               id: newEdge.id,
-              from: params.source!,
-              to: params.target!,
+              source: params.source!,
+              target: params.target!,
+              sourceHandle: params.sourceHandle,
+              targetHandle: params.targetHandle,
               label:
                 typeof newEdge.label === 'string' ? newEdge.label : undefined,
-              condition: params.sourceHandle as FlowConnection['condition'],
             };
 
             const updatedConnections = [
@@ -455,6 +580,9 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         blockCategory: string,
         dropPosition?: { x: number; y: number },
       ) => {
+        // Включаем режим редактирования
+        setIsEditing(true);
+
         const position = dropPosition || getSmartPosition(blockCategory);
 
         const newBlock: Node = {
@@ -663,6 +791,9 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
     // Функция для показа диалога подтверждения удаления
     const onDeleteBlock = useCallback(
       (nodeId: string) => {
+        // Включаем режим редактирования
+        setIsEditing(true);
+
         // Если включен режим быстрого удаления, удаляем сразу
         if (quickDeleteMode) {
           handleDirectDelete(nodeId);
@@ -910,8 +1041,10 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
 
         const flowConnections = edges.map((edge) => ({
           id: edge.id,
-          source: edge.source, // Бэкенд ожидает source, а не from
-          target: edge.target, // Бэкенд ожидает target, а не to
+          source: edge.source,
+          target: edge.target,
+          sourceHandle: edge.sourceHandle,
+          targetHandle: edge.targetHandle,
           label: typeof edge.label === 'string' ? edge.label : undefined,
         }));
 
@@ -942,17 +1075,28 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         // Проверяем, это новый flow или существующий
         let response;
         if (flow?.id && !flow.id.startsWith('flow-')) {
-          // Обновляем существующий flow
-          response = await apiClient.flowManagement.updateFlow(flow.id, {
-            ...flowData,
+          // Обновляем существующий flow - НЕ отправляем createdBy
+          const updateData = {
+            name: flowData.name,
+            description: flowData.description,
+            definition: flowData.definition,
+            metadata: flowData.metadata,
             updatedBy: 'current-user',
-          });
+          };
+          console.log('Updating existing flow with data:', updateData);
+          response = await apiClient.flowManagement.updateFlow(
+            flow.id,
+            updateData,
+          );
         } else {
-          // Создаем новый flow
+          // Создаем новый flow - отправляем все данные включая createdBy
+          console.log('Creating new flow with data:', flowData);
           response = await apiClient.flowManagement.createFlow(flowData);
         }
 
         console.log('Flow saved successfully:', response);
+        console.log('Response definition:', response.definition);
+        console.log('Response connections:', response.definition?.connections);
 
         // Обновляем локальное состояние с данными от сервера
         const updatedFlow: FlowDefinition = {
@@ -964,8 +1108,8 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           updated: new Date(response.updatedAt),
           agentId: response.agentId,
           triggers: response.definition?.triggers || [],
-          blocks: flowBlocks as any, // Временно используем any для совместимости
-          connections: flowConnections as any, // Временно используем any для совместимости с разными форматами
+          blocks: response.definition?.blocks || [], // Используем данные от сервера
+          connections: response.definition?.connections || [], // Используем данные от сервера
           variables: response.definition?.variables || [],
           settings: response.definition?.settings || {
             timeout: 600000,
@@ -975,7 +1119,12 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           },
         };
 
+        console.log('Calling onFlowChange with updatedFlow:', updatedFlow);
+        console.log('Updated flow connections:', updatedFlow.connections);
         onFlowChange(updatedFlow);
+
+        // Отключаем режим редактирования после успешного сохранения
+        setIsEditing(false);
 
         // Показываем успешное сообщение
         showAlert?.(
@@ -1089,7 +1238,7 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange}
+            onNodesChange={handleNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onNodeClick={onNodeClick}

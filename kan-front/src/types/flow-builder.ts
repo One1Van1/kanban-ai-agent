@@ -178,8 +178,13 @@ export interface FlowDefinition {
 // Flow Connections
 export interface FlowConnection {
   id: string;
-  from: string;
-  to: string;
+  // Support both legacy format (from/to) and new format (source/target)
+  from?: string; // Legacy support
+  to?: string; // Legacy support
+  source?: string; // New format - matches backend
+  target?: string; // New format - matches backend
+  sourceHandle?: string;
+  targetHandle?: string;
   // condition identifies which output path of the source block this connection represents
   // For logic blocks: 'true' | 'false'
   // For wait/AI blocks: 'success' | 'error' | 'timeout' | 'text' | 'empty'

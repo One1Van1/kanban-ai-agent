@@ -18,6 +18,15 @@ export function StyledSmoothStepEdge({
   source,
   ...props
 }: EdgeProps & { sourceType?: string }) {
+  console.log(`Edge ${id} coordinates:`, {
+    sourceX,
+    sourceY,
+    targetX,
+    targetY,
+    sourcePosition,
+    targetPosition,
+  });
+
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,
     sourceY,
@@ -36,6 +45,7 @@ export function StyledSmoothStepEdge({
         path={edgePath}
         style={{
           strokeWidth: 3,
+          stroke: '#64748b', // Принудительно устанавливаем цвет
           ...style,
         }}
         {...props}

@@ -157,6 +157,7 @@ export function TriggerOutputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="source"
       position={Position.Bottom}
+      id="output"
       color="green"
       label="Start"
       {...props}
@@ -169,6 +170,7 @@ export function ActionInputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="target"
       position={Position.Top}
+      id="input"
       color="purple"
       label="Input"
       {...props}
@@ -181,6 +183,7 @@ export function ActionOutputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="source"
       position={Position.Bottom}
+      id="output"
       color="purple"
       label="Complete"
       {...props}
@@ -193,6 +196,7 @@ export function LogicInputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="target"
       position={Position.Top}
+      id="input"
       color="yellow"
       label="Input"
       {...props}
@@ -232,6 +236,7 @@ export function ContextInputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="target"
       position={Position.Top}
+      id="input"
       color="blue"
       label="Input"
       {...props}
@@ -244,6 +249,7 @@ export function ContextOutputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="source"
       position={Position.Bottom}
+      id="output"
       color="blue"
       label="Data"
       {...props}
@@ -256,6 +262,7 @@ export function WaitInputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="target"
       position={Position.Top}
+      id="input"
       color="orange"
       label="Input"
       {...props}
@@ -268,6 +275,7 @@ export function WaitOutputHandle(props: Partial<ConnectionHandleProps>) {
     <ConnectionHandle
       type="source"
       position={Position.Bottom}
+      id="output"
       color="orange"
       label="Continue"
       {...props}
