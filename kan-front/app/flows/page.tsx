@@ -446,9 +446,7 @@ export default function FlowsPage() {
                         {t('flows.actions.execute')}
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
-                        <Link
-                          href={`/agents/flow-builder?flowId=${flow.flowId}`}
-                        >
+                        <Link href={`/flows/editor?flowId=${flow.flowId}`}>
                           <Edit className="h-4 w-4 mr-2" />
                           {t('flows.actions.edit')}
                         </Link>
@@ -539,7 +537,7 @@ export default function FlowsPage() {
                     </Button>
 
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/agents/flow-builder?flowId=${flow.flowId}`}>
+                      <Link href={`/flows/editor?flowId=${flow.flowId}`}>
                         <Edit className="h-3 w-3" />
                       </Link>
                     </Button>

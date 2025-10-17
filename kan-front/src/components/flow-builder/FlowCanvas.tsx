@@ -148,6 +148,9 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
     // Ref для отслеживания, инициализированы ли уже nodes
     const nodesInitialized = useRef(false);
 
+    // Ref для отслеживания текущего flow ID
+    const currentFlowId = useRef<string | null>(null);
+
     // Флаг для блокировки автоматической синхронизации во время редактирования
     const [isEditing, setIsEditing] = useState(false);
 
@@ -230,9 +233,16 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       console.log('Current nodes count:', nodes.length);
       console.log('Is editing mode:', isEditing);
 
-      // НЕ синхронизируемся если пользователь активно редактирует
-      if (isEditing) {
-        console.log('⚠️ Skipping sync - user is editing');
+      // ПРОСТОЕ РЕШЕНИЕ: НИКОГДА не синхронизируемся если у нас уже есть nodes
+      // Синхронизируемся ТОЛЬКО при первой загрузке или смене flow ID
+      const flowIdChanged = currentFlowId.current !== (flow?.id || null);
+
+      if (flowIdChanged) {
+        console.log('🔄 Flow ID changed, loading new flow');
+        currentFlowId.current = flow?.id || null;
+        nodesInitialized.current = false;
+      } else if (nodesInitialized.current && nodes.length > 0) {
+        console.log('⚠️ HARD SKIP - preserving existing nodes, NO SYNC');
         return;
       }
 
@@ -1023,7 +1033,7 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
 
     // Сохранение flow
     const handleSaveFlow = useCallback(async () => {
-      if (!onFlowChange) return;
+      // УБИРАЕМ проверку onFlowChange - сохраняем всегда
 
       try {
         console.log('Starting Flow save process...');
@@ -1121,15 +1131,41 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
 
         console.log('Calling onFlowChange with updatedFlow:', updatedFlow);
         console.log('Updated flow connections:', updatedFlow.connections);
-        onFlowChange(updatedFlow);
+
+        // ПРОСТОЕ РЕШЕНИЕ: НЕ ВЫЗЫВАЕМ onFlowChange после сохранения
+        // Это предотвратит любые обновления store которые могут затереть nodes
+
+        // Обновляем только локальные nodes с данными сервера
+        const updatedNodes = nodes.map((node) => {
+          const serverBlock = updatedFlow.blocks.find(
+            (block) => block.id === node.id,
+          );
+          if (serverBlock) {
+            return {
+              ...node,
+              data: {
+                ...node.data,
+                config: (serverBlock as any).config || node.data.config,
+                name: (serverBlock as any).name || node.data.name,
+              },
+            };
+          }
+          return node;
+        });
+
+        setNodes(updatedNodes);
 
         // Отключаем режим редактирования после успешного сохранения
         setIsEditing(false);
 
-        // Показываем успешное сообщение
+        // Показываем успешное сообщение БЕЗ обновления store
         showAlert?.(
-          `✅ Flow "${response.name}" saved successfully!\nFlow ID: ${response.flowId}`,
+          `✅ Flow "${response.name}" saved successfully!\nFlow ID: ${response.flowId}\n🔒 Editor state preserved`,
           'success',
+        );
+
+        console.log(
+          '✅ SAVE COMPLETE - Editor state preserved, no store updates',
         );
       } catch (error) {
         console.error('Failed to save Flow:', error);

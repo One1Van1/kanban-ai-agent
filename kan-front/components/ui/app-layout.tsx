@@ -15,9 +15,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   const { isOpen, toggle } = useSidebar();
   const pathname = usePathname();
   const isFlowBuilder = pathname === '/agents/flow-builder';
+  const isFlowEditor =
+    pathname === '/flows/editor' || pathname.startsWith('/flows/editor?');
 
-  // Flow Builder теперь управляет своим собственным сайдбаром
-  if (isFlowBuilder) {
+  // Flow Builder и Flow Editor управляют своими собственными сайдбарами
+  if (isFlowBuilder || isFlowEditor) {
     return <>{children}</>;
   }
 
