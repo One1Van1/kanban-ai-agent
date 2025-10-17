@@ -138,15 +138,17 @@ export function TriggerBlock({
                   }
                   ref={(el) => registerFieldRef('targetColumn', el)}
                 />
-                <input
-                  type="text"
-                  placeholder={t('flowBuilder.fields.event')}
-                  defaultValue={data.config?.event || ''}
-                  className="w-full text-xs px-2 py-1 border rounded bg-background"
-                  onClick={(e) => e.stopPropagation()}
-                  onChange={(e) => updateFormData('event', e.target.value)}
-                  ref={(el) => registerFieldRef('event', el)}
-                />
+                {data.type !== 'board_move' && data.type !== 'board_create' && (
+                  <input
+                    type="text"
+                    placeholder={t('flowBuilder.fields.event')}
+                    defaultValue={data.config?.event || ''}
+                    className="w-full text-xs px-2 py-1 border rounded bg-background"
+                    onClick={(e) => e.stopPropagation()}
+                    onChange={(e) => updateFormData('event', e.target.value)}
+                    ref={(el) => registerFieldRef('event', el)}
+                  />
+                )}
               </div>
               <div className="flex gap-1 pt-1">
                 <Button
@@ -181,12 +183,14 @@ export function TriggerBlock({
                 {t('flowBuilder.fields.column')}:{' '}
                 {data.config?.targetColumn || t('flowBuilder.fields.notSet')}
               </div>
-              <div className="text-xs text-muted-foreground">
-                {t('flowBuilder.fields.event')}:{' '}
-                {data.config?.event
-                  ? t(`flowBuilder.events.${data.config.event}`)
-                  : t('flowBuilder.fields.notSet')}
-              </div>
+              {data.type !== 'board_move' && data.type !== 'board_create' && (
+                <div className="text-xs text-muted-foreground">
+                  {t('flowBuilder.fields.event')}:{' '}
+                  {data.config?.event
+                    ? t(`flowBuilder.events.${data.config.event}`)
+                    : t('flowBuilder.fields.notSet')}
+                </div>
+              )}
             </div>
           )}
         </CardContent>

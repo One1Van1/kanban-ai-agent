@@ -970,13 +970,11 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         case 'board_move':
           return {
             boardType: 'jira', // По умолчанию Jira для тестирования
-            event: 'card_moved',
             targetColumn: '',
           };
         case 'board_create':
           return {
             boardType: 'jira',
-            event: 'card_created',
           };
         case 'webhook':
           return {

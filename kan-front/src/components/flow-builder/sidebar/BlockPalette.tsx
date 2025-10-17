@@ -578,7 +578,9 @@ const createExactBlockPreview = (
           : ''
       }
       ${
-        mockConfig?.event
+        mockConfig?.event &&
+        blockType !== 'board_move' &&
+        blockType !== 'board_create'
           ? `
         <div style="font-size: ${scaledContentFontSize}px; color: ${mutedText};">
           ${t('flowBuilder.fields.event')}: ${t(`flowBuilder.events.${mockConfig.event}`)}
@@ -809,13 +811,17 @@ const getDefaultBlockConfig = (blockType: string) => {
     case 'board_move':
       return {
         boardType: 'jira',
-        event: 'card_moved',
         targetColumn: 'In Progress',
       };
     case 'board_create':
       return {
         boardType: 'jira',
-        event: 'card_created',
+      };
+    case 'webhook':
+      return {
+        boardType: 'generic',
+        event: 'card_moved',
+        webhookUrl: '',
       };
     case 'comment':
       return {
@@ -890,7 +896,10 @@ const getConfigTextSimple = (blockType: string, config: any) => {
   switch (blockType) {
     case 'board_move':
     case 'board_create':
-      return `Board: ${config?.boardType?.toUpperCase() || 'JIRA'}\nEvent: ${config?.event?.replace('_', ' ') || 'card moved'}`;
+      return `Board: ${config?.boardType?.toUpperCase() || 'JIRA'}${config?.targetColumn ? `\nColumn: ${config.targetColumn}` : ''}`;
+
+    case 'webhook':
+      return `Board: ${config?.boardType?.toUpperCase() || 'GENERIC'}\nEvent: ${config?.event?.replace('_', ' ') || 'card moved'}`;
 
     case 'comment':
       return `"${config?.commentText || 'Add your comment here'}"`;
@@ -926,9 +935,10 @@ const getConfigText = (blockType: string, config: any) => {
   switch (blockType) {
     case 'board_move':
     case 'board_create':
-      return `Board: ${config?.boardType?.toUpperCase() || 'JIRA'}<br>
-              ${config?.targetColumn ? `Column: ${config.targetColumn}<br>` : ''}
-              Event: ${config?.event?.replace('_', ' ') || 'card moved'}`;
+      return `Board: ${config?.boardType?.toUpperCase() || 'JIRA'}${config?.targetColumn ? `<br>Column: ${config.targetColumn}` : ''}`;
+
+    case 'webhook':
+      return `Board: ${config?.boardType?.toUpperCase() || 'GENERIC'}<br>Event: ${config?.event?.replace('_', ' ') || 'card moved'}`;
 
     case 'comment':
       return `"${config?.commentText || 'Add your comment here'}"`;

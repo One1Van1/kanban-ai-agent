@@ -82,24 +82,29 @@ export function PropertiesPanel({
             </Select>
           </div>
 
-          <div>
-            <Label htmlFor="event">Event</Label>
-            <Select
-              value={(node.data.config as any)?.event || 'card_moved'}
-              onValueChange={(value) => updateConfig('event', value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select event" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="card_moved">Card Moved</SelectItem>
-                <SelectItem value="card_created">Card Created</SelectItem>
-                <SelectItem value="card_updated">Card Updated</SelectItem>
-                <SelectItem value="card_assigned">Card Assigned</SelectItem>
-                <SelectItem value="card_completed">Card Completed</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {node.data.type !== 'board_move' &&
+            node.data.type !== 'board_create' && (
+              <div>
+                <Label htmlFor="event">Event</Label>
+                <Select
+                  value={(node.data.config as any)?.event || 'card_moved'}
+                  onValueChange={(value) => updateConfig('event', value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select event" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="card_moved">Card Moved</SelectItem>
+                    <SelectItem value="card_created">Card Created</SelectItem>
+                    <SelectItem value="card_updated">Card Updated</SelectItem>
+                    <SelectItem value="card_assigned">Card Assigned</SelectItem>
+                    <SelectItem value="card_completed">
+                      Card Completed
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
           {node.data.type === 'board_move' && (
             <>
