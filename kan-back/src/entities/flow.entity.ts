@@ -8,6 +8,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Agent } from './agent.entity';
+import { FlowDefinitionData } from '../types/flow-definition.types';
 
 export enum FlowStatus {
   DRAFT = 'draft',
@@ -27,17 +28,7 @@ export class Flow {
   description?: string;
 
   @Column({ type: 'jsonb' })
-  definition: {
-    id?: string;
-    name?: string;
-    description?: string;
-    blocks: any[];
-    edges?: any[]; // Поддерживаем legacy
-    connections?: any[]; // Новый формат
-    triggers: any[];
-    variables?: Record<string, any>;
-    settings?: Record<string, any>;
-  };
+  definition: FlowDefinitionData;
 
   @Column({ type: 'uuid', nullable: true })
   agentId?: string;

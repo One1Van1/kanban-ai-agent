@@ -318,6 +318,9 @@ export class InstructionExecutorService {
           'https://saakov2004.atlassian.net';
         fullUrl = `${baseUrl}${endpoint}`;
 
+        this.logger.log(`🌐 Making Jira API call: ${method} ${fullUrl}`);
+        this.logger.debug(`📦 Payload: ${JSON.stringify(payload)}`);
+
         // Добавляем авторизацию для Jira
         const jiraAuth = {
           Authorization: `Basic ${Buffer.from(
@@ -334,6 +337,8 @@ export class InstructionExecutorService {
           headers: jiraAuth,
           timeout: 30000,
         });
+
+        this.logger.log(`✅ Jira API call successful: ${response.status}`);
 
         return new AgentActionOutputDto({
           actionType: 'api_call_jira',
@@ -399,7 +404,14 @@ export class InstructionExecutorService {
         });
       }
     } catch (error) {
-      this.logger.error(`API call failed:`, error);
+      this.logger.error(`❌ API call failed:`, error);
+      this.logger.error(`📍 Endpoint: ${action.endpoint}`);
+      this.logger.error(`🔗 Full URL: ${error.config?.url || 'N/A'}`);
+      this.logger.error(`📦 Payload: ${JSON.stringify(action.payload)}`);
+      this.logger.error(`📡 Status: ${error.response?.status || 'N/A'}`);
+      this.logger.error(
+        `📝 Response: ${JSON.stringify(error.response?.data || 'N/A')}`,
+      );
 
       return new AgentActionOutputDto({
         actionType: 'api_call_error',
@@ -410,6 +422,8 @@ export class InstructionExecutorService {
           payload: action.payload,
           error: error.message,
           status: error.response?.status || 'unknown',
+          responseData: error.response?.data,
+          url: error.config?.url,
         },
       });
     }

@@ -28,6 +28,11 @@ import { DeployToAgentService } from '../features/flow-management/deploy-to-agen
 import { CreateAgentService } from '../features/ai-agent/create-agent/create-agent.service';
 import { ConfigureColumnInstructionsService } from '../features/ai-agent/configure-column-instructions/configure-column-instructions.service';
 
+// Import Flow Conversion services
+import { ConvertFlowToAgentService } from '../features/flow-conversion/convert-flow-to-agent.service';
+import { FlowAnalyzerService } from '../features/flow-conversion/flow-analyzer.service';
+import { BlockConverterService } from '../features/flow-conversion/block-converter.service';
+
 @Module({
   imports: [TypeOrmModule.forFeature([Flow, Agent, AgentInstruction])],
   controllers: [
@@ -51,6 +56,10 @@ import { ConfigureColumnInstructionsService } from '../features/ai-agent/configu
     DeployToAgentService,
     CreateAgentService,
     ConfigureColumnInstructionsService,
+    // Flow Conversion services
+    ConvertFlowToAgentService,
+    FlowAnalyzerService,
+    BlockConverterService,
   ],
   exports: [
     CreateFlowService,

@@ -100,4 +100,29 @@ export class CreateAgentRequestDto {
   @IsOptional()
   @IsObject()
   boardConfig?: Record<string, any>;
+
+  @ApiPropertyOptional({
+    description: 'Column ID or name for trigger',
+    example: 'New',
+  })
+  @IsOptional()
+  @IsString()
+  triggerColumnId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Column display name for trigger',
+    example: 'New Tasks',
+  })
+  @IsOptional()
+  @IsString()
+  triggerColumnName?: string;
+
+  @ApiPropertyOptional({
+    description: 'Trigger event type',
+    example: 'on_enter',
+    enum: ['on_enter', 'on_exit', 'on_update'],
+  })
+  @IsOptional()
+  @IsString()
+  triggerEvent?: string;
 }

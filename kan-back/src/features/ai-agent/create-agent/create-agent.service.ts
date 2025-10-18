@@ -56,13 +56,15 @@ export class CreateAgentService {
       if (requestDto.instructions) {
         const agentInstruction = this.agentInstructionRepository.create({
           agentId: savedAgent.id,
-          columnId: 'all', // Общая инструкция для всех колонок
-          columnName: 'All Columns',
+          columnId: requestDto.triggerColumnId || 'all', // Используем переданную колонку или 'all'
+          columnName: requestDto.triggerColumnName || 'All Columns',
           instruction: requestDto.instructions,
-          triggerEvent: 'on_enter', // По умолчанию срабатывает при входе в колонку
+          triggerEvent: requestDto.triggerEvent || 'on_enter', // Используем переданное событие или по умолчанию
           conditions: {
-            description: 'Default instruction for all columns',
-            applyToAll: true,
+            description: requestDto.triggerColumnId
+              ? `Triggered when task enters "${requestDto.triggerColumnName}" column`
+              : 'Default instruction for all columns',
+            applyToAll: !requestDto.triggerColumnId, // true если колонка не указана
           },
           actions: {
             type: 'comment',

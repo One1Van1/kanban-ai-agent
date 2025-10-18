@@ -10,6 +10,7 @@ import { Flow, FlowStatus } from '../../../entities/flow.entity';
 import { Agent } from '../../../entities/agent.entity';
 import { CreateAgentService } from '../../ai-agent/create-agent/create-agent.service';
 import { ConfigureColumnInstructionsService } from '../../ai-agent/configure-column-instructions/configure-column-instructions.service';
+import { ConvertFlowToAgentService } from '../../flow-conversion/convert-flow-to-agent.service';
 import { DeployToAgentRequestDto } from './deploy-to-agent.request.dto';
 import { DeployToAgentResponseDto } from './deploy-to-agent.response.dto';
 
@@ -24,6 +25,7 @@ export class DeployToAgentService {
     private readonly agentRepository: Repository<Agent>,
     private readonly createAgentService: CreateAgentService,
     private readonly configureColumnInstructionsService: ConfigureColumnInstructionsService,
+    private readonly convertFlowToAgentService: ConvertFlowToAgentService,
   ) {}
 
   async execute(
@@ -73,10 +75,55 @@ export class DeployToAgentService {
       }
 
       // 4. Create new agent from flow
-      // TODO: Реализовать новую логику конвертации
-      throw new BadRequestException(
-        'Конвертация flow в agent временно отключена. Будет переделана.',
+      this.logger.log('🔄 Converting Flow to Agent configuration...');
+
+      // Конвертируем Flow в Agent конфигурацию
+      const conversion =
+        await this.convertFlowToAgentService.convertFlowToAgent(flow);
+
+      this.logger.log(
+        `✅ Conversion successful. Generated complete instruction for agent.`,
       );
+
+      // Создаем нового агента с полной инструкцией из Flow
+      const createAgentResponse = await this.createAgentService.execute({
+        name: requestDto.agentName || conversion.agentName,
+        description: requestDto.agentDescription || conversion.agentDescription,
+        instructions: conversion.instructionText, // Полная инструкция из всего Flow
+        model: 'claude-3-haiku-20240307',
+        temperature: 0.3,
+        isActive: true,
+        boardType: conversion.triggerConfig.type as any,
+        // Передаем trigger configuration из Flow
+        triggerColumnId: conversion.triggerConfig.columnId,
+        triggerColumnName: conversion.triggerConfig.columnName,
+        triggerEvent: conversion.triggerConfig.event,
+      });
+
+      // Связываем Flow с Agent
+      await this.flowRepository.update(flow.id, {
+        agentId: createAgentResponse.agentId,
+        status: FlowStatus.ACTIVE,
+      });
+
+      this.logger.log(
+        `✅ Successfully deployed flow ${flow.id} to agent ${createAgentResponse.agentId}`,
+      );
+
+      return new DeployToAgentResponseDto({
+        success: true,
+        message: `Flow "${flow.name}" successfully deployed as Agent`,
+        flowId: flow.id,
+        agentId: createAgentResponse.agentId,
+        createdAgent: {
+          id: createAgentResponse.agentId,
+          name: createAgentResponse.name,
+          description:
+            requestDto.agentDescription || conversion.agentDescription,
+          isActive: true,
+        },
+        createdInstructions: [], // TODO: Return created instructions
+      });
     } catch (error) {
       this.logger.error(`❌ Failed to deploy flow to agent: ${error.message}`);
       throw error;

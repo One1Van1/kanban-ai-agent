@@ -47,7 +47,7 @@ export class CreateFlowService {
       const flow = this.flowRepository.create({
         name: requestDto.name,
         description: requestDto.description,
-        definition: requestDto.definition,
+        definition: requestDto.definition as any, // Type casting for partial definition
         agentId: requestDto.agentId,
         status: FlowStatus.DRAFT,
         createdBy: requestDto.createdBy,

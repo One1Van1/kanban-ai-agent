@@ -199,40 +199,43 @@ export class ExecuteAgentActionService {
       `🔍 Searching for instructions: agentId=${agentId}, columnId=${columnId}`,
     );
 
-    // Сначала ищем специфическую инструкцию для колонки
-    let instruction = await this.agentInstructionRepository.findOne({
-      where: {
-        agentId,
-        columnId,
-      },
+    // Нормализуем columnId - убираем пробелы и приводим к правильному регистру
+    const normalizedColumnId = columnId?.trim();
+
+    // Получаем все инструкции агента для case-insensitive поиска
+    const allInstructions = await this.agentInstructionRepository.find({
+      where: { agentId },
     });
 
-    // Если не нашли, ищем универсальную инструкцию для всех колонок
+    this.logger.log(
+      `📋 Found ${allInstructions.length} instructions for agent ${agentId}`,
+    );
+
+    // Сначала ищем специфическую инструкцию для колонки (case-insensitive)
+    let instruction = allInstructions.find(
+      (i) =>
+        i.columnId?.toLowerCase() === normalizedColumnId?.toLowerCase() &&
+        i.isActive,
+    );
+
+    // Если не нашли, ищем универсальную инструкцию для всех колонок (case-insensitive)
     if (!instruction) {
       this.logger.log(
         `🔍 No specific instruction found, searching for universal (columnId="all")`,
       );
-      instruction = await this.agentInstructionRepository.findOne({
-        where: {
-          agentId,
-          columnId: 'all',
-        },
-      });
+      instruction = allInstructions.find(
+        (i) => i.columnId?.toLowerCase() === 'all' && i.isActive,
+      );
     }
 
     if (instruction) {
       this.logger.log(
-        `✅ Found instruction: ${instruction.id} - ${instruction.instruction} (triggerEvent: ${instruction.triggerEvent}, isActive: ${instruction.isActive}, columnId: ${instruction.columnId})`,
+        `✅ Found instruction: ${instruction.id} - columnId: ${instruction.columnId}, triggerEvent: ${instruction.triggerEvent}, isActive: ${instruction.isActive}`,
       );
     } else {
       this.logger.warn(
         `❌ No instructions found for agent ${agentId} in column ${columnId} or universal`,
       );
-
-      // Попробуем найти все инструкции для этого агента для отладки
-      const allInstructions = await this.agentInstructionRepository.find({
-        where: { agentId },
-      });
 
       this.logger.warn(
         `📋 All instructions for agent ${agentId}:`,
@@ -243,7 +246,7 @@ export class ExecuteAgentActionService {
       );
     }
 
-    return instruction;
+    return instruction || null;
   }
 
   private shouldExecuteAgent(

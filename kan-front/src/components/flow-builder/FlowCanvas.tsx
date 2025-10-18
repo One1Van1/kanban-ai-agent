@@ -1029,6 +1029,132 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       }
     };
 
+    // Helper функция для извлечения конкретного типа блока
+    const extractBlockType = useCallback((node: Node): string => {
+      // Вариант 1: Из data.type (самый надежный)
+      if ((node.data as any).type) return (node.data as any).type;
+
+      // Вариант 2: Из config.blockType
+      if ((node.data as any).config?.blockType)
+        return (node.data as any).config.blockType;
+
+      // Вариант 3: Из ID блока (fallback)
+      const blockTypeFromId = node.id.split('-')[0];
+      return blockTypeFromId;
+    }, []);
+
+    // Helper функция для вычисления порядка выполнения блоков
+    const calculateExecutionOrder = useCallback(
+      (
+        blocks: any[],
+        connections: any[],
+      ): {
+        executionOrder: string[];
+        dependencies: Record<string, string[]>;
+      } => {
+        // Строим граф зависимостей
+        const dependencies: Record<string, string[]> = {};
+        const inDegree: Record<string, number> = {};
+
+        // Инициализация
+        blocks.forEach((block) => {
+          dependencies[block.id] = [];
+          inDegree[block.id] = 0;
+        });
+
+        // Построение графа
+        connections.forEach((conn) => {
+          if (!dependencies[conn.target]) dependencies[conn.target] = [];
+          dependencies[conn.target].push(conn.source);
+          inDegree[conn.target] = (inDegree[conn.target] || 0) + 1;
+        });
+
+        // Топологическая сортировка (Kahn's algorithm)
+        const executionOrder: string[] = [];
+        const queue: string[] = [];
+
+        // Находим блоки без входящих связей (стартовые блоки)
+        Object.keys(inDegree).forEach((blockId) => {
+          if (inDegree[blockId] === 0) {
+            queue.push(blockId);
+          }
+        });
+
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          executionOrder.push(current);
+
+          // Уменьшаем входящие связи для зависимых блоков
+          connections
+            .filter((conn) => conn.source === current)
+            .forEach((conn) => {
+              inDegree[conn.target]--;
+              if (inDegree[conn.target] === 0) {
+                queue.push(conn.target);
+              }
+            });
+        }
+
+        return { executionOrder, dependencies };
+      },
+      [],
+    );
+
+    // Helper функция для извлечения условных ветвлений
+    const extractConditionalBranches = useCallback((connections: any[]) => {
+      const conditionalBranches: Record<
+        string,
+        {
+          trueBranch?: string[];
+          falseBranch?: string[];
+          errorBranch?: string[];
+          successBranch?: string[];
+        }
+      > = {};
+
+      connections.forEach((conn) => {
+        const sourceId = conn.source;
+
+        if (!conditionalBranches[sourceId]) {
+          conditionalBranches[sourceId] = {};
+        }
+
+        // Определяем тип ветки на основе handle или label
+        const branchType =
+          conn.sourceHandle ||
+          conn.label?.toLowerCase() ||
+          conn.condition ||
+          'default';
+
+        if (branchType.includes('true')) {
+          if (!conditionalBranches[sourceId].trueBranch)
+            conditionalBranches[sourceId].trueBranch = [];
+          conditionalBranches[sourceId].trueBranch!.push(conn.target);
+        } else if (branchType.includes('false')) {
+          if (!conditionalBranches[sourceId].falseBranch)
+            conditionalBranches[sourceId].falseBranch = [];
+          conditionalBranches[sourceId].falseBranch!.push(conn.target);
+        } else if (branchType.includes('error')) {
+          if (!conditionalBranches[sourceId].errorBranch)
+            conditionalBranches[sourceId].errorBranch = [];
+          conditionalBranches[sourceId].errorBranch!.push(conn.target);
+        } else if (branchType.includes('success')) {
+          if (!conditionalBranches[sourceId].successBranch)
+            conditionalBranches[sourceId].successBranch = [];
+          conditionalBranches[sourceId].successBranch!.push(conn.target);
+        }
+      });
+
+      // Убираем пустые объекты
+      Object.keys(conditionalBranches).forEach((key) => {
+        if (Object.keys(conditionalBranches[key]).length === 0) {
+          delete conditionalBranches[key];
+        }
+      });
+
+      return conditionalBranches;
+    }, []);
+
     // Сохранение flow
     const handleSaveFlow = useCallback(async () => {
       // УБИРАЕМ проверку onFlowChange - сохраняем всегда
@@ -1042,6 +1168,7 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
         const flowBlocks = nodes.map((node) => ({
           id: node.id,
           type: node.type,
+          blockType: extractBlockType(node), // ⭐ НОВОЕ: конкретный тип блока
           position: node.position,
           config: node.data.config || {},
           name: node.data.name || '',
@@ -1056,6 +1183,13 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           label: typeof edge.label === 'string' ? edge.label : undefined,
         }));
 
+        // Вычисляем метаданные для конвертации
+        const { executionOrder, dependencies } = calculateExecutionOrder(
+          flowBlocks,
+          flowConnections,
+        );
+        const conditionalBranches = extractConditionalBranches(flowConnections);
+
         const flowData = {
           name: flow?.name || 'Untitled Flow',
           description: flow?.description || 'Flow created with visual builder',
@@ -1069,6 +1203,23 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
               retryAttempts: 3,
               errorHandling: 'stop',
               logging: 'detailed',
+            },
+            metadata: {
+              // ⭐ НОВОЕ: метаданные для конвертации
+              executionOrder,
+              dependencies,
+              conditionalBranches,
+              entryPoints: flowBlocks
+                .filter((b) => b.type === 'trigger')
+                .map((b) => b.id),
+              exitPoints: flowBlocks
+                .filter((b) => {
+                  // Блоки без исходящих connections
+                  return !flowConnections.some((c) => c.source === b.id);
+                })
+                .map((b) => b.id),
+              analysisVersion: '1.0.0',
+              analyzedAt: new Date().toISOString(),
             },
           },
           createdBy: 'current-user', // TODO: Get from auth context
@@ -1172,7 +1323,16 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           'error',
         );
       }
-    }, [flow, onFlowChange, nodes, edges, showAlert]);
+    }, [
+      flow,
+      onFlowChange,
+      nodes,
+      edges,
+      showAlert,
+      extractBlockType,
+      calculateExecutionOrder,
+      extractConditionalBranches,
+    ]);
 
     // Проверка наличия контента для сохранения
     const hasContent = useCallback(() => {
