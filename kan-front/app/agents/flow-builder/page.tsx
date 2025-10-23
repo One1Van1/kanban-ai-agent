@@ -72,14 +72,8 @@ export default function FlowBuilderPage() {
       return;
     }
 
-    const confirmed = await showConfirm(
-      'Вы уверены, что хотите сохранить этот Flow?',
-      'Подтверждение сохранения',
-    );
-
-    if (confirmed) {
-      await flowCanvasRef.current.saveFlow();
-    }
+    // Диалог для ввода названия показывается в FlowCanvas
+    await flowCanvasRef.current.saveFlow();
   };
 
   const handleTestFlow = () => {

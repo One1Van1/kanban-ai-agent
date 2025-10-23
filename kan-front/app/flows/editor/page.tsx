@@ -127,15 +127,9 @@ export default function FlowEditorPage() {
       return;
     }
 
-    const confirmed = await showConfirm(
-      'Вы уверены, что хотите сохранить изменения в этом Flow?',
-      'Подтверждение сохранения изменений',
-    );
-
-    if (confirmed) {
-      console.log('💾 Flow Editor: Saving flow changes...');
-      await flowCanvasRef.current.saveFlow();
-    }
+    // Диалог для ввода названия показывается в FlowCanvas
+    console.log('💾 Flow Editor: Saving flow changes...');
+    await flowCanvasRef.current.saveFlow();
   };
 
   const handleTestFlow = () => {

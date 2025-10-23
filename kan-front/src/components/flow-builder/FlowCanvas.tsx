@@ -46,6 +46,7 @@ import { LogicBlock } from './blocks/LogicBlock';
 import { ActionBlock } from './blocks/ActionBlock';
 import { WaitBlock } from './blocks/WaitBlock';
 import { ConfirmDeleteDialog } from './dialogs/ConfirmDeleteDialog';
+import { SaveFlowDialog, SaveFlowData } from './SaveFlowDialog';
 import { DynamicConnectionLine } from './components/DynamicConnectionLine';
 import { StyledSmoothStepEdge } from './components/StyledSmoothStepEdge';
 
@@ -225,6 +226,12 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       blockName: null,
       blockType: null,
     });
+
+    // Состояние для диалога сохранения Flow
+    const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+    const [pendingSaveCallback, setPendingSaveCallback] = useState<
+      ((data: SaveFlowData) => Promise<void>) | null
+    >(null);
 
     // Синхронизация внешнего flow с внутренними nodes и edges
     React.useEffect(() => {
@@ -1155,184 +1162,207 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       return conditionalBranches;
     }, []);
 
-    // Сохранение flow
-    const handleSaveFlow = useCallback(async () => {
-      // УБИРАЕМ проверку onFlowChange - сохраняем всегда
+    // Вспомогательная функция для выполнения сохранения с заданным именем и описанием
+    const performSave = useCallback(
+      async (saveData: SaveFlowData) => {
+        try {
+          console.log('Starting Flow save process with data:', saveData);
+          console.log('Current nodes:', nodes);
+          console.log('Current edges:', edges);
 
-      try {
-        console.log('Starting Flow save process...');
-        console.log('Current nodes:', nodes);
-        console.log('Current edges:', edges);
+          // Конвертируем текущие nodes и edges в правильный формат для API
+          const flowBlocks = nodes.map((node) => ({
+            id: node.id,
+            type: node.type,
+            blockType: extractBlockType(node), // ⭐ НОВОЕ: конкретный тип блока
+            position: node.position,
+            config: node.data.config || {},
+            name: node.data.name || '',
+          }));
 
-        // Конвертируем текущие nodes и edges в правильный формат для API
-        const flowBlocks = nodes.map((node) => ({
-          id: node.id,
-          type: node.type,
-          blockType: extractBlockType(node), // ⭐ НОВОЕ: конкретный тип блока
-          position: node.position,
-          config: node.data.config || {},
-          name: node.data.name || '',
-        }));
+          const flowConnections = edges.map((edge) => ({
+            id: edge.id,
+            source: edge.source,
+            target: edge.target,
+            sourceHandle: edge.sourceHandle,
+            targetHandle: edge.targetHandle,
+            label: typeof edge.label === 'string' ? edge.label : undefined,
+          }));
 
-        const flowConnections = edges.map((edge) => ({
-          id: edge.id,
-          source: edge.source,
-          target: edge.target,
-          sourceHandle: edge.sourceHandle,
-          targetHandle: edge.targetHandle,
-          label: typeof edge.label === 'string' ? edge.label : undefined,
-        }));
+          // Вычисляем метаданные для конвертации
+          const { executionOrder, dependencies } = calculateExecutionOrder(
+            flowBlocks,
+            flowConnections,
+          );
+          const conditionalBranches =
+            extractConditionalBranches(flowConnections);
 
-        // Вычисляем метаданные для конвертации
-        const { executionOrder, dependencies } = calculateExecutionOrder(
-          flowBlocks,
-          flowConnections,
-        );
-        const conditionalBranches = extractConditionalBranches(flowConnections);
+          const flowData = {
+            name: saveData.name,
+            description:
+              saveData.description || 'Flow created with visual builder',
+            definition: {
+              blocks: flowBlocks,
+              connections: flowConnections,
+              triggers: flow?.triggers || [],
+              variables: flow?.variables || [],
+              settings: flow?.settings || {
+                timeout: 600000,
+                retryAttempts: 3,
+                errorHandling: 'stop',
+                logging: 'detailed',
+              },
+              metadata: {
+                // ⭐ НОВОЕ: метаданные для конвертации
+                executionOrder,
+                dependencies,
+                conditionalBranches,
+                entryPoints: flowBlocks
+                  .filter((b) => b.type === 'trigger')
+                  .map((b) => b.id),
+                exitPoints: flowBlocks
+                  .filter((b) => {
+                    // Блоки без исходящих connections
+                    return !flowConnections.some((c) => c.source === b.id);
+                  })
+                  .map((b) => b.id),
+                analysisVersion: '1.0.0',
+                analyzedAt: new Date().toISOString(),
+              },
+            },
+            createdBy: 'current-user', // TODO: Get from auth context
+            metadata: {
+              version: flow?.version || '1.0.0',
+              category: 'workflow',
+            },
+          };
 
-        const flowData = {
-          name: flow?.name || 'Untitled Flow',
-          description: flow?.description || 'Flow created with visual builder',
-          definition: {
-            blocks: flowBlocks,
-            connections: flowConnections,
-            triggers: flow?.triggers || [],
-            variables: flow?.variables || [],
-            settings: flow?.settings || {
+          console.log('Sending Flow to backend:', flowData);
+
+          // Проверяем, это новый flow или существующий
+          let response;
+          if (flow?.id && !flow.id.startsWith('flow-')) {
+            // Обновляем существующий flow - НЕ отправляем createdBy
+            const updateData = {
+              name: flowData.name,
+              description: flowData.description,
+              definition: flowData.definition,
+              metadata: flowData.metadata,
+              updatedBy: 'current-user',
+            };
+            console.log('Updating existing flow with data:', updateData);
+            response = await apiClient.flowManagement.updateFlow(
+              flow.id,
+              updateData,
+            );
+          } else {
+            // Создаем новый flow - отправляем все данные включая createdBy
+            console.log('Creating new flow with data:', flowData);
+            response = await apiClient.flowManagement.createFlow(flowData);
+          }
+
+          console.log('Flow saved successfully:', response);
+          console.log('Response definition:', response.definition);
+          console.log(
+            'Response connections:',
+            response.definition?.connections,
+          );
+
+          // Обновляем локальное состояние с данными от сервера
+          const updatedFlow: FlowDefinition = {
+            id: response.flowId,
+            name: response.name,
+            description: response.description || '',
+            version: String(response.metadata?.version || '1.0.0'),
+            created: new Date(response.createdAt),
+            updated: new Date(response.updatedAt),
+            agentId: response.agentId,
+            triggers: response.definition?.triggers || [],
+            blocks: response.definition?.blocks || [], // Используем данные от сервера
+            connections: response.definition?.connections || [], // Используем данные от сервера
+            variables: response.definition?.variables || [],
+            settings: response.definition?.settings || {
               timeout: 600000,
               retryAttempts: 3,
               errorHandling: 'stop',
               logging: 'detailed',
             },
-            metadata: {
-              // ⭐ НОВОЕ: метаданные для конвертации
-              executionOrder,
-              dependencies,
-              conditionalBranches,
-              entryPoints: flowBlocks
-                .filter((b) => b.type === 'trigger')
-                .map((b) => b.id),
-              exitPoints: flowBlocks
-                .filter((b) => {
-                  // Блоки без исходящих connections
-                  return !flowConnections.some((c) => c.source === b.id);
-                })
-                .map((b) => b.id),
-              analysisVersion: '1.0.0',
-              analyzedAt: new Date().toISOString(),
-            },
-          },
-          createdBy: 'current-user', // TODO: Get from auth context
-          metadata: {
-            version: flow?.version || '1.0.0',
-            category: 'workflow',
-          },
-        };
-
-        console.log('Sending Flow to backend:', flowData);
-
-        // Проверяем, это новый flow или существующий
-        let response;
-        if (flow?.id && !flow.id.startsWith('flow-')) {
-          // Обновляем существующий flow - НЕ отправляем createdBy
-          const updateData = {
-            name: flowData.name,
-            description: flowData.description,
-            definition: flowData.definition,
-            metadata: flowData.metadata,
-            updatedBy: 'current-user',
           };
-          console.log('Updating existing flow with data:', updateData);
-          response = await apiClient.flowManagement.updateFlow(
-            flow.id,
-            updateData,
+
+          console.log('Calling onFlowChange with updatedFlow:', updatedFlow);
+          console.log('Updated flow connections:', updatedFlow.connections);
+
+          // ПРОСТОЕ РЕШЕНИЕ: НЕ ВЫЗЫВАЕМ onFlowChange после сохранения
+          // Это предотвратит любые обновления store которые могут затереть nodes
+
+          // Обновляем только локальные nodes с данными сервера
+          const updatedNodes = nodes.map((node) => {
+            const serverBlock = updatedFlow.blocks.find(
+              (block) => block.id === node.id,
+            );
+            if (serverBlock) {
+              return {
+                ...node,
+                data: {
+                  ...node.data,
+                  config: (serverBlock as any).config || node.data.config,
+                  name: (serverBlock as any).name || node.data.name,
+                },
+              };
+            }
+            return node;
+          });
+
+          setNodes(updatedNodes);
+
+          // Отключаем режим редактирования после успешного сохранения
+          setIsEditing(false);
+
+          // Показываем успешное сообщение БЕЗ обновления store
+          showAlert?.(
+            `✅ Flow "${response.name}" saved successfully!\nFlow ID: ${response.flowId}\n🔒 Editor state preserved`,
+            'success',
           );
-        } else {
-          // Создаем новый flow - отправляем все данные включая createdBy
-          console.log('Creating new flow with data:', flowData);
-          response = await apiClient.flowManagement.createFlow(flowData);
+
+          console.log(
+            '✅ SAVE COMPLETE - Editor state preserved, no store updates',
+          );
+
+          // Закрываем диалог после успешного сохранения
+          setSaveDialogOpen(false);
+        } catch (error) {
+          console.error('Failed to save Flow:', error);
+          showAlert?.(
+            `❌ Failed to save Flow: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            'error',
+          );
         }
+      },
+      [
+        flow,
+        onFlowChange,
+        nodes,
+        edges,
+        showAlert,
+        extractBlockType,
+        calculateExecutionOrder,
+        extractConditionalBranches,
+      ],
+    );
 
-        console.log('Flow saved successfully:', response);
-        console.log('Response definition:', response.definition);
-        console.log('Response connections:', response.definition?.connections);
+    // Основная функция сохранения - показывает диалог
+    const handleSaveFlow = useCallback(async () => {
+      // Показываем диалог для ввода названия и описания
+      setSaveDialogOpen(true);
+    }, []);
 
-        // Обновляем локальное состояние с данными от сервера
-        const updatedFlow: FlowDefinition = {
-          id: response.flowId,
-          name: response.name,
-          description: response.description || '',
-          version: String(response.metadata?.version || '1.0.0'),
-          created: new Date(response.createdAt),
-          updated: new Date(response.updatedAt),
-          agentId: response.agentId,
-          triggers: response.definition?.triggers || [],
-          blocks: response.definition?.blocks || [], // Используем данные от сервера
-          connections: response.definition?.connections || [], // Используем данные от сервера
-          variables: response.definition?.variables || [],
-          settings: response.definition?.settings || {
-            timeout: 600000,
-            retryAttempts: 3,
-            errorHandling: 'stop',
-            logging: 'detailed',
-          },
-        };
-
-        console.log('Calling onFlowChange with updatedFlow:', updatedFlow);
-        console.log('Updated flow connections:', updatedFlow.connections);
-
-        // ПРОСТОЕ РЕШЕНИЕ: НЕ ВЫЗЫВАЕМ onFlowChange после сохранения
-        // Это предотвратит любые обновления store которые могут затереть nodes
-
-        // Обновляем только локальные nodes с данными сервера
-        const updatedNodes = nodes.map((node) => {
-          const serverBlock = updatedFlow.blocks.find(
-            (block) => block.id === node.id,
-          );
-          if (serverBlock) {
-            return {
-              ...node,
-              data: {
-                ...node.data,
-                config: (serverBlock as any).config || node.data.config,
-                name: (serverBlock as any).name || node.data.name,
-              },
-            };
-          }
-          return node;
-        });
-
-        setNodes(updatedNodes);
-
-        // Отключаем режим редактирования после успешного сохранения
-        setIsEditing(false);
-
-        // Показываем успешное сообщение БЕЗ обновления store
-        showAlert?.(
-          `✅ Flow "${response.name}" saved successfully!\nFlow ID: ${response.flowId}\n🔒 Editor state preserved`,
-          'success',
-        );
-
-        console.log(
-          '✅ SAVE COMPLETE - Editor state preserved, no store updates',
-        );
-      } catch (error) {
-        console.error('Failed to save Flow:', error);
-        showAlert?.(
-          `❌ Failed to save Flow: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          'error',
-        );
-      }
-    }, [
-      flow,
-      onFlowChange,
-      nodes,
-      edges,
-      showAlert,
-      extractBlockType,
-      calculateExecutionOrder,
-      extractConditionalBranches,
-    ]);
+    // Обработчик сохранения из диалога
+    const handleSaveFromDialog = useCallback(
+      async (saveData: SaveFlowData) => {
+        await performSave(saveData);
+      },
+      [performSave],
+    );
 
     // Проверка наличия контента для сохранения
     const hasContent = useCallback(() => {
@@ -1502,6 +1532,23 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           onConfirmWithoutAsking={handleEnableQuickDelete}
           blockName={deleteConfirm.blockName || undefined}
           blockType={deleteConfirm.blockType || undefined}
+        />
+
+        {/* Диалог сохранения Flow */}
+        <SaveFlowDialog
+          open={saveDialogOpen}
+          onOpenChange={setSaveDialogOpen}
+          onSave={handleSaveFromDialog}
+          initialName={flow?.name || ''}
+          initialDescription={flow?.description || ''}
+          title={
+            flow?.id && !flow.id.startsWith('flow-')
+              ? 'Обновить Flow'
+              : 'Сохранить новый Flow'
+          }
+          submitLabel={
+            flow?.id && !flow.id.startsWith('flow-') ? 'Обновить' : 'Сохранить'
+          }
         />
       </div>
     );

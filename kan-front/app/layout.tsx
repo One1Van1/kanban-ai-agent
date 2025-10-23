@@ -45,7 +45,7 @@ export default function RootLayout({
                 <AppLayout>{children}</AppLayout>
               </DialogProvider>
             </SidebarProvider>
-            <Toaster />
+            <Toaster position="top-right" duration={3000} />
           </LanguageProvider>
         </ThemeProvider>
       </body>

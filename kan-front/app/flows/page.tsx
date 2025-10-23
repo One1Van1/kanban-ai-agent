@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { EditableFlowCard } from '@/src/components/flows/EditableFlowCard';
 import {
   Workflow,
   Activity,
@@ -165,6 +166,36 @@ export default function FlowsPage() {
         `${t('flows.deploy.failed')} ${err instanceof Error ? err.message : 'Unknown error'}`,
         'error',
       );
+    }
+  };
+
+  const handleUpdateMetadata = async (
+    flowId: string,
+    name: string,
+    description?: string,
+  ) => {
+    try {
+      console.log('📝 Updating flow metadata:', { flowId, name, description });
+      await apiClient.flowManagement.updateFlow(flowId, {
+        name,
+        description,
+        updatedBy: 'current-user', // TODO: Get from auth
+      });
+
+      // Обновляем локальный стейт
+      setFlows((prevFlows) =>
+        prevFlows.map((f) =>
+          f.flowId === flowId
+            ? { ...f, name, description, updatedAt: new Date().toISOString() }
+            : f,
+        ),
+      );
+
+      // Уведомление показывается в EditableFlowCard
+    } catch (err) {
+      console.error('❌ Failed to update flow metadata:', err);
+      // Уведомление об ошибке показывается в EditableFlowCard
+      throw err; // Пробрасываем ошибку чтобы компонент мог обработать
     }
   };
 
@@ -407,144 +438,18 @@ export default function FlowsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {flows.map((flow) => (
-            <Card
+            <EditableFlowCard
               key={flow.flowId}
-              className="group hover:shadow-lg transition-all duration-200 border hover:border-primary/20"
-            >
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1 min-w-0">
-                    <CardTitle
-                      className="text-lg mb-1 truncate"
-                      title={flow.name}
-                    >
-                      {flow.name}
-                    </CardTitle>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {flow.description || 'No description provided'}
-                    </p>
-                  </div>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="opacity-70 hover:opacity-100 transition-opacity"
-                      >
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem
-                        onClick={() =>
-                          handleExecuteFlow(flow.flowId, flow.name)
-                        }
-                        disabled={flow.status !== 'active'}
-                      >
-                        <Play className="h-4 w-4 mr-2" />
-                        {t('flows.actions.execute')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href={`/flows/editor?flowId=${flow.flowId}`}>
-                          <Edit className="h-4 w-4 mr-2" />
-                          {t('flows.actions.edit')}
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleCloneFlow(flow.flowId, flow.name)}
-                      >
-                        <Copy className="h-4 w-4 mr-2" />
-                        {t('flows.actions.clone')}
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() =>
-                          handleDeployToAgent(flow.flowId, flow.name)
-                        }
-                        disabled={flow.status !== 'active'}
-                      >
-                        <Bot className="h-4 w-4 mr-2" />
-                        {flow.agentId
-                          ? 'Update Agent'
-                          : t('flows.actions.deploy')}
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onClick={() => handleDeleteFlow(flow.flowId, flow.name)}
-                        className="text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        {t('flows.actions.delete')}
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </CardHeader>
-
-              <CardContent>
-                <div className="space-y-3">
-                  {/* Status Badge */}
-                  <div className="flex items-center justify-between">
-                    <Badge className={getStatusColor(flow.status)}>
-                      {t(`flows.status.${flow.status}`)}
-                    </Badge>
-                    {flow.agentId && (
-                      <Badge variant="secondary" className="text-xs">
-                        <Bot className="h-3 w-3 mr-1" />
-                        Agent
-                      </Badge>
-                    )}
-                  </div>
-
-                  {/* Meta Info */}
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <User className="h-3 w-3" />
-                      <span>{flow.createdBy}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatDate(flow.updatedAt)}</span>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex gap-2 pt-2">
-                    <Button
-                      size="sm"
-                      className="flex-1"
-                      onClick={() => handleExecuteFlow(flow.flowId, flow.name)}
-                      disabled={flow.status !== 'active'}
-                    >
-                      <Play className="h-3 w-3 mr-1" />
-                      {t('flows.actions.execute')}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() =>
-                        handleDeployToAgent(flow.flowId, flow.name)
-                      }
-                      disabled={flow.status !== 'active'}
-                      title={
-                        flow.agentId
-                          ? 'Update Agent'
-                          : t('flows.actions.deploy')
-                      }
-                    >
-                      <Bot className="h-3 w-3" />
-                    </Button>
-
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/flows/editor?flowId=${flow.flowId}`}>
-                        <Edit className="h-3 w-3" />
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+              flow={flow}
+              onExecute={handleExecuteFlow}
+              onClone={handleCloneFlow}
+              onDelete={handleDeleteFlow}
+              onDeploy={handleDeployToAgent}
+              onUpdateMetadata={handleUpdateMetadata}
+              getStatusColor={getStatusColor}
+              formatDate={formatDate}
+              t={t}
+            />
           ))}
         </div>
       )}
