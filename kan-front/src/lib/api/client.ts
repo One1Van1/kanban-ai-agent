@@ -182,6 +182,57 @@ export class APIClient {
       };
       createdInstructions: any[];
     }> => this.post(`/flow-management/${flowId}/deploy-to-agent`, data),
+
+    // Export flow to JSON
+    exportFlowJson: async (flowId: string): Promise<any> => {
+      const response = await fetch(
+        `${this.baseURL}/flow-management/export-json/${flowId}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to export flow: ${response.statusText}`);
+      }
+      return response.json();
+    },
+
+    // Export flow to PDF
+    exportFlowPdf: async (flowId: string): Promise<Blob> => {
+      const response = await fetch(
+        `${this.baseURL}/flow-management/export-pdf/${flowId}`,
+        {
+          method: 'GET',
+        },
+      );
+      if (!response.ok) {
+        throw new Error(`Failed to export flow to PDF: ${response.statusText}`);
+      }
+      return response.blob();
+    },
+
+    // Import flow from JSON
+    importFlow: (data: {
+      version: string;
+      name: string;
+      description?: string;
+      status: string;
+      definition: any;
+      metadata?: any;
+      importMode?: 'create_new' | 'replace_existing';
+      flowIdToReplace?: string;
+      createdBy?: string;
+    }): Promise<{
+      status: string;
+      message: string;
+      flowId: string;
+      flowName: string;
+      importMode: string;
+      isNewFlow: boolean;
+    }> => this.post('/flow-management/import', data),
   };
 
   // Legacy Flow Builder API (deprecated - use flowManagement instead)

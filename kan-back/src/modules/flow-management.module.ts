@@ -13,6 +13,9 @@ import { ListFlowsController } from '../features/flow-management/list-flows/list
 import { CloneFlowController } from '../features/flow-management/clone-flow/clone-flow.controller';
 import { ExecuteFlowController } from '../features/flow-management/execute-flow/execute-flow.controller';
 import { DeployToAgentController } from '../features/flow-management/deploy-to-agent/deploy-to-agent.controller';
+import { ExportFlowJsonController } from '../features/flow-management/export-flow-json/export-flow-json.controller';
+import { ExportFlowPdfController } from '../features/flow-management/export-flow-pdf/export-flow-pdf.controller';
+import { ImportFlowController } from '../features/flow-management/import-flow/import-flow.controller';
 
 // Services
 import { CreateFlowService } from '../features/flow-management/create-flow/create-flow.service';
@@ -23,6 +26,9 @@ import { ListFlowsService } from '../features/flow-management/list-flows/list-fl
 import { CloneFlowService } from '../features/flow-management/clone-flow/clone-flow.service';
 import { ExecuteFlowService } from '../features/flow-management/execute-flow/execute-flow.service';
 import { DeployToAgentService } from '../features/flow-management/deploy-to-agent/deploy-to-agent.service';
+import { ExportFlowJsonService } from '../features/flow-management/export-flow-json/export-flow-json.service';
+import { ExportFlowPdfService } from '../features/flow-management/export-flow-pdf/export-flow-pdf.service';
+import { ImportFlowService } from '../features/flow-management/import-flow/import-flow.service';
 
 // Import AI Agent services
 import { CreateAgentService } from '../features/ai-agent/create-agent/create-agent.service';
@@ -44,6 +50,9 @@ import { BlockConverterService } from '../features/flow-conversion/block-convert
     CloneFlowController,
     ExecuteFlowController,
     DeployToAgentController,
+    ExportFlowJsonController,
+    ExportFlowPdfController,
+    ImportFlowController,
   ],
   providers: [
     CreateFlowService,
@@ -54,6 +63,9 @@ import { BlockConverterService } from '../features/flow-conversion/block-convert
     CloneFlowService,
     ExecuteFlowService,
     DeployToAgentService,
+    ExportFlowJsonService,
+    ExportFlowPdfService,
+    ImportFlowService,
     CreateAgentService,
     ConfigureColumnInstructionsService,
     // Flow Conversion services
@@ -70,6 +82,9 @@ import { BlockConverterService } from '../features/flow-conversion/block-convert
     CloneFlowService,
     ExecuteFlowService,
     DeployToAgentService,
+    ExportFlowJsonService,
+    ExportFlowPdfService,
+    ImportFlowService,
   ],
 })
 export class FlowManagementModule {}

@@ -8,6 +8,13 @@ import FlowCanvas, {
 import { FlowToolbar } from '../../../src/components/flow-builder/toolbar/FlowToolbar';
 import { Button } from '../../../components/ui/button';
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '../../../components/ui/dropdown-menu';
+import {
   Card,
   CardContent,
   CardHeader,
@@ -24,6 +31,8 @@ import {
   FileText,
   Clock,
   Bot,
+  Download,
+  Upload,
 } from 'lucide-react';
 import { FlowDefinition } from '../../../src/types/flow-builder';
 import { useTranslation } from '../../../src/lib/i18n';
@@ -145,6 +154,258 @@ export default function FlowEditorPage() {
 
   const handleCascadeDelete = () => {
     setIsCascadeDeleteOpen(true);
+  };
+
+  // Export handlers
+  const handleExportJSON = async () => {
+    if (!currentFlow?.id) {
+      showAlert('No flow to export', 'warning');
+      return;
+    }
+
+    try {
+      console.log('📤 Exporting flow to JSON:', currentFlow.id);
+      const exportData = await apiClient.flowManagement.exportFlowJson(
+        currentFlow.id,
+      );
+
+      // Download as JSON file
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], {
+        type: 'application/json',
+      });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentFlow.name || 'flow'}-export.json`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      showAlert('Flow exported successfully to JSON', 'success');
+    } catch (error) {
+      console.error('❌ Failed to export flow:', error);
+      showAlert(
+        error instanceof Error ? error.message : 'Failed to export flow',
+        'error',
+      );
+    }
+  };
+
+  const handleExportPDF = async () => {
+    if (!currentFlow?.id) {
+      showAlert('No flow to export', 'warning');
+      return;
+    }
+
+    try {
+      console.log('📄 Exporting flow to PDF:', currentFlow.id);
+      const pdfBlob = await apiClient.flowManagement.exportFlowPdf(
+        currentFlow.id,
+      );
+
+      // Download as PDF file
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentFlow.name || 'flow'}-export.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      showAlert('Flow exported successfully to PDF', 'success');
+    } catch (error) {
+      console.error('❌ Failed to export flow to PDF:', error);
+      showAlert(
+        error instanceof Error ? error.message : 'Failed to export flow to PDF',
+        'error',
+      );
+    }
+  };
+
+  const handleImportFlow = () => {
+    // Create file input element
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        console.log('📥 Importing flow from file:', file.name);
+        const text = await file.text();
+        const importData = JSON.parse(text);
+
+        // Ask user: create new, add to current, or replace current
+        let importMode: 'create_new' | 'replace_existing' | 'merge' =
+          'create_new';
+        let flowIdToReplace: string | undefined = undefined;
+
+        if (currentFlow?.id) {
+          // Show dialog with three choices
+          const choice = window.confirm(
+            `Выберите действие:\n\n` +
+              `ОК - Добавить блоки к текущему flow (merge на canvas)\n` +
+              `Отмена - Создать новый отдельный flow\n\n` +
+              `Текущий flow: "${currentFlow.name}"\n` +
+              `Импортируемый flow: "${importData.name}"`,
+          );
+
+          if (choice) {
+            importMode = 'merge';
+            console.log('� User chose to MERGE blocks to current flow');
+          } else {
+            importMode = 'create_new';
+            console.log('➕ User chose to CREATE NEW flow');
+          }
+        } else {
+          console.log('➕ No current flow, creating new');
+        }
+
+        // If merge mode - add blocks to canvas directly
+        if (importMode === 'merge' && currentFlow) {
+          console.log('🔀 Merging blocks to canvas...');
+
+          // Get imported blocks and connections
+          const importedBlocks = importData.definition?.blocks || [];
+          const importedConnections = importData.definition?.connections || [];
+
+          // Calculate dynamic offset based on existing blocks
+          // Find rightmost and bottommost positions
+          const existingBlocks = currentFlow.blocks || [];
+          let maxX = 0;
+          let maxY = 0;
+
+          existingBlocks.forEach((block: any) => {
+            const x = block.position?.x || 0;
+            const y = block.position?.y || 0;
+            if (x > maxX) maxX = x;
+            if (y > maxY) maxY = y;
+          });
+
+          // Add offset from rightmost/bottommost block + extra space
+          const OFFSET_X = maxX + 400; // 400px to the right from rightmost block
+          const OFFSET_Y = maxY > 0 ? 100 : 200; // Stay on similar Y level or small offset
+
+          console.log(
+            `📐 Calculated offset: X=${OFFSET_X}, Y=${OFFSET_Y} (maxX=${maxX}, maxY=${maxY})`,
+          ); // Generate unique timestamp suffix for new IDs
+          const timestamp = Date.now();
+
+          // Create mapping from old IDs to new IDs
+          const idMapping: Record<string, string> = {};
+
+          // Generate new unique IDs for blocks and update positions
+          const shiftedBlocks = importedBlocks.map((block: any) => {
+            const oldId = block.id;
+            const newId = `${block.blockType || block.type}-${timestamp}-${Math.random().toString(36).substring(7)}`;
+            idMapping[oldId] = newId;
+
+            return {
+              ...block,
+              id: newId,
+              position: {
+                x: (block.position?.x || 0) + OFFSET_X,
+                y: (block.position?.y || 0) + OFFSET_Y,
+              },
+            };
+          });
+
+          // Update connections to use new block IDs
+          const updatedConnections = importedConnections.map((conn: any) => {
+            const newSource = idMapping[conn.source] || conn.source;
+            const newTarget = idMapping[conn.target] || conn.target;
+
+            return {
+              ...conn,
+              id: `edge-${timestamp}-${Math.random().toString(36).substring(7)}`,
+              source: newSource,
+              target: newTarget,
+            };
+          });
+
+          // Merge with current flow
+          const mergedFlow = {
+            ...currentFlow,
+            blocks: [...(currentFlow.blocks || []), ...shiftedBlocks],
+            connections: [
+              ...(currentFlow.connections || []),
+              ...updatedConnections,
+            ],
+          };
+
+          console.log('✅ Merged flow with new IDs:', mergedFlow);
+          console.log('📋 ID mapping:', idMapping);
+
+          // Save merged flow to backend
+          try {
+            await apiClient.flowManagement.updateFlow(currentFlow.id, {
+              definition: {
+                blocks: mergedFlow.blocks,
+                connections: mergedFlow.connections,
+                triggers: mergedFlow.triggers || [],
+                variables: mergedFlow.variables || [],
+                settings: mergedFlow.settings || {},
+              },
+              updatedBy: 'user-123', // TODO: get from auth
+            });
+
+            showAlert(
+              `✅ Добавлено ${shiftedBlocks.length} блоков (с новыми ID) и ${updatedConnections.length} связей. Перезагружаю...`,
+              'success',
+            );
+
+            // Reload page to show merged flow
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000);
+          } catch (error) {
+            console.error('❌ Failed to save merged flow:', error);
+            showAlert(
+              'Не удалось сохранить объединённый flow: ' +
+                (error instanceof Error ? error.message : 'Unknown error'),
+              'error',
+            );
+          }
+
+          return;
+        }
+
+        // Otherwise - use backend import (create new or replace)
+        const response = await apiClient.flowManagement.importFlow({
+          version: importData.version,
+          name: importData.name,
+          description: importData.description,
+          status: importData.status,
+          definition: importData.definition,
+          metadata: importData.metadata,
+          importMode: importMode === 'merge' ? 'create_new' : importMode,
+          flowIdToReplace: flowIdToReplace,
+          createdBy: 'user-123', // TODO: get from auth context
+        });
+
+        showAlert(response.message, 'success');
+
+        // Reload the imported flow
+        if (response.flowId) {
+          console.log(
+            '✅ Flow imported successfully, redirecting to:',
+            response.flowId,
+          );
+          // Use window.location to force full page reload with new flowId
+          window.location.href = `/flows/editor?flowId=${response.flowId}`;
+        }
+      } catch (error) {
+        console.error('❌ Failed to import flow:', error);
+        showAlert(
+          error instanceof Error ? error.message : 'Failed to import flow',
+          'error',
+        );
+      }
+    };
+    input.click();
   };
 
   const handleConfirmCascadeDelete = () => {
@@ -404,6 +665,40 @@ export default function FlowEditorPage() {
                   >
                     <Play className="h-4 w-4 mr-1" />
                     Тест
+                  </Button>
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={!currentFlow}
+                        className="h-8"
+                      >
+                        <Download className="h-4 w-4 mr-1" />
+                        Экспорт
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem onClick={handleExportJSON}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Экспорт в JSON
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleExportPDF}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Экспорт в PDF
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleImportFlow}
+                    className="h-8"
+                  >
+                    <Upload className="h-4 w-4 mr-1" />
+                    Импорт
                   </Button>
 
                   <Button
