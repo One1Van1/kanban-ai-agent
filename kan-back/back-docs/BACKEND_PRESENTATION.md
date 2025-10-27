@@ -899,7 +899,7 @@ EMAIL  PUSH  IN-APP   TELEGRAM
 
 ---
 
-## ⚙️ CONFIGURATION
+## 14. ⚙️ CONFIGURATION
 
 _Все настройки приложения хранятся здесь. Изменил .env файл → поведение приложения изменилось._
 
@@ -1020,7 +1020,7 @@ JIRA_HOST=xxx       →        jira.config.ts
 
 ---
 
-## 🗄️ DATABASE ENTITIES
+## 15. 🗄️ DATABASE ENTITIES
 
 _TypeORM сущности - это схема базы данных. Каждая entity = таблица в PostgreSQL._
 
@@ -1169,7 +1169,7 @@ User (1) ───── (N) NotificationLog
 
 ---
 
-## 📦 NESTJS MODULES
+## 16. 📦 NESTJS MODULES
 
 _Модули управляют зависимостями между компонентами. Это как "упаковки" кода._
 
@@ -1288,7 +1288,7 @@ export class AgentService {
 
 ---
 
-## 📘 TYPESCRIPT TYPES
+## 17. 📘 TYPESCRIPT TYPES
 
 _Типы и интерфейсы для строгой типизации всего приложения._
 
@@ -1422,7 +1422,7 @@ function createAgent(data: CreateAgentDto): Promise<Agent> {
 
 ---
 
-## 🔧 SHARED SERVICES
+## 18. 🔧 SHARED SERVICES
 
 _Переиспользуемые сервисы для интеграций с внешними системами._
 
