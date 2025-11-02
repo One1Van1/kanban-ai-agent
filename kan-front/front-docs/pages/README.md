@@ -1,122 +1,382 @@
 # Pages Documentation
 
-Документация по всем страницам приложения (Next.js App Router).
+> ✅ **ОБНОВЛЕНО:** 2 ноября 2025 г.  
+> Документация обновлена после рефакторинга. Отражает разделение app/ (routing) и src/pages/ (UI logic).
 
 ## 🎯 Назначение
 
-Next.js 14 App Router страницы для навигации и отображения основного функционала.
+Страницы организованы по **двухуровневой архитектуре**:
+
+1. **app/** - Next.js 14 App Router (роутинг, 3-5 строк)
+2. **src/pages/** - UI логика и компоненты (модульная структура)
 
 ## 📁 Структура страниц
 
-| Страница     | Путь        | Описание         | Компоненты               |
-| ------------ | ----------- | ---------------- | ------------------------ |
-| **Home**     | `/`         | Главная страница | Навигация к функциям     |
-| **Kanban**   | `/kanban`   | Канбан-доска     | KanbanBoard, TaskCard    |
-| **Agents**   | `/agents`   | AI агенты        | AgentList, AgentCard     |
-| **Flows**    | `/flows`    | Flow Builder     | FlowCanvas, BlockPalette |
-| **API Test** | `/api-test` | Тестирование API | Test forms               |
+### Уровень 1: Роутинг (app/)
 
-## ⚙️ Основные возможности
+| Страница         | Путь                   | Описание          |
+| ---------------- | ---------------------- | ----------------- |
+| **Home**         | `/`                    | Главная страница  |
+| **Kanban**       | `/kanban`              | Канбан-доска      |
+| **Agents**       | `/agents`              | Список AI агентов |
+| **Agent Create** | `/agents/create`       | Создание агента   |
+| **Flow Builder** | `/agents/flow-builder` | Конструктор flow  |
+| **Flows**        | `/flows`               | Список flows      |
+| **Flow Editor**  | `/flows/editor`        | Редактор flow     |
+| **API Test**     | `/api-test`            | Тестирование API  |
 
-- ✅ Next.js App Router (современный роутинг)
-- ✅ Server Components где возможно
-- ✅ Client Components для интерактивности
-- ✅ Layouts для общей структуры
-- ✅ Loading и Error states
+### Уровень 2: UI Логика (src/pages/)
 
-## 🌐 Детали страниц
+```
+src/pages/
+├── home/
+│   ├── index.tsx                    # Главный компонент
+│   └── components/                  # UI компоненты
+│       ├── MetricCard.tsx
+│       ├── MetricsSection.tsx
+│       ├── QuickActionCard.tsx
+│       └── QuickActionsSection.tsx
+│
+├── agents/
+│   ├── index.tsx
+│   ├── components/
+│   │   ├── AgentCard.tsx
+│   │   ├── AgentsGrid.tsx
+│   │   └── AgentsHeader.tsx
+│   └── hooks/
+│       └── useAgents.ts
+│
+├── agent-create/
+│   ├── index.tsx
+│   ├── components/
+│   │   ├── AgentCreateForm.tsx
+│   │   ├── BasicInfoSection.tsx
+│   │   └── ModelConfigSection.tsx
+│   └── hooks/
+│       └── useAgentCreate.ts
+│
+├── flows/
+│   ├── index.tsx
+│   ├── components/
+│   │   ├── EditableFlowCard.tsx
+│   │   ├── FlowsFilters.tsx
+│   │   └── FlowsHeader.tsx
+│   └── hooks/
+│       └── useFlows.ts
+│
+├── flow-builder/
+│   ├── index.tsx
+│   └── components/
+│       ├── blocks/                  # Блоки flow
+│       ├── canvas/                  # Canvas (React Flow)
+│       ├── dialogs/                 # Диалоги
+│       ├── edges/                   # Связи
+│       ├── properties/              # Панель свойств
+│       ├── sidebar/                 # Боковая панель
+│       └── toolbar/                 # Тулбар
+│
+└── flow-editor/                     # 🆕 НОВАЯ СТРАНИЦА
+    ├── index.tsx                    # 83 строки (после рефакторинга)
+    ├── components/
+    │   ├── FlowEditorToolbar.tsx
+    │   ├── FlowsList.tsx
+    │   └── FlowEditorContent.tsx
+    └── hooks/
+        ├── useFlowEditor.ts
+        └── useFlowsList.ts
+```
 
-### Home Page (`/`)
+## ⚙️ Основные принципы
 
-**Файл:** `app/page.tsx`
+### 1. Разделение app/ и src/pages/
 
-**Назначение:** Лендинг и навигация
-
-**Содержимое:**
-
-- Приветствие
-- Ссылки на основные разделы
-- Quick actions
+**app/** - ТОЛЬКО роутинг:
 
 ```typescript
-export default function Home() {
+// app/agents/page.tsx (5 строк)
+import { AgentsPageContent } from '@/src/pages/agents';
+
+export default function AgentsPage() {
+  return <AgentsPageContent />;
+}
+```
+
+**src/pages/** - UI логика:
+
+```typescript
+// src/pages/agents/index.tsx
+export function AgentsPageContent() {
+  const { agents, isLoading } = useAgents();
+
   return (
     <div>
-      <h1>Kanban AI Agent</h1>
-      <nav>
-        <Link href="/kanban">Kanban Board</Link>
-        <Link href="/agents">AI Agents</Link>
-        <Link href="/flows">Flow Builder</Link>
-      </nav>
+      <AgentsHeader />
+      <AgentsGrid agents={agents} loading={isLoading} />
     </div>
   );
 }
 ```
 
+### 2. Модульная структура каждой страницы
+
+```
+page-name/
+├── index.tsx              # Главный компонент
+├── components/            # UI компоненты страницы
+│   ├── Component1.tsx
+│   ├── Component2.tsx
+│   └── index.ts          # Экспорты
+└── hooks/                # Логика страницы
+    ├── usePageLogic.ts
+    └── index.ts          # Экспорты
+```
+
+---
+
+## 🌐 Детали страниц
+
+### Home Page (`/`)
+
+**Роутинг:** `app/page.tsx` (5 строк)  
+**UI Логика:** `src/pages/home/` (4 компонента)
+
+**Компоненты:**
+
+- `MetricsSection` - секция с метриками
+- `MetricCard` - карточка метрики
+- `QuickActionsSection` - секция быстрых действий
+- `QuickActionCard` - карточка действия
+
+**Функционал:**
+
+- ✅ Отображение метрик проекта
+- ✅ Быстрые ссылки на разделы
+- ✅ Адаптивный дизайн
+
 ---
 
 ### Agents Page (`/agents`)
 
-**Файл:** `app/agents/page.tsx`
-
-**Назначение:** Управление AI агентами
-
-**Функционал:**
-
-- Список всех агентов
-- Создание нового агента
-- Запуск агента
-- Просмотр результатов
-- Удаление агента
-
-**Подстраницы:**
-
-- `/agents` - список агентов
-- `/agents/create` - форма создания
-- `/agents/[id]` - детали агента
+**Роутинг:** `app/agents/page.tsx` (5 строк)  
+**UI Логика:** `src/pages/agents/` (3 компонента + 1 хук)
 
 **Компоненты:**
 
-```
-<AgentsPage>
-  <AgentList>
-    <AgentCard />
-    <AgentCard />
-  </AgentList>
-  <CreateAgentButton />
-</AgentsPage>
-```
+- `AgentsHeader` - заголовок с кнопкой создания
+- `AgentsGrid` - сетка карточек агентов
+- `AgentCard` - карточка агента
 
-**API Calls:**
+**Хуки:**
 
-- GET `/api/agents` - получить список
-- POST `/api/agents/create` - создать агента
-- POST `/api/agents/run` - запустить
-- GET `/api/agents/result/:id` - результат
-
----
-
-### Flows Page (`/flows`) ⭐
-
-**Файл:** `app/flows/page.tsx`
-
-**Назначение:** Визуальный Flow Builder
+- `useAgents` - загрузка и управление списком агентов
 
 **Функционал:**
 
-- Drag-and-drop блоков
-- Создание связей
-- Редактирование блоков
-- Сохранение флоу
-- Конвертация в агента
-- Загрузка флоу
+- ✅ Список всех агентов
+- ✅ Создание нового агента (→ `/agents/create`)
+- ✅ Создание flow (→ `/agents/flow-builder`)
+- ✅ Просмотр статистики
+- ✅ Фильтрация и поиск
 
-**Подстраницы:**
+**API:**
 
-- `/flows` - список флоу
-- `/flows/new` - новый флоу
-- `/flows/[flowId]` - редактор флоу
-- `/flows/[flowId]/editor` - альтернативный редактор
+- `GET /api/agents` - получить список
+- `DELETE /api/agents/:id` - удалить агента
+
+---
+
+### Agent Create Page (`/agents/create`)
+
+**Роутинг:** `app/agents/create/page.tsx` (5 строк)  
+**UI Логика:** `src/pages/agent-create/` (3 компонента + 1 хук)
+
+**Компоненты:**
+
+- `AgentCreateForm` - основная форма
+- `BasicInfoSection` - базовая информация
+- `ModelConfigSection` - конфигурация модели
+
+**Хуки:**
+
+- `useAgentCreate` - логика создания агента
+
+**Функционал:**
+
+- ✅ Форма создания агента
+- ✅ Выбор модели (GPT-4, Claude, etc.)
+- ✅ Настройка параметров
+- ✅ Валидация данных
+- ✅ Сохранение агента
+
+**API:**
+
+- `POST /api/agents` - создать агента
+
+---
+
+### Flows Page (`/flows`)
+
+**Роутинг:** `app/flows/page.tsx` (5 строк)  
+**UI Логика:** `src/pages/flows/` (3 компонента + 1 хук)
+
+**Компоненты:**
+
+- `FlowsHeader` - заголовок страницы
+- `FlowsFilters` - фильтры и поиск
+- `EditableFlowCard` - карточка flow с редактированием
+
+**Хуки:**
+
+- `useFlows` - загрузка и управление flows
+
+**Функционал:**
+
+- ✅ Список всех flows
+- ✅ Создание нового flow
+- ✅ Редактирование inline
+- ✅ Удаление flow
+- ✅ Фильтрация по статусу
+- ✅ Поиск
+
+**API:**
+
+- `GET /api/flows` - получить список
+- `PUT /api/flows/:id` - обновить flow
+- `DELETE /api/flows/:id` - удалить flow
+
+---
+
+### Flow Builder Page (`/agents/flow-builder`) ⭐
+
+**Роутинг:** `app/agents/flow-builder/page.tsx` (5 строк)  
+**UI Логика:** `src/pages/flow-builder/` (сложная структура)
+
+**Основные компоненты:**
+
+1. **Blocks** (блоки flow):
+   - `TriggerBlock` - блок триггера
+   - `ActionBlock` - блок действия
+   - `LogicBlock` - блок логики
+   - `ContextBlock` - блок контекста
+   - `WaitBlock` - блок ожидания
+   - `ResultBlock` - блок результата
+
+2. **Canvas**:
+   - `FlowCanvas` - главный canvas (React Flow)
+   - `DynamicConnectionLine` - динамические связи
+
+3. **Dialogs**:
+   - `SaveFlowDialog` - сохранение flow
+   - `ConfirmDeleteDialog` - подтверждение удаления
+   - `ConfirmCascadeDeleteDialog` - каскадное удаление
+
+4. **Edges**:
+   - `StyledSmoothStepEdge` - стилизованные связи
+   - `StraightEdge` - прямые связи
+
+5. **Other**:
+   - `PropertiesPanel` - панель свойств блока
+   - `BlockPalette` - палитра блоков
+   - `FlowToolbar` - тулбар редактора
+
+**Функционал:**
+
+- ✅ Drag & Drop блоков
+- ✅ Создание связей между блоками
+- ✅ Редактирование свойств
+- ✅ Сохранение flow
+- ✅ Валидация структуры
+- ✅ Экспорт/импорт
+
+**Технологии:**
+
+- React Flow - библиотека для node-based UI
+- Zustand - state management
+- React DnD - drag and drop
+
+---
+
+### Flow Editor Page (`/flows/editor`) 🆕
+
+**Роутинг:** `app/flows/editor/page.tsx` (5 строк)  
+**UI Логика:** `src/pages/flow-editor/` (3 компонента + 2 хука)
+
+**Компоненты:**
+
+- `FlowEditorToolbar` - тулбар редактора (Save, Export, Import)
+- `FlowsList` - список flows для выбора
+- `FlowEditorContent` - основной редактор
+
+**Хуки:**
+
+- `useFlowEditor` - логика редактирования flow
+- `useFlowsList` - логика списка flows
+
+**Функционал:**
+
+- ✅ Редактирование существующих flows
+- ✅ Выбор flow из списка
+- ✅ Экспорт в JSON/PDF
+- ✅ Импорт из JSON
+- ✅ Merge flows (объединение)
+- ✅ Quick delete mode
+- ✅ Cascade delete
+
+**Особенности:**
+
+- 🎯 Рефакторинг: 748 строк → 83 строки в index.tsx
+- 🎯 Модульная структура
+- 🎯 Переиспользуемые компоненты из flow-builder
+
+**API:**
+
+- `GET /api/flows/:id` - получить flow
+- `PUT /api/flows/:id` - обновить flow
+- `POST /api/flows/export/json` - экспорт JSON
+- `POST /api/flows/export/pdf` - экспорт PDF
+- `POST /api/flows/import` - импорт flow
+
+---
+
+### Kanban Page (`/kanban`)
+
+**Роутинг:** `app/kanban/page.tsx` (5 строк)  
+**UI Логика:** `src/pages/kanban/`
+
+**Функционал:**
+
+- ✅ Kanban доска
+- ✅ Drag & Drop задач
+- ✅ Создание/редактирование задач
+- ✅ Статусы задач
+
+---
+
+## 📊 Сравнение: До vs После
+
+| Метрика                         | До рефакторинга | После     |
+| ------------------------------- | --------------- | --------- |
+| **Строк в app/page.tsx**        | 144             | 5 (-97%)  |
+| **Строк в app/agents/page.tsx** | 241             | 5 (-98%)  |
+| **Строк в flow-editor**         | 748             | 83 (-89%) |
+| **Модульность**                 | ❌ Нет          | ✅ Да     |
+| **Переиспользование**           | ❌ Сложно       | ✅ Легко  |
+
+---
+
+## 📚 Дополнительно
+
+### Смотри также:
+
+- [FOLDER_GUIDE.md](../FOLDER_GUIDE.md) - Полный гайд по структуре
+- [REFACTORING_GUIDE.md](../docs/REFACTORING_GUIDE.md) - Гайд по рефакторингу
+- [components/README.md](../components/README.md) - Документация компонентов
+
+---
+
+**Обновлено:** 2 ноября 2025 г.  
+**Статус:** ✅ Актуально  
+**Версия:** 2.0 (после рефакторинга)
 
 **Компоненты:**
 

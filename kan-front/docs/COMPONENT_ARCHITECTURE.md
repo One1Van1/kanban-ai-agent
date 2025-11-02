@@ -1,5 +1,10 @@
 # 🧩 Component Architecture Guide
 
+> ⚠️ **ВНИМАНИЕ: Документация частично устарела!**  
+> После рефакторинга (ноябрь 2025) изменилась структура проекта.  
+> **Актуальная информация:** [`FOLDER_GUIDE.md`](../FOLDER_GUIDE.md)  
+> **Пути импортов:** Используйте `@/src/shared/components/` вместо `@/components/`
+
 ## Overview
 
 Structured approach to building scalable and maintainable React components in our Next.js application.
