@@ -4,7 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
-import { Sidebar } from './sidebar';
+import { Sidebar } from '@/src/shared/components/ui/sidebar';
 import { useSidebar } from '@/src/lib/SidebarContext';
 
 interface AppLayoutProps {

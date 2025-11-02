@@ -3,28 +3,28 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/shared/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+} from '@/src/shared/components/ui/card';
+import { Input } from '@/src/shared/components/ui/input';
+import { Label } from '@/src/shared/components/ui/label';
+import { Textarea } from '@/src/shared/components/ui/textarea';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useAgentsStore } from '@/src/lib/stores/agents-store';
+} from '@/src/shared/components/ui/select';
+import { useAgentsStore } from '@/src/features/agents/stores/agents.store';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
-import { useTranslation } from '@/src/lib/i18n';
+import { useTranslation } from '@/src/shared/i18n';
 
 export default function CreateAgentPage() {
   const router = useRouter();

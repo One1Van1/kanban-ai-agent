@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Toaster } from '@/components/ui/sonner';
-import { AppLayout } from '../components/ui/app-layout';
-import { LanguageProvider } from '@/src/lib/i18n';
-import { ThemeProvider } from '@/src/components/theme-provider';
+import { Toaster } from '@/src/shared/components/ui/sonner';
+import { AppLayout } from '@/src/shared/components/ui/app-layout';
+import { LanguageProvider } from '@/src/shared/i18n';
+import { ThemeProvider } from '@/src/shared/components/common/theme-provider';
 import { SidebarProvider } from '@/src/lib/SidebarContext';
-import { DialogProvider } from '@/src/hooks/use-dialog';
+import { DialogProvider } from '@/src/shared/hooks/use-dialog';
 import './globals.css';
 
 const geistSans = Geist({

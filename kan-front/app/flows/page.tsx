@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { EditableFlowCard } from '@/src/components/flows/EditableFlowCard';
+import { Button } from '@/src/shared/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { Badge } from '@/src/shared/components/ui/badge';
+import { Input } from '@/src/shared/components/ui/input';
+import { EditableFlowCard } from '@/src/features/flows/components/EditableFlowCard';
 import {
   Workflow,
   Activity,
@@ -30,11 +30,11 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useTranslation } from '@/src/lib/i18n';
-import { apiClient } from '@/src/lib/api/client';
-import { useFlowBuilderStore } from '@/src/lib/stores/flow-builder-store';
-import { useDialog } from '@/src/hooks/use-dialog';
+} from '@/src/shared/components/ui/dropdown-menu';
+import { useTranslation } from '@/src/shared/i18n';
+import { flowsAPI } from '@/src/features/flows/api/flows.api';
+import { useFlowBuilderStore } from '@/src/features/flow-builder/stores/flow-builder.store';
+import { useDialog } from '@/src/shared/hooks/use-dialog';
 
 interface FlowItem {
   flowId: string;
@@ -73,7 +73,7 @@ export default function FlowsPage() {
       setError(null);
       console.log('🔄 Loading flows...');
 
-      const response = await apiClient.flowManagement.listFlows({
+      const response = await flowsAPI.list({
         limit: 50,
         ...(searchTerm && { search: searchTerm }),
         ...(statusFilter && { status: statusFilter }),
@@ -109,7 +109,7 @@ export default function FlowsPage() {
   const handleCloneFlow = async (flowId: string, flowName: string) => {
     try {
       console.log('📋 Cloning flow:', flowName);
-      await apiClient.flowManagement.cloneFlow(flowId, {
+      await flowsAPI.clone(flowId, {
         name: `${flowName} (Copy)`,
         description: `Cloned version of ${flowName}`,
         clonedBy: 'current-user', // TODO: Get from auth
@@ -133,7 +133,7 @@ export default function FlowsPage() {
     if (confirmed) {
       try {
         console.log('🗑️ Deleting flow:', flowName);
-        await apiClient.flowManagement.deleteFlow(flowId);
+        await flowsAPI.delete(flowId);
         showAlert(`Flow "${flowName}" ${t('flows.delete.success')}`, 'success');
         loadFlows(); // Refresh list
       } catch (err) {
@@ -149,7 +149,7 @@ export default function FlowsPage() {
   const handleDeployToAgent = async (flowId: string, flowName: string) => {
     try {
       console.log('🤖 Deploying flow to agent:', flowName);
-      const result = await apiClient.flowManagement.deployToAgent(flowId, {
+      const result = await flowsAPI.deployToAgent(flowId, {
         userId: 'current-user', // TODO: Get from auth
         agentName: `${flowName} Agent`,
         agentDescription: `Agent created from flow: ${flowName}`,
@@ -176,7 +176,7 @@ export default function FlowsPage() {
   ) => {
     try {
       console.log('📝 Updating flow metadata:', { flowId, name, description });
-      await apiClient.flowManagement.updateFlow(flowId, {
+      await flowsAPI.update(flowId, {
         name,
         description,
         updatedBy: 'current-user', // TODO: Get from auth

@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/src/shared/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import { Badge } from '@/src/shared/components/ui/badge';
 import { Bot, Plus, ArrowRight, Users, Calendar } from 'lucide-react';
-import { useTranslation } from '@/src/lib/i18n';
+import { useTranslation } from '@/src/shared/i18n';
 
 export default function KanbanPage() {
   const { t } = useTranslation();

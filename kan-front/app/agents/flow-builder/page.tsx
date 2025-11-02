@@ -4,26 +4,33 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import FlowCanvas, {
   FlowCanvasRef,
-} from '../../../src/components/flow-builder/FlowCanvas';
-import { FlowToolbar } from '../../../src/components/flow-builder/toolbar/FlowToolbar';
-import { Button } from '../../../components/ui/button';
+} from '@/src/features/flow-builder/components/canvas/FlowCanvas';
+import { FlowToolbar } from '@/src/features/flow-builder/components/toolbar/FlowToolbar';
+import { Button } from '@/src/shared/components/ui/button';
 import {
   Save,
   Play,
+  AlertCircle,
+  Settings,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+  Upload,
+  Copy,
+  Menu,
   ArrowLeft,
   Workflow,
   Sidebar,
-  PanelRightOpen,
-  Menu,
 } from 'lucide-react';
-import { FlowDefinition } from '../../../src/types/flow-builder';
-import { useTranslation } from '../../../src/lib/i18n';
-import { Sidebar as AppSidebar } from '../../../components/ui/sidebar';
-import { useSidebar } from '../../../src/lib/SidebarContext';
-import { useFlowBuilderStore } from '../../../src/lib/stores/flow-builder-store';
-import { useDialog } from '../../../src/hooks/use-dialog';
+import { FlowDefinition } from '@/src/features/flow-builder/types';
+import { useTranslation } from '@/src/shared/i18n';
+import { Sidebar as AppSidebar } from '@/src/shared/components/ui/sidebar';
+import { useSidebar } from '@/src/lib/SidebarContext';
+import { useFlowBuilderStore } from '@/src/features/flow-builder/stores/flow-builder.store';
+import { useDialog } from '@/src/shared/hooks/use-dialog';
 import Link from 'next/link';
-import { ConfirmCascadeDeleteDialog } from '../../../src/components/flow-builder/dialogs/ConfirmCascadeDeleteDialog';
+import { ConfirmCascadeDeleteDialog } from '@/src/features/flow-builder/components/dialogs/ConfirmCascadeDeleteDialog';
 
 export default function FlowBuilderPage() {
   const { t } = useTranslation();

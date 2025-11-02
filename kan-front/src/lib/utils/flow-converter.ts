@@ -1,5 +1,5 @@
 import { Node, Edge } from '@xyflow/react';
-import { FlowDefinition } from '../../types/flow-builder';
+import { FlowDefinition } from '@/src/features/flow-builder/types';
 
 export interface FlowNodeData {
   type: string;

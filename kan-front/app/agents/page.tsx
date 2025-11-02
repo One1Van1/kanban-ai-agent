@@ -2,12 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/src/shared/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/src/shared/components/ui/card';
 import { Bot, Plus, Activity, Settings, Edit } from 'lucide-react';
-import { useTranslation } from '@/src/lib/i18n';
-import { apiClient } from '@/src/lib/api/client';
-import { AgentSummary, GetAllAgentsResponse } from '@/src/lib/types';
+import { useTranslation } from '@/src/shared/i18n';
+import { agentsAPI } from '@/src/features/agents/api/agents.api';
+import { AgentSummary, GetAllAgentsResponse } from '@/src/shared/types';
 
 export default function AgentsPage() {
   const { t } = useTranslation();
@@ -29,7 +34,7 @@ export default function AgentsPage() {
       console.log('🔄 Loading agents...');
       console.log('🌐 API Client baseURL:', 'http://localhost:3000');
 
-      const response: GetAllAgentsResponse = await apiClient.agents.getAll();
+      const response: GetAllAgentsResponse = await agentsAPI.getAll();
       console.log('✅ Agents loaded successfully:', response);
 
       setAgents(response.agents || []);

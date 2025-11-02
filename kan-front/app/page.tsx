@@ -7,9 +7,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
+} from '@/src/shared/components/ui/card';
 import { Bot, Activity, Clock, CheckCircle } from 'lucide-react';
-import { useTranslation } from '@/src/lib/i18n';
+import { useTranslation } from '@/src/shared/i18n';
 
 export default function Home() {
   const { t } = useTranslation();

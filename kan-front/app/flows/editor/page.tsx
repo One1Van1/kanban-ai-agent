@@ -4,23 +4,23 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import FlowCanvas, {
   FlowCanvasRef,
-} from '../../../src/components/flow-builder/FlowCanvas';
-import { FlowToolbar } from '../../../src/components/flow-builder/toolbar/FlowToolbar';
-import { Button } from '../../../components/ui/button';
+} from '@/src/features/flow-builder/components/canvas/FlowCanvas';
+import { FlowToolbar } from '@/src/features/flow-builder/components/toolbar/FlowToolbar';
+import { Button } from '@/src/shared/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from '../../../components/ui/dropdown-menu';
+} from '@/src/shared/components/ui/dropdown-menu';
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from '../../../components/ui/card';
-import { Badge } from '../../../components/ui/badge';
+} from '@/src/shared/components/ui/card';
+import { Badge } from '@/src/shared/components/ui/badge';
 import {
   Save,
   Play,
@@ -34,15 +34,15 @@ import {
   Download,
   Upload,
 } from 'lucide-react';
-import { FlowDefinition } from '../../../src/types/flow-builder';
-import { useTranslation } from '../../../src/lib/i18n';
-import { Sidebar as AppSidebar } from '../../../components/ui/sidebar';
-import { useSidebar } from '../../../src/lib/SidebarContext';
-import { useFlowEditorStore } from '../../../src/lib/stores/flow-editor-store';
-import { useDialog } from '../../../src/hooks/use-dialog';
+import { FlowDefinition } from '@/src/features/flow-builder/types';
+import { useTranslation } from '@/src/shared/i18n';
+import { Sidebar as AppSidebar } from '@/src/shared/components/ui/sidebar';
+import { useSidebar } from '@/src/lib/SidebarContext';
+import { useFlowEditorStore } from '@/src/features/flows/stores/flow-editor.store';
+import { useDialog } from '@/src/shared/hooks/use-dialog';
 import Link from 'next/link';
-import { ConfirmCascadeDeleteDialog } from '../../../src/components/flow-builder/dialogs/ConfirmCascadeDeleteDialog';
-import { apiClient } from '../../../src/lib/api/client';
+import { ConfirmCascadeDeleteDialog } from '@/src/features/flow-builder/components/dialogs/ConfirmCascadeDeleteDialog';
+import { flowsAPI } from '@/src/features/flows/api/flows.api';
 
 interface FlowItem {
   flowId: string;
@@ -105,7 +105,7 @@ export default function FlowEditorPage() {
       setFlowsLoading(true);
       console.log('🔄 Loading flows list for editor...');
 
-      const response = await apiClient.flowManagement.listFlows({
+      const response = await flowsAPI.list({
         limit: 50,
       });
 
@@ -165,9 +165,7 @@ export default function FlowEditorPage() {
 
     try {
       console.log('📤 Exporting flow to JSON:', currentFlow.id);
-      const exportData = await apiClient.flowManagement.exportFlowJson(
-        currentFlow.id,
-      );
+      const exportData = await flowsAPI.exportJson(currentFlow.id);
 
       // Download as JSON file
       const blob = new Blob([JSON.stringify(exportData, null, 2)], {
@@ -200,9 +198,7 @@ export default function FlowEditorPage() {
 
     try {
       console.log('📄 Exporting flow to PDF:', currentFlow.id);
-      const pdfBlob = await apiClient.flowManagement.exportFlowPdf(
-        currentFlow.id,
-      );
+      const pdfBlob = await flowsAPI.exportPdf(currentFlow.id);
 
       // Download as PDF file
       const url = window.URL.createObjectURL(pdfBlob);
@@ -341,7 +337,7 @@ export default function FlowEditorPage() {
 
           // Save merged flow to backend
           try {
-            await apiClient.flowManagement.updateFlow(currentFlow.id, {
+            await flowsAPI.update(currentFlow.id, {
               definition: {
                 blocks: mergedFlow.blocks,
                 connections: mergedFlow.connections,
@@ -374,7 +370,7 @@ export default function FlowEditorPage() {
         }
 
         // Otherwise - use backend import (create new or replace)
-        const response = await apiClient.flowManagement.importFlow({
+        const response = await flowsAPI.import({
           version: importData.version,
           name: importData.name,
           description: importData.description,
