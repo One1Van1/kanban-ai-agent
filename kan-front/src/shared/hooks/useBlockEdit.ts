@@ -1,5 +1,5 @@
 import { useCallback, useRef } from 'react';
-import { useEditingStore } from '@/src/stores/editingStore';
+import { useEditingStore } from '@/src/shared/stores/editingStore';
 
 export function useBlockEdit(
   id: string,

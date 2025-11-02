@@ -37,7 +37,7 @@ import { flowsAPI } from '@/src/features/flows/api/flows.api';
 import {
   convertNodesToFlowDefinition,
   validateFlowDefinition,
-} from '@/src/lib/utils/flow-converter';
+} from '@/src/shared/utils/flow-converter';
 import { BlockPalette } from '../sidebar/BlockPalette';
 import { FlowToolbar } from '../toolbar/FlowToolbar';
 import { TriggerBlock } from '../blocks/TriggerBlock';
