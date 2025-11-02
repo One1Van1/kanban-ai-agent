@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/shared/components/ui/button';
 import { Globe } from 'lucide-react';
 import { useLanguage } from '@/src/shared/i18n';
 

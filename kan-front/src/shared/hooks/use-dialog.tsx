@@ -8,8 +8,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+} from '@/src/shared/components/ui/dialog';
+import { Button } from '@/src/shared/components/ui/button';
 import { AlertCircle, CheckCircle, Info, XCircle } from 'lucide-react';
 
 interface DialogContextType {

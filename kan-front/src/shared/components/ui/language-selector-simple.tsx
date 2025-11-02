@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/shared/components/ui/button';
 
 export function LanguageSelector() {
   const [language, setLanguage] = useState('en');

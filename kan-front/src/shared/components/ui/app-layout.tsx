@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/src/shared/components/ui/button';
 import { Menu } from 'lucide-react';
 import { Sidebar } from './sidebar';
 import { useSidebar } from '@/src/lib/SidebarContext';
