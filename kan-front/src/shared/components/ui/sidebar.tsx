@@ -98,14 +98,6 @@ export function Sidebar() {
             <Workflow className="h-3 w-3" />
             {t('navigation.flowEditor')}
           </Link>
-
-          <Link
-            href="/kanban"
-            className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
-          >
-            <LayoutGrid className="h-4 w-4" />
-            {t('navigation.kanban')}
-          </Link>
         </nav>
 
         <div className="border-t p-4">
