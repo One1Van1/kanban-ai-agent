@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useFlows } from './hooks/useFlows';
 import { FlowsHeader } from './components/FlowsHeader';
 import { FlowsFilters } from './components/FlowsFilters';
+import { EditableFlowCard } from './components/EditableFlowCard';
 import {
   Card,
   CardContent,
@@ -20,6 +21,57 @@ export function FlowsPageContent() {
   const [statusFilter, setStatusFilter] = useState('');
 
   const { flows, loading, error, reload } = useFlows(searchTerm, statusFilter);
+
+  // Функции для работы с потоками
+  const handleExecute = (flowId: string, flowName: string) => {
+    console.log('Execute flow:', flowId, flowName);
+    // TODO: Implement flow execution
+  };
+
+  const handleClone = (flowId: string, flowName: string) => {
+    console.log('Clone flow:', flowId, flowName);
+    // TODO: Implement flow cloning
+  };
+
+  const handleDelete = (flowId: string, flowName: string) => {
+    console.log('Delete flow:', flowId, flowName);
+    // TODO: Implement flow deletion
+  };
+
+  const handleDeploy = (flowId: string, flowName: string) => {
+    console.log('Deploy flow:', flowId, flowName);
+    // TODO: Implement flow deployment
+  };
+
+  const handleUpdateMetadata = async (
+    flowId: string,
+    name: string,
+    description?: string,
+  ) => {
+    console.log('Update metadata:', flowId, name, description);
+    // TODO: Implement metadata update API call
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-100 text-green-800 hover:bg-green-200';
+      case 'draft':
+        return 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200';
+      case 'archived':
+        return 'bg-gray-100 text-gray-800 hover:bg-gray-200';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatDate = (date: string) => {
+    return new Date(date).toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  };
 
   return (
     <div className="min-h-full">
@@ -60,19 +112,21 @@ export function FlowsPageContent() {
           onStatusChange={setStatusFilter}
         />
 
-        {/* Temporary: Using simplified grid */}
+        {/* Editable Flow Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {flows.map((flow: FlowItem) => (
-            <Card key={flow.flowId}>
-              <CardHeader>
-                <CardTitle>{flow.name}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {flow.description || 'No description'}
-                </p>
-              </CardContent>
-            </Card>
+            <EditableFlowCard
+              key={flow.flowId}
+              flow={flow}
+              onExecute={handleExecute}
+              onClone={handleClone}
+              onDelete={handleDelete}
+              onDeploy={handleDeploy}
+              onUpdateMetadata={handleUpdateMetadata}
+              getStatusColor={getStatusColor}
+              formatDate={formatDate}
+              t={t}
+            />
           ))}
         </div>
 

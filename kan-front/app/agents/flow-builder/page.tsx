@@ -1,5 +1,8 @@
-import FlowBuilderPageContent from '@/src/pages/flow-builder';
+import FlowBuilderPageContent from '@/src/views/flow-builder/FlowBuilderPage';
 
-export default function FlowBuilderPage() {
+// Prevent static generation for this page because it uses useSearchParams
+export const dynamic = 'force-dynamic';
+
+export default function AgentFlowBuilderPage() {
   return <FlowBuilderPageContent />;
 }
