@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/src/shared/components/ui/card';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import {
@@ -16,13 +21,15 @@ import {
   Move,
   Edit,
   Trash2,
+  Send,
+  Plug,
+  Database,
 } from 'lucide-react';
 import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
-import {
-  ActionInputHandle,
-  ActionOutputHandle,
-} from './ConnectionHandle';
+import { ActionInputHandle, ActionOutputHandle } from './ConnectionHandle';
+import { VariableStorageControl } from './VariableStorageControl';
+import { AsyncControl } from './AsyncControl';
 
 interface ActionBlockProps {
   data: {
@@ -62,12 +69,21 @@ export function ActionBlock({
         return <Brain className="w-4 h-4" />;
       case 'api_call':
         return <Globe className="w-4 h-4" />;
+      // RENAMED TYPES - support both old and new names
       case 'create_file':
+      case 'generate_file':
         return <FileText className="w-4 h-4" />;
       case 'attach_file':
         return <Paperclip className="w-4 h-4" />;
       case 'send_notification':
-        return <Bell className="w-4 h-4" />;
+      case 'send_message':
+        return <Send className="w-4 h-4" />;
+      // NEW TYPES
+      case 'mcp_operation':
+        return <Plug className="w-4 h-4" />;
+      case 'store_data':
+        return <Database className="w-4 h-4" />;
+      // OLD TYPES (for backward compatibility)
       case 'move_card':
         return <Move className="w-4 h-4" />;
       case 'update_field':
@@ -394,6 +410,23 @@ export function ActionBlock({
                   </>
                 )}
               </div>
+
+              {/* ✅ ВСТРОЕН: Variable Storage Control */}
+              <VariableStorageControl
+                config={data.config || {}}
+                onChange={updateFormData}
+              />
+
+              {/* ✅ ВСТРОЕН: Async Control (for AI, API, MCP) */}
+              {(data.type === 'ai_request' ||
+                data.type === 'api_call' ||
+                data.type === 'mcp_operation') && (
+                <AsyncControl
+                  config={data.config || {}}
+                  onChange={updateFormData}
+                />
+              )}
+
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"

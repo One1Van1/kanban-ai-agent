@@ -1,4 +1,33 @@
 // Types for Visual Flow Builder
+
+// ===========================
+// SHARED INTERFACES
+// ===========================
+
+/**
+ * Universal interface for blocks that can save their output to a variable
+ * Can be embedded in any block type (Trigger, Context, Logic, Action, Wait)
+ */
+export interface WithVariableStorage {
+  saveToVariable?: boolean;
+  variableName?: string;
+}
+
+/**
+ * Universal interface for async operations (AI, API, MCP)
+ * Controls waiting behavior and timeout handling
+ */
+export interface WithAsyncControl {
+  waitForResponse?: boolean; // Default: true
+  timeout?: number; // Default: 30
+  timeoutUnit?: 'seconds' | 'minutes' | 'hours'; // Default: 'seconds'
+  onTimeout?: 'fail' | 'continue' | 'retry'; // Default: 'fail'
+}
+
+// ===========================
+// FLOW NODE TYPES
+// ===========================
+
 export interface FlowNodeData {
   type: string;
   name: string;
@@ -23,73 +52,127 @@ export interface FlowEdge {
 // Trigger Block Types
 export interface TriggerBlock {
   id: string;
-  type:
-    | 'board_move'
-    | 'board_create'
-    | 'board_update'
-    | 'webhook'
-    | 'time_based';
+  type: // UNIVERSAL TRIGGERS - removed board-specific triggers
+  | 'webhook' // HTTP webhook trigger
+    | 'schedule' // Time-based trigger (cron/interval)
+    | 'event_listener' // Generic event listener
+    | 'manual_trigger'; // Manual flow execution
   name: string;
   config: {
-    // Универсальные настройки досок
-    boardType:
-      | 'jira'
-      | 'trello'
-      | 'asana'
-      | 'notion'
-      | 'monday'
-      | 'clickup'
-      | 'generic';
-    boardConnection?: string; // ID подключения к доске
+    // ===========================
+    // WEBHOOK TRIGGER CONFIG
+    // ===========================
+    webhookUrl?: string;
+    webhookSecret?: string;
+    webhookMethod?: 'POST' | 'GET' | 'PUT' | 'PATCH';
+    webhookHeaders?: Record<string, string>;
+    webhookPayloadSchema?: string; // JSON schema for validation
 
-    // События
-    event:
-      | 'card_moved'
-      | 'card_created'
-      | 'card_updated'
-      | 'card_assigned'
-      | 'card_completed';
+    // ===========================
+    // SCHEDULE TRIGGER CONFIG
+    // ===========================
+    schedule?: {
+      type: 'interval' | 'cron' | 'once';
+      expression: string; // cron expression or interval (e.g., "*/5 * * * *" or "5m")
+      timezone?: string;
+      startDate?: Date;
+      endDate?: Date;
+    };
 
-    // Условия триггера
-    sourceColumn?: string; // Из какой колонки
-    targetColumn?: string; // В какую колонку
+    // ===========================
+    // EVENT LISTENER CONFIG
+    // ===========================
+    // Universal event listener - can listen to ANY event source
+    eventSource?: 'board' | 'user' | 'system' | 'custom';
+    eventType?: string; // Generic event type (e.g., 'card_moved', 'user_created', 'file_uploaded')
 
-    // Дополнительные условия
-    conditions?: {
+    // Event filters - flexible filtering system
+    eventFilters?: {
+      // For board events (backward compatibility)
+      boardType?:
+        | 'jira'
+        | 'trello'
+        | 'asana'
+        | 'notion'
+        | 'monday'
+        | 'clickup'
+        | 'generic';
+      boardConnection?: string;
+      sourceColumn?: string;
+      targetColumn?: string;
       assignee?: string;
       priority?: string;
       labels?: string[];
       cardType?: string;
-      customFields?: Record<string, any>;
+
+      // For any custom filters
+      customFilters?: Record<string, any>;
     };
 
-    // Для webhook триггеров
-    webhookUrl?: string;
-    webhookSecret?: string;
+    // ===========================
+    // MANUAL TRIGGER CONFIG
+    // ===========================
+    allowedUsers?: string[]; // User IDs who can trigger
+    requireConfirmation?: boolean; // Require confirmation before execution
+    confirmationMessage?: string; // Custom confirmation message
 
-    // Для time-based триггеров
-    schedule?: {
-      type: 'interval' | 'cron' | 'once';
-      expression: string; // cron expression или interval
-      timezone?: string;
+    // ===========================
+    // COMMON TRIGGER SETTINGS
+    // ===========================
+    enabled?: boolean; // Enable/disable trigger
+    rateLimit?: {
+      maxExecutions: number; // Max executions per period
+      period: 'minute' | 'hour' | 'day';
     };
-  };
+  } & WithVariableStorage;
 }
 
 // Context Block Types
 export interface ContextBlock {
   id: string;
-  type: 'extract_files' | 'get_card_data' | 'external_api' | 'variable';
+  type: // Existing types
+  | 'extract_files'
+    | 'get_card_data'
+    | 'external_api'
+    | 'variable'
+    // NEW TYPES - Universal context extraction
+    | 'extract_text' // Extract text from documents/images (OCR)
+    | 'extract_media' // Extract images/videos from sources
+    | 'get_data' // Get data from any source
+    | 'rag_processing' // RAG - Retrieval Augmented Generation
+    | 'transform_data'; // Transform/format data
   name: string;
   config: {
     variableName: string;
-    source: 'card_attachments' | 'card_fields' | 'api_call';
+    source:
+      | 'card_attachments'
+      | 'card_fields'
+      | 'api_call'
+      | 'file'
+      | 'url'
+      | 'database';
     filter?: {
       uploadedBy?: string;
       fileType?: string[];
       dateRange?: [Date, Date];
     };
-  };
+
+    // For extract_text
+    ocrEnabled?: boolean;
+    language?: string;
+
+    // For extract_media
+    mediaType?: 'image' | 'video' | 'audio' | 'all';
+
+    // For rag_processing
+    vectorDb?: string;
+    embeddingModel?: string;
+    topK?: number;
+
+    // For transform_data
+    transformationType?: 'format' | 'filter' | 'aggregate' | 'map';
+    transformationScript?: string;
+  } & WithVariableStorage;
 }
 
 // Logic Block Types
@@ -107,18 +190,22 @@ export interface LogicBlock {
     falseBranch?: string[]; // IDs следующих блоков
     // For ai_result type
     responseVariable?: string;
-  };
+  } & WithVariableStorage;
 }
 
 // Action Block Types
 export interface ActionBlock {
   id: string;
-  type:
-    | 'comment'
+  type: // Existing types (some renamed)
+  | 'comment'
     | 'ai_request'
-    | 'create_file'
+    | 'generate_file' // RENAMED from 'create_file'
     | 'attach_file'
-    | 'send_notification';
+    | 'send_message' // RENAMED from 'send_notification'
+    // NEW TYPES - Universal actions
+    | 'api_call' // Make HTTP API request
+    | 'mcp_operation' // Model Context Protocol operation
+    | 'store_data'; // Store data in database/storage
   name: string;
   config: {
     // Для комментариев
@@ -132,15 +219,37 @@ export interface ActionBlock {
     // name of variable where AI response (text) will be stored
     outputVariable?: string;
 
-    // Для файлов
+    // Для файлов (generate_file)
     fileName?: string;
     fileContent?: string;
     fileFormat?: 'docx' | 'pdf' | 'txt' | 'xlsx';
+    template?: string; // NEW: Template for file generation
+    templateVariables?: Record<string, string>; // NEW: Variables for template
 
-    // Для уведомлений
+    // Для уведомлений (send_message)
     recipient?: string;
     message?: string;
-  };
+    channel?: 'email' | 'sms' | 'slack' | 'telegram'; // NEW: Channel type
+
+    // Для API запросов (api_call)
+    apiUrl?: string;
+    method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+    headers?: Record<string, string>;
+    body?: string | Record<string, any>;
+    authType?: 'none' | 'bearer' | 'basic' | 'api_key';
+    authToken?: string;
+
+    // Для MCP операций (mcp_operation)
+    mcpServer?: string;
+    mcpOperation?: string;
+    mcpParams?: Record<string, any>;
+
+    // Для сохранения данных (store_data)
+    storageType?: 'database' | 's3' | 'local';
+    storagePath?: string;
+    dataFormat?: 'json' | 'csv' | 'xml';
+  } & WithVariableStorage &
+    WithAsyncControl;
 }
 
 // Wait Block Types
@@ -156,7 +265,7 @@ export interface WaitBlock {
     onTimeout?: string[]; // IDs следующих блоков
     // variable containing awaited data (e.g. AI response text) for subsequent branching
     responseVariable?: string;
-  };
+  } & WithVariableStorage;
 }
 
 // Flow Definition

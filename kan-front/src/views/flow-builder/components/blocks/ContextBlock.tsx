@@ -2,16 +2,30 @@
 
 import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/src/shared/components/ui/card';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
-import { FileText, Archive, Variable, Pencil, Trash2 } from 'lucide-react';
+import {
+  FileText,
+  Archive,
+  Variable,
+  Pencil,
+  Trash2,
+  FileImage,
+  Image,
+  Database,
+  Brain,
+  RefreshCw,
+} from 'lucide-react';
 import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
-import {
-  ContextInputHandle,
-  ContextOutputHandle,
-} from './ConnectionHandle';
+import { ContextInputHandle, ContextOutputHandle } from './ConnectionHandle';
+import { VariableStorageControl } from './VariableStorageControl';
 
 interface ContextBlockProps {
   data: {
@@ -48,6 +62,16 @@ export function ContextBlock({
         return <FileText className="w-4 h-4" />;
       case 'get_card_data':
         return <Archive className="w-4 h-4" />;
+      case 'extract_text':
+        return <FileImage className="w-4 h-4" />;
+      case 'extract_media':
+        return <Image className="w-4 h-4" />;
+      case 'get_data':
+        return <Database className="w-4 h-4" />;
+      case 'rag_processing':
+        return <Brain className="w-4 h-4" />;
+      case 'transform_data':
+        return <RefreshCw className="w-4 h-4" />;
       default:
         return <Variable className="w-4 h-4" />;
     }
@@ -161,6 +185,13 @@ export function ContextBlock({
                   />
                 )}
               </div>
+
+              {/* ✅ ВСТРОЕН: Variable Storage Control */}
+              <VariableStorageControl
+                config={data.config || {}}
+                onChange={updateFormData}
+              />
+
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"

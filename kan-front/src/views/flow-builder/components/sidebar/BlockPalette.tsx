@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/src/shared/components/ui/card';
 import { Button } from '@/src/shared/components/ui/button';
 import {
   Zap,
@@ -28,6 +33,13 @@ import {
   Send,
   Edit,
   ExternalLink,
+  // NEW ICONS for universal blocks
+  Play,
+  Ear,
+  FileImage,
+  Image as ImageIcon,
+  RefreshCw,
+  Plug,
 } from 'lucide-react';
 import { useTranslation } from '@/src/shared/i18n';
 
@@ -1089,35 +1101,48 @@ const getBlockInfo = (blockType: string, blockCategory: string) => {
 // Получение правильного названия блока для drag image
 const getBlockDisplayName = (blockType: string) => {
   const blockNames = {
-    // Triggers
+    // Triggers - UNIVERSAL
+    webhook: 'Webhook',
+    schedule: 'Schedule',
+    event_listener: 'Event Listener',
+    manual_trigger: 'Manual Trigger',
+    // OLD triggers (backward compatibility)
     board_move: 'Board Move',
     board_create: 'Board Create',
     board_update: 'Board Update',
-    webhook: 'Webhook',
-    schedule: 'Schedule',
 
-    // Context
+    // Context - EXPANDED
     extract_files: 'Extract Files',
     get_card_data: 'Get Card Data',
     set_variable: 'Set Variable',
+    extract_text: 'Extract Text',
+    extract_media: 'Extract Media',
+    get_data: 'Get Data',
+    rag_processing: 'RAG Processing',
+    transform_data: 'Transform Data',
 
-    // Logic
+    // Logic - UNCHANGED
     if_else: 'If/Else',
     switch: 'Switch',
     loop: 'Loop',
     try_catch: 'Try/Catch',
     ai_result: 'AI Result',
 
-    // Actions
+    // Actions - RENAMED & EXPANDED
     comment: 'Add Comment',
     ai_request: 'AI Request',
-    create_file: 'Create File',
-    move_card: 'Move Card',
-    send_notification: 'Send Notification',
-    update_field: 'Update Field',
+    generate_file: 'Generate File', // RENAMED from create_file
+    create_file: 'Generate File', // Alias for backward compatibility
+    send_message: 'Send Message', // RENAMED from send_notification
+    send_notification: 'Send Message', // Alias for backward compatibility
     api_call: 'API Call',
+    mcp_operation: 'MCP Operation',
+    store_data: 'Store Data',
+    // OLD actions (backward compatibility)
+    move_card: 'Move Card',
+    update_field: 'Update Field',
 
-    // Wait
+    // Wait - UNCHANGED
     wait_response: 'Wait Response',
     wait_timeout: 'Wait Timeout',
     wait_condition: 'Wait Condition',
@@ -1137,19 +1162,9 @@ interface PaletteBlock {
 }
 
 const PALETTE_BLOCKS: PaletteBlock[] = [
-  // Triggers
-  {
-    type: 'board_move',
-    category: 'trigger',
-    icon: <GitBranch className="w-4 h-4" />,
-    color: 'text-green-600',
-  },
-  {
-    type: 'board_create',
-    category: 'trigger',
-    icon: <Plus className="w-4 h-4" />,
-    color: 'text-green-600',
-  },
+  // ===========================
+  // TRIGGERS - UNIVERSAL (4 blocks)
+  // ===========================
   {
     type: 'webhook',
     category: 'trigger',
@@ -1159,15 +1174,41 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
   {
     type: 'schedule',
     category: 'trigger',
-    icon: <Calendar className="w-4 h-4" />,
+    icon: <Clock className="w-4 h-4" />,
+    color: 'text-green-600',
+  },
+  {
+    type: 'event_listener',
+    category: 'trigger',
+    icon: <Ear className="w-4 h-4" />,
+    color: 'text-green-600',
+  },
+  {
+    type: 'manual_trigger',
+    category: 'trigger',
+    icon: <Play className="w-4 h-4" />,
     color: 'text-green-600',
   },
 
-  // Context
+  // ===========================
+  // CONTEXT - EXPANDED (8 blocks)
+  // ===========================
   {
     type: 'extract_files',
     category: 'context',
     icon: <FileText className="w-4 h-4" />,
+    color: 'text-blue-600',
+  },
+  {
+    type: 'extract_text',
+    category: 'context',
+    icon: <FileImage className="w-4 h-4" />,
+    color: 'text-blue-600',
+  },
+  {
+    type: 'extract_media',
+    category: 'context',
+    icon: <ImageIcon className="w-4 h-4" />,
     color: 'text-blue-600',
   },
   {
@@ -1177,13 +1218,33 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     color: 'text-blue-600',
   },
   {
+    type: 'get_data',
+    category: 'context',
+    icon: <Database className="w-4 h-4" />,
+    color: 'text-blue-600',
+  },
+  {
+    type: 'rag_processing',
+    category: 'context',
+    icon: <Brain className="w-4 h-4" />,
+    color: 'text-blue-600',
+  },
+  {
+    type: 'transform_data',
+    category: 'context',
+    icon: <RefreshCw className="w-4 h-4" />,
+    color: 'text-blue-600',
+  },
+  {
     type: 'set_variable',
     category: 'context',
     icon: <Variable className="w-4 h-4" />,
     color: 'text-blue-600',
   },
 
-  // Logic
+  // ===========================
+  // LOGIC - UNCHANGED (5 blocks)
+  // ===========================
   {
     type: 'if_else',
     category: 'logic',
@@ -1215,7 +1276,9 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     color: 'text-yellow-600',
   },
 
-  // Actions
+  // ===========================
+  // ACTIONS - RENAMED & EXPANDED (7 blocks)
+  // ===========================
   {
     type: 'comment',
     category: 'action',
@@ -1229,27 +1292,15 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     color: 'text-purple-600',
   },
   {
-    type: 'move_card',
-    category: 'action',
-    icon: <Move className="w-4 h-4" />,
-    color: 'text-purple-600',
-  },
-  {
-    type: 'create_file',
+    type: 'generate_file',
     category: 'action',
     icon: <FileUp className="w-4 h-4" />,
     color: 'text-purple-600',
   },
   {
-    type: 'send_notification',
+    type: 'send_message',
     category: 'action',
     icon: <Send className="w-4 h-4" />,
-    color: 'text-purple-600',
-  },
-  {
-    type: 'update_field',
-    category: 'action',
-    icon: <Edit className="w-4 h-4" />,
     color: 'text-purple-600',
   },
   {
@@ -1258,8 +1309,22 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     icon: <ExternalLink className="w-4 h-4" />,
     color: 'text-purple-600',
   },
+  {
+    type: 'mcp_operation',
+    category: 'action',
+    icon: <Plug className="w-4 h-4" />,
+    color: 'text-purple-600',
+  },
+  {
+    type: 'store_data',
+    category: 'action',
+    icon: <Database className="w-4 h-4" />,
+    color: 'text-purple-600',
+  },
 
-  // Wait
+  // ===========================
+  // WAIT - UNCHANGED (3 blocks)
+  // ===========================
   {
     type: 'wait_response',
     category: 'wait',

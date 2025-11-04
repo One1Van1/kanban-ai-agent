@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import { Handle, Position } from '@xyflow/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/src/shared/components/ui/card';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import { Clock, Timer, CheckCircle, Pencil, Trash2 } from 'lucide-react';
@@ -13,6 +18,7 @@ import {
   WaitOutputHandle,
   ConnectionHandle,
 } from './ConnectionHandle';
+import { VariableStorageControl } from './VariableStorageControl';
 
 interface WaitBlockProps {
   data: {
@@ -267,6 +273,13 @@ export function WaitBlock({
                     </>
                   )}
               </div>
+
+              {/* ✅ ВСТРОЕН: Variable Storage Control */}
+              <VariableStorageControl
+                config={data.config || {}}
+                onChange={updateFormData}
+              />
+
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"

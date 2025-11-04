@@ -301,7 +301,9 @@ export const translations = {
           wait: 'Ожидание',
         },
         blocks: {
-          // Triggers
+          // ===========================
+          // TRIGGERS - UNIVERSAL
+          // ===========================
           board_move: {
             name: 'Перемещение карточки',
             description: 'Срабатывает при перемещении карточки между колонками',
@@ -318,20 +320,55 @@ export const translations = {
             name: 'Расписание',
             description: 'Срабатывает в определенное время или интервалы',
           },
-          // Context
+          event_listener: {
+            name: 'Слушатель событий',
+            description: 'Универсальный триггер для любых событий системы',
+          },
+          manual_trigger: {
+            name: 'Ручной запуск',
+            description: 'Запуск потока вручную пользователем',
+          },
+
+          // ===========================
+          // CONTEXT - EXPANDED
+          // ===========================
           extract_files: {
             name: 'Извлечь файлы',
             description: 'Извлечь файлы из вложений карточки',
+          },
+          extract_text: {
+            name: 'Извлечь текст',
+            description: 'Извлечь текст из документов и изображений (OCR)',
+          },
+          extract_media: {
+            name: 'Извлечь медиа',
+            description: 'Извлечь изображения, видео и аудио из источников',
           },
           get_card_data: {
             name: 'Получить данные карточки',
             description: 'Извлечь данные из полей карточки',
           },
+          get_data: {
+            name: 'Получить данные',
+            description: 'Получить данные из любого источника',
+          },
+          rag_processing: {
+            name: 'RAG обработка',
+            description:
+              'Обработка с использованием RAG (Retrieval Augmented Generation)',
+          },
+          transform_data: {
+            name: 'Преобразовать данные',
+            description: 'Преобразовать и отформатировать данные',
+          },
           set_variable: {
             name: 'Установить переменную',
             description: 'Создать или обновить переменную',
           },
-          // Logic
+
+          // ===========================
+          // LOGIC - UNCHANGED
+          // ===========================
           if_else: {
             name: 'ЕСЛИ/ИНАЧЕ',
             description: 'Условное ветвление на основе переменных',
@@ -356,7 +393,10 @@ export const translations = {
             emptyHelp: 'Ответ AI не содержит полезного текста',
             errorHelp: 'Ошибка обработки или получения ответа AI',
           },
-          // Actions
+
+          // ===========================
+          // ACTIONS - RENAMED & EXPANDED
+          // ===========================
           comment: {
             name: 'Комментарий',
             description: 'Добавить комментарий к карточке',
@@ -365,27 +405,48 @@ export const translations = {
             name: 'AI запрос',
             description: 'Отправить запрос к AI модели',
           },
+          generate_file: {
+            name: 'Сгенерировать файл',
+            description: 'Создать файл из шаблона и данных',
+          },
+          create_file: {
+            name: 'Сгенерировать файл',
+            description: 'Создать файл из шаблона и данных',
+          },
+          send_message: {
+            name: 'Отправить сообщение',
+            description:
+              'Отправить сообщение через Email, SMS, Slack, Telegram',
+          },
+          send_notification: {
+            name: 'Отправить сообщение',
+            description:
+              'Отправить сообщение через Email, SMS, Slack, Telegram',
+          },
+          api_call: {
+            name: 'API запрос',
+            description: 'Выполнить HTTP запрос к внешнему API',
+          },
+          mcp_operation: {
+            name: 'MCP операция',
+            description: 'Выполнить операцию через Model Context Protocol',
+          },
+          store_data: {
+            name: 'Сохранить данные',
+            description: 'Сохранить данные в базу данных или хранилище',
+          },
           move_card: {
             name: 'Переместить карточку',
             description: 'Переместить карточку в другую колонку',
-          },
-          create_file: {
-            name: 'Создать файл',
-            description: 'Создать и прикрепить файл к карточке',
-          },
-          send_notification: {
-            name: 'Отправить уведомление',
-            description: 'Отправить уведомление участникам',
           },
           update_field: {
             name: 'Обновить поле',
             description: 'Обновить поле карточки',
           },
-          api_call: {
-            name: 'Веб-интеграция',
-            description: 'Подключиться к внешнему сервису или системе',
-          },
-          // Wait
+
+          // ===========================
+          // WAIT - UNCHANGED
+          // ===========================
           wait_response: {
             name: 'Ждать ответ',
             description: 'Ждать ответ от AI или внешней системы',
@@ -883,7 +944,9 @@ export const translations = {
           wait: 'Wait',
         },
         blocks: {
-          // Triggers
+          // ===========================
+          // TRIGGERS - UNIVERSAL
+          // ===========================
           board_move: {
             name: 'Card Moved',
             description: 'Triggered when a card is moved between columns',
@@ -900,20 +963,54 @@ export const translations = {
             name: 'Schedule',
             description: 'Triggered at specific times or intervals',
           },
-          // Context
+          event_listener: {
+            name: 'Event Listener',
+            description: 'Universal trigger for any system events',
+          },
+          manual_trigger: {
+            name: 'Manual Trigger',
+            description: 'Manually start flow execution',
+          },
+
+          // ===========================
+          // CONTEXT - EXPANDED
+          // ===========================
           extract_files: {
             name: 'Extract Files',
             description: 'Extract files from card attachments',
+          },
+          extract_text: {
+            name: 'Extract Text',
+            description: 'Extract text from documents and images (OCR)',
+          },
+          extract_media: {
+            name: 'Extract Media',
+            description: 'Extract images, videos and audio from sources',
           },
           get_card_data: {
             name: 'Get Card Data',
             description: 'Extract data from card fields',
           },
+          get_data: {
+            name: 'Get Data',
+            description: 'Get data from any source',
+          },
+          rag_processing: {
+            name: 'RAG Processing',
+            description: 'Process using RAG (Retrieval Augmented Generation)',
+          },
+          transform_data: {
+            name: 'Transform Data',
+            description: 'Transform and format data',
+          },
           set_variable: {
             name: 'Set Variable',
             description: 'Create or update a variable',
           },
-          // Logic
+
+          // ===========================
+          // LOGIC - UNCHANGED
+          // ===========================
           if_else: {
             name: 'IF/ELSE',
             description: 'Conditional branching based on variables',
@@ -937,7 +1034,10 @@ export const translations = {
             emptyHelp: 'AI response contained no meaningful text',
             errorHelp: 'There was an error processing the AI response',
           },
-          // Actions
+
+          // ===========================
+          // ACTIONS - RENAMED & EXPANDED
+          // ===========================
           comment: {
             name: 'Comment',
             description: 'Add comment to card',
@@ -946,27 +1046,46 @@ export const translations = {
             name: 'AI Request',
             description: 'Send request to AI model',
           },
+          generate_file: {
+            name: 'Generate File',
+            description: 'Create file from template and data',
+          },
+          create_file: {
+            name: 'Generate File',
+            description: 'Create file from template and data',
+          },
+          send_message: {
+            name: 'Send Message',
+            description: 'Send message via Email, SMS, Slack, Telegram',
+          },
+          send_notification: {
+            name: 'Send Message',
+            description: 'Send message via Email, SMS, Slack, Telegram',
+          },
+          api_call: {
+            name: 'API Call',
+            description: 'Execute HTTP request to external API',
+          },
+          mcp_operation: {
+            name: 'MCP Operation',
+            description: 'Execute operation via Model Context Protocol',
+          },
+          store_data: {
+            name: 'Store Data',
+            description: 'Store data in database or storage',
+          },
           move_card: {
             name: 'Move Card',
             description: 'Move card to another column',
-          },
-          create_file: {
-            name: 'Create File',
-            description: 'Create and attach file to card',
-          },
-          send_notification: {
-            name: 'Send Notification',
-            description: 'Send notification to team members',
           },
           update_field: {
             name: 'Update Field',
             description: 'Update card field',
           },
-          api_call: {
-            name: 'Web Integration',
-            description: 'Connect to external service or system',
-          },
-          // Wait
+
+          // ===========================
+          // WAIT - UNCHANGED
+          // ===========================
           wait_response: {
             name: 'Wait Response',
             description: 'Wait for AI or external system response',

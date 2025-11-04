@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 import { Handle, Position, useReactFlow } from '@xyflow/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/src/shared/components/ui/card';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import {
@@ -20,6 +25,7 @@ import {
   LogicOutputHandle,
   ConnectionHandle,
 } from './ConnectionHandle';
+import { VariableStorageControl } from './VariableStorageControl';
 
 interface LogicBlockProps {
   data: { type: string; name: string; config: any; isEditing?: boolean };
@@ -263,21 +269,27 @@ export function LogicBlock({
                       defaultValue={data.config?.responseVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => updateFormData('responseVariable', e.target.value)}
+                      onChange={(e) =>
+                        updateFormData('responseVariable', e.target.value)
+                      }
                       ref={(el) => registerFieldRef('responseVariable', el)}
                     />
                     <select
                       defaultValue={data.config?.aiModel || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => updateFormData('aiModel', e.target.value)}
+                      onChange={(e) =>
+                        updateFormData('aiModel', e.target.value)
+                      }
                       ref={(el) => registerFieldRef('aiModel', el)}
                     >
                       <option value="">Выберите AI модель</option>
                       <option value="gpt-4">GPT-4</option>
                       <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                       <option value="claude-3">Claude 3</option>
-                      <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+                      <option value="claude-3.5-sonnet">
+                        Claude 3.5 Sonnet
+                      </option>
                       <option value="gemini-pro">Gemini Pro</option>
                       <option value="llama-2">Llama 2</option>
                     </select>
@@ -293,6 +305,13 @@ export function LogicBlock({
                   </>
                 )}
               </div>
+
+              {/* ✅ ВСТРОЕН: Variable Storage Control */}
+              <VariableStorageControl
+                config={data.config || {}}
+                onChange={updateFormData}
+              />
+
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"
@@ -387,13 +406,11 @@ export function LogicBlock({
                   </div>
                   <div className="text-xs text-muted-foreground">
                     Prompt:{' '}
-                    {data.config?.prompt ? 
-                      (data.config.prompt.length > 50 ? 
-                        data.config.prompt.substring(0, 50) + '...' : 
-                        data.config.prompt
-                      ) : 
-                      t('flowBuilder.fields.notSet')
-                    }
+                    {data.config?.prompt
+                      ? data.config.prompt.length > 50
+                        ? data.config.prompt.substring(0, 50) + '...'
+                        : data.config.prompt
+                      : t('flowBuilder.fields.notSet')}
                   </div>
                 </>
               )}
