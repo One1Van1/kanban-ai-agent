@@ -181,6 +181,153 @@ export function ContextBlock({
                     ref={(el) => registerFieldRef('fileType', el)}
                   />
                 )}
+
+                {/* Поля для transform_data */}
+                {data.type === 'transform_data' && (
+                  <>
+                    {/* Тип преобразования */}
+                    <select
+                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      value={data.config?.transformationType || 'javascript'}
+                      onChange={(e) =>
+                        updateFormData('transformationType', e.target.value)
+                      }
+                      onClick={(e) => e.stopPropagation()}
+                      ref={(el) => registerFieldRef('transformationType', el)}
+                    >
+                      <option value="">
+                        {t('flowBuilder.fields.selectTransformationType')}
+                      </option>
+                      <option value="javascript">JavaScript Expression</option>
+                      <option value="map">Map</option>
+                      <option value="filter">Filter</option>
+                      <option value="reduce">Reduce</option>
+                      <option value="sort">Sort</option>
+                      <option value="groupBy">Group By</option>
+                      <option value="format">Format Conversion</option>
+                    </select>
+
+                    {/* JavaScript код или Map expression */}
+                    {(data.config?.transformationType === 'javascript' ||
+                      data.config?.transformationType === 'map' ||
+                      data.config?.transformationType === 'reduce' ||
+                      !data.config?.transformationType) && (
+                      <textarea
+                        placeholder={
+                          data.config?.transformationType === 'map'
+                            ? t('flowBuilder.fields.mapExpressionPlaceholder')
+                            : t(
+                                'flowBuilder.fields.transformationCodePlaceholder',
+                              )
+                        }
+                        defaultValue={
+                          data.config?.transformationCode ||
+                          data.config?.mapExpression ||
+                          ''
+                        }
+                        className="w-full text-xs px-2 py-1 border rounded bg-background font-mono min-h-[60px]"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData(
+                            data.config?.transformationType === 'map'
+                              ? 'mapExpression'
+                              : 'transformationCode',
+                            e.target.value,
+                          )
+                        }
+                        ref={(el) => registerFieldRef('transformationCode', el)}
+                      />
+                    )}
+
+                    {/* Filter condition */}
+                    {data.config?.transformationType === 'filter' && (
+                      <input
+                        type="text"
+                        placeholder={t(
+                          'flowBuilder.fields.filterConditionPlaceholder',
+                        )}
+                        defaultValue={data.config?.filterCondition || ''}
+                        className="w-full text-xs px-2 py-1 border rounded bg-background font-mono"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData('filterCondition', e.target.value)
+                        }
+                        ref={(el) => registerFieldRef('filterCondition', el)}
+                      />
+                    )}
+
+                    {/* Sort options */}
+                    {data.config?.transformationType === 'sort' && (
+                      <>
+                        <input
+                          type="text"
+                          placeholder={t('flowBuilder.fields.sortField')}
+                          defaultValue={data.config?.sortField || ''}
+                          className="w-full text-xs px-2 py-1 border rounded bg-background"
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) =>
+                            updateFormData('sortField', e.target.value)
+                          }
+                          ref={(el) => registerFieldRef('sortField', el)}
+                        />
+                        <select
+                          className="w-full text-xs px-2 py-1 border rounded bg-background"
+                          value={data.config?.sortOrder || 'asc'}
+                          onChange={(e) =>
+                            updateFormData('sortOrder', e.target.value)
+                          }
+                          onClick={(e) => e.stopPropagation()}
+                          ref={(el) => registerFieldRef('sortOrder', el)}
+                        >
+                          <option value="asc">
+                            {t('flowBuilder.fields.sortAsc')}
+                          </option>
+                          <option value="desc">
+                            {t('flowBuilder.fields.sortDesc')}
+                          </option>
+                        </select>
+                      </>
+                    )}
+
+                    {/* Group By field */}
+                    {data.config?.transformationType === 'groupBy' && (
+                      <input
+                        type="text"
+                        placeholder={t(
+                          'flowBuilder.fields.groupByFieldPlaceholder',
+                        )}
+                        defaultValue={data.config?.groupByField || ''}
+                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData('groupByField', e.target.value)
+                        }
+                        ref={(el) => registerFieldRef('groupByField', el)}
+                      />
+                    )}
+
+                    {/* Output Format */}
+                    {data.config?.transformationType === 'format' && (
+                      <select
+                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        value={data.config?.outputFormat || 'json'}
+                        onChange={(e) =>
+                          updateFormData('outputFormat', e.target.value)
+                        }
+                        onClick={(e) => e.stopPropagation()}
+                        ref={(el) => registerFieldRef('outputFormat', el)}
+                      >
+                        <option value="">
+                          {t('flowBuilder.fields.selectOutputFormat')}
+                        </option>
+                        <option value="json">JSON</option>
+                        <option value="csv">CSV</option>
+                        <option value="xml">XML</option>
+                        <option value="excel">Excel</option>
+                      </select>
+                    )}
+                  </>
+                )}
               </div>
 
               {/* ✅ ВСТРОЕН: Variable Storage Control */}
@@ -233,6 +380,44 @@ export function ContextBlock({
                   {data.config?.filter?.fileType?.join(', ') ||
                     t('flowBuilder.fields.notSet')}
                 </div>
+              )}
+
+              {/* Дополнительные поля для transform_data */}
+              {data.type === 'transform_data' && (
+                <>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.transformationType')}:{' '}
+                    {data.config?.transformationType ||
+                      t('flowBuilder.fields.notSet')}
+                  </div>
+                  {data.config?.transformationCode && (
+                    <div className="text-xs text-muted-foreground mb-1 font-mono bg-muted/30 p-1 rounded">
+                      {data.config.transformationCode.substring(0, 50)}
+                      {data.config.transformationCode.length > 50 && '...'}
+                    </div>
+                  )}
+                  {data.config?.filterCondition && (
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Filter: {data.config.filterCondition}
+                    </div>
+                  )}
+                  {data.config?.sortField && (
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Sort: {data.config.sortField} (
+                      {data.config.sortOrder || 'asc'})
+                    </div>
+                  )}
+                  {data.config?.groupByField && (
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Group by: {data.config.groupByField}
+                    </div>
+                  )}
+                  {data.config?.outputFormat && (
+                    <div className="text-xs text-muted-foreground mb-1">
+                      Format: {data.config.outputFormat}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
