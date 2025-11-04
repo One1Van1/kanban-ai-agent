@@ -240,16 +240,22 @@ export function TriggerBlock({
                       }
                       ref={(el) => registerFieldRef('scheduleType', el)}
                     >
-                      <option value="cron">Cron Expression</option>
-                      <option value="interval">Interval</option>
-                      <option value="once">Once</option>
+                      <option value="cron">
+                        {t('flowBuilder.triggerSettings.cronExpression')}
+                      </option>
+                      <option value="interval">
+                        {t('flowBuilder.triggerSettings.interval')}
+                      </option>
+                      <option value="once">
+                        {t('flowBuilder.triggerSettings.once')}
+                      </option>
                     </select>
                     <input
                       type="text"
                       placeholder={
                         data.config?.schedule?.type === 'cron'
-                          ? 'e.g., */5 * * * *'
-                          : 'e.g., 5m, 1h, 30s'
+                          ? t('flowBuilder.triggerSettings.cronPlaceholder')
+                          : t('flowBuilder.triggerSettings.intervalPlaceholder')
                       }
                       defaultValue={data.config?.schedule?.expression || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
@@ -264,7 +270,9 @@ export function TriggerBlock({
                     />
                     <input
                       type="text"
-                      placeholder="Timezone (optional, e.g., UTC, America/New_York)"
+                      placeholder={t(
+                        'flowBuilder.triggerSettings.timezonePlaceholder',
+                      )}
                       defaultValue={data.config?.schedule?.timezone || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
@@ -293,14 +301,24 @@ export function TriggerBlock({
                       }
                       ref={(el) => registerFieldRef('eventSource', el)}
                     >
-                      <option value="board">Board Events</option>
-                      <option value="user">User Events</option>
-                      <option value="system">System Events</option>
-                      <option value="custom">Custom Events</option>
+                      <option value="board">
+                        {t('flowBuilder.triggerSettings.boardEvents')}
+                      </option>
+                      <option value="user">
+                        {t('flowBuilder.triggerSettings.userEvents')}
+                      </option>
+                      <option value="system">
+                        {t('flowBuilder.triggerSettings.systemEvents')}
+                      </option>
+                      <option value="custom">
+                        {t('flowBuilder.triggerSettings.customEvents')}
+                      </option>
                     </select>
                     <input
                       type="text"
-                      placeholder="Event Type (e.g., card_moved, user_created)"
+                      placeholder={t(
+                        'flowBuilder.triggerSettings.eventTypePlaceholder',
+                      )}
                       defaultValue={data.config?.eventType || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
@@ -312,7 +330,9 @@ export function TriggerBlock({
                     {data.config?.eventSource === 'board' && (
                       <input
                         type="text"
-                        placeholder="Board Type (optional, e.g., jira, trello)"
+                        placeholder={t(
+                          'flowBuilder.triggerSettings.boardTypePlaceholder',
+                        )}
                         defaultValue={
                           data.config?.eventFilters?.boardType || ''
                         }
@@ -337,7 +357,9 @@ export function TriggerBlock({
                   <>
                     <input
                       type="text"
-                      placeholder="Allowed User IDs (comma-separated)"
+                      placeholder={t(
+                        'flowBuilder.triggerSettings.allowedUsersPlaceholder',
+                      )}
                       defaultValue={data.config?.allowedUsers?.join(', ') || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
@@ -369,7 +391,9 @@ export function TriggerBlock({
                           registerFieldRef('requireConfirmation', el)
                         }
                       />
-                      <span>Require confirmation before execution</span>
+                      <span>
+                        {t('flowBuilder.triggerSettings.requireConfirmation')}
+                      </span>
                     </label>
                   </>
                 )}
@@ -426,18 +450,19 @@ export function TriggerBlock({
               {data.type === 'schedule' && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Type:{' '}
+                    {t('flowBuilder.triggerSettings.type')}:{' '}
                     {data.config?.schedule?.type ||
                       t('flowBuilder.fields.notSet')}
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Expression:{' '}
+                    {t('flowBuilder.triggerSettings.expression')}:{' '}
                     {data.config?.schedule?.expression ||
                       t('flowBuilder.fields.notSet')}
                   </div>
                   {data.config?.schedule?.timezone && (
                     <div className="text-xs text-muted-foreground mb-1">
-                      Timezone: {data.config.schedule.timezone}
+                      {t('flowBuilder.triggerSettings.timezone')}:{' '}
+                      {data.config.schedule.timezone}
                     </div>
                   )}
                 </>
@@ -447,16 +472,17 @@ export function TriggerBlock({
               {data.type === 'event_listener' && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Source:{' '}
+                    {t('flowBuilder.triggerSettings.source')}:{' '}
                     {data.config?.eventSource || t('flowBuilder.fields.notSet')}
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Event:{' '}
+                    {t('flowBuilder.triggerSettings.event')}:{' '}
                     {data.config?.eventType || t('flowBuilder.fields.notSet')}
                   </div>
                   {data.config?.eventFilters?.boardType && (
                     <div className="text-xs text-muted-foreground mb-1">
-                      Board Type: {data.config.eventFilters.boardType}
+                      {t('flowBuilder.triggerSettings.boardType')}:{' '}
+                      {data.config.eventFilters.boardType}
                     </div>
                   )}
                 </>
@@ -466,14 +492,15 @@ export function TriggerBlock({
               {data.type === 'manual_trigger' && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Allowed Users: {data.config?.allowedUsers?.length || 0}{' '}
-                    users
+                    {t('flowBuilder.triggerSettings.allowedUsersLabel')}:{' '}
+                    {data.config?.allowedUsers?.length || 0}{' '}
+                    {t('flowBuilder.triggerSettings.users')}
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Confirmation:{' '}
+                    {t('flowBuilder.triggerSettings.confirmationLabel')}:{' '}
                     {data.config?.requireConfirmation
-                      ? 'Required'
-                      : 'Not Required'}
+                      ? t('flowBuilder.triggerSettings.required')
+                      : t('flowBuilder.triggerSettings.notRequired')}
                   </div>
                 </>
               )}

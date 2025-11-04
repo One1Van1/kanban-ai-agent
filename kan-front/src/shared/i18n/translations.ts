@@ -598,6 +598,46 @@ export const translations = {
         usageHintSuffix: 'в последующих блоках',
       },
 
+      // Trigger Settings
+      triggerSettings: {
+        requireConfirmation: 'Требовать подтверждение перед выполнением',
+
+        // Info labels
+        type: 'Тип',
+        expression: 'Выражение',
+        timezone: 'Временная зона',
+        source: 'Источник',
+        event: 'Событие',
+        boardType: 'Тип доски',
+
+        // Schedule fields
+        cronExpression: 'Cron выражение',
+        interval: 'Интервал',
+        once: 'Один раз',
+        cronPlaceholder: 'например, */5 * * * *',
+        intervalPlaceholder: 'например, 5m, 1h, 30s',
+        timezonePlaceholder:
+          'Временная зона (необязательно, например, UTC, Europe/Moscow)',
+
+        // Event Listener fields
+        boardEvents: 'События доски',
+        userEvents: 'События пользователя',
+        systemEvents: 'Системные события',
+        customEvents: 'Пользовательские события',
+        eventTypePlaceholder:
+          'Тип события (например, card_moved, user_created)',
+        boardTypePlaceholder:
+          'Тип доски (необязательно, например, jira, trello)',
+
+        // Manual Trigger fields
+        allowedUsersPlaceholder: 'Разрешенные ID пользователей (через запятую)',
+        allowedUsersLabel: 'Разрешенные пользователи',
+        users: 'пользователей',
+        confirmationLabel: 'Подтверждение',
+        required: 'Требуется',
+        notRequired: 'Не требуется',
+      },
+
       // Events
       events: {
         card_moved: 'Карточка перемещена',
@@ -1245,6 +1285,43 @@ export const translations = {
         variableNamePlaceholder: 'e.g., extracted_text, api_response',
         usageHint: 'Use',
         usageHintSuffix: 'in subsequent blocks',
+      },
+
+      // Trigger Settings
+      triggerSettings: {
+        requireConfirmation: 'Require confirmation before execution',
+
+        // Info labels
+        type: 'Type',
+        expression: 'Expression',
+        timezone: 'Timezone',
+        source: 'Source',
+        event: 'Event',
+        boardType: 'Board Type',
+
+        // Schedule fields
+        cronExpression: 'Cron Expression',
+        interval: 'Interval',
+        once: 'Once',
+        cronPlaceholder: 'e.g., */5 * * * *',
+        intervalPlaceholder: 'e.g., 5m, 1h, 30s',
+        timezonePlaceholder: 'Timezone (optional, e.g., UTC, America/New_York)',
+
+        // Event Listener fields
+        boardEvents: 'Board Events',
+        userEvents: 'User Events',
+        systemEvents: 'System Events',
+        customEvents: 'Custom Events',
+        eventTypePlaceholder: 'Event Type (e.g., card_moved, user_created)',
+        boardTypePlaceholder: 'Board Type (optional, e.g., jira, trello)',
+
+        // Manual Trigger fields
+        allowedUsersPlaceholder: 'Allowed User IDs (comma-separated)',
+        allowedUsersLabel: 'Allowed Users',
+        users: 'users',
+        confirmationLabel: 'Confirmation',
+        required: 'Required',
+        notRequired: 'Not Required',
       },
 
       // Events
