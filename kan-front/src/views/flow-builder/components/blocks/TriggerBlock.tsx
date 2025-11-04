@@ -26,6 +26,30 @@ import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
 import { TriggerOutputHandle } from './ConnectionHandle';
 import { VariableStorageControl } from './VariableStorageControl';
 
+// Helper для отображения HTTP методов
+const getHttpMethodLabel = (
+  method: string,
+  lang: 'ru' | 'en' = 'ru',
+): string => {
+  const methodLabels: Record<'ru' | 'en', Record<string, string>> = {
+    ru: {
+      POST: 'Получение данных',
+      GET: 'Запрос информации',
+      PUT: 'Полное обновление',
+      PATCH: 'Частичное обновление',
+      DELETE: 'Удаление данных',
+    },
+    en: {
+      POST: 'Receive Data',
+      GET: 'Request Information',
+      PUT: 'Full Update',
+      PATCH: 'Partial Update',
+      DELETE: 'Delete Data',
+    },
+  };
+  return methodLabels[lang][method] || method;
+};
+
 interface TriggerBlockProps {
   data: {
     type: string;
@@ -46,7 +70,7 @@ export function TriggerBlock({
   onDeleteBlock,
   onUpdateBlock,
 }: TriggerBlockProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const {
     isEditing,
     toggleEdit,
@@ -169,10 +193,21 @@ export function TriggerBlock({
                       }
                       ref={(el) => registerFieldRef('webhookMethod', el)}
                     >
-                      <option value="POST">POST</option>
-                      <option value="GET">GET</option>
-                      <option value="PUT">PUT</option>
-                      <option value="PATCH">PATCH</option>
+                      <option value="POST">
+                        {getHttpMethodLabel('POST', language)}
+                      </option>
+                      <option value="GET">
+                        {getHttpMethodLabel('GET', language)}
+                      </option>
+                      <option value="PUT">
+                        {getHttpMethodLabel('PUT', language)}
+                      </option>
+                      <option value="PATCH">
+                        {getHttpMethodLabel('PATCH', language)}
+                      </option>
+                      <option value="DELETE">
+                        {getHttpMethodLabel('DELETE', language)}
+                      </option>
                     </select>
                     <input
                       type="text"
@@ -378,7 +413,11 @@ export function TriggerBlock({
                     {data.config?.webhookUrl || t('flowBuilder.fields.notSet')}
                   </div>
                   <div className="text-xs text-muted-foreground mb-1">
-                    Method: {data.config?.webhookMethod || 'POST'}
+                    Метод:{' '}
+                    {getHttpMethodLabel(
+                      data.config?.webhookMethod || 'POST',
+                      language,
+                    )}
                   </div>
                 </>
               )}
