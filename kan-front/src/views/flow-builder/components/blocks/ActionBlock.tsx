@@ -218,7 +218,8 @@ export function ActionBlock({
                   </>
                 )}
                 {(data.type === 'create_file' ||
-                  data.type === 'attach_file') && (
+                  data.type === 'attach_file' ||
+                  data.type === 'generate_file') && (
                   <>
                     <input
                       type="text"
@@ -319,8 +320,29 @@ export function ActionBlock({
                     />
                   </>
                 )}
-                {data.type === 'send_notification' && (
+                {(data.type === 'send_notification' ||
+                  data.type === 'send_message') && (
                   <>
+                    <select
+                      defaultValue={data.config?.channel || ''}
+                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('channel', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('channel', el)}
+                    >
+                      <option value="">
+                        {t('flowBuilder.fields.selectChannel')}
+                      </option>
+                      <option value="telegram">Telegram</option>
+                      <option value="email">Email</option>
+                      <option value="slack">Slack</option>
+                      <option value="discord">Discord</option>
+                      <option value="whatsapp">WhatsApp</option>
+                      <option value="sms">SMS</option>
+                      <option value="webhook">Webhook</option>
+                    </select>
                     <input
                       type="text"
                       placeholder={t('flowBuilder.fields.recipient')}
@@ -332,16 +354,16 @@ export function ActionBlock({
                       }
                       ref={(el) => registerFieldRef('recipient', el)}
                     />
-                    <input
-                      type="text"
+                    <textarea
                       placeholder={t('flowBuilder.fields.message')}
                       defaultValue={data.config?.message || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('message', e.target.value)
                       }
                       ref={(el) => registerFieldRef('message', el)}
+                      rows={2}
                     />
                   </>
                 )}
@@ -406,6 +428,83 @@ export function ActionBlock({
                         updateFormData('newValue', e.target.value)
                       }
                       ref={(el) => registerFieldRef('newValue', el)}
+                    />
+                  </>
+                )}
+                {data.type === 'mcp_operation' && (
+                  <>
+                    <select
+                      defaultValue={data.config?.mcpServer || ''}
+                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('mcpServer', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('mcpServer', el)}
+                    >
+                      <option value="">
+                        {t('flowBuilder.fields.selectMcpServer')}
+                      </option>
+                      <option value="filesystem">File System</option>
+                      <option value="database">Database</option>
+                      <option value="api">API Integration</option>
+                      <option value="ai-tools">AI Tools</option>
+                    </select>
+                    <select
+                      defaultValue={data.config?.operation || ''}
+                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('operation', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('operation', el)}
+                    >
+                      <option value="">
+                        {t('flowBuilder.fields.selectOperation')}
+                      </option>
+                      <option value="read">Read</option>
+                      <option value="write">Write</option>
+                      <option value="execute">Execute</option>
+                      <option value="query">Query</option>
+                    </select>
+                    <textarea
+                      placeholder={t('flowBuilder.fields.paramsPlaceholder')}
+                      defaultValue={data.config?.params || ''}
+                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) => updateFormData('params', e.target.value)}
+                      ref={(el) => registerFieldRef('params', el)}
+                      rows={2}
+                    />
+                  </>
+                )}
+                {data.type === 'store_data' && (
+                  <>
+                    <input
+                      type="text"
+                      placeholder={t(
+                        'flowBuilder.fields.storageKeyPlaceholder',
+                      )}
+                      defaultValue={data.config?.storageKey || ''}
+                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('storageKey', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('storageKey', el)}
+                    />
+                    <textarea
+                      placeholder={t(
+                        'flowBuilder.fields.storageValuePlaceholder',
+                      )}
+                      defaultValue={data.config?.storageValue || ''}
+                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
+                      onClick={(e) => e.stopPropagation()}
+                      onChange={(e) =>
+                        updateFormData('storageValue', e.target.value)
+                      }
+                      ref={(el) => registerFieldRef('storageValue', el)}
+                      rows={2}
                     />
                   </>
                 )}
@@ -488,7 +587,9 @@ export function ActionBlock({
               )}
 
               {/* Конфигурация для файлов */}
-              {(data.type === 'create_file' || data.type === 'attach_file') && (
+              {(data.type === 'create_file' ||
+                data.type === 'attach_file' ||
+                data.type === 'generate_file') && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.fileName')}:{' '}
@@ -498,7 +599,8 @@ export function ActionBlock({
                     {t('flowBuilder.fields.format')}:{' '}
                     {data.config?.fileFormat || t('flowBuilder.fields.notSet')}
                   </div>
-                  {data.type === 'create_file' && (
+                  {(data.type === 'create_file' ||
+                    data.type === 'generate_file') && (
                     <div className="text-xs text-muted-foreground truncate">
                       {t('flowBuilder.fields.fileContent')}: &quot;
                       {data.config?.content
@@ -546,8 +648,13 @@ export function ActionBlock({
               )}
 
               {/* Конфигурация для уведомлений */}
-              {data.type === 'send_notification' && (
+              {(data.type === 'send_notification' ||
+                data.type === 'send_message') && (
                 <>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.channel')}:{' '}
+                    {data.config?.channel || t('flowBuilder.fields.notSet')}
+                  </div>
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.recipient')}:{' '}
                     {data.config?.recipient || t('flowBuilder.fields.notSet')}
@@ -591,6 +698,46 @@ export function ActionBlock({
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.newValue')}:{' '}
                     {data.config?.newValue || t('flowBuilder.fields.notSet')}
+                  </div>
+                </>
+              )}
+
+              {/* Конфигурация для MCP операций */}
+              {data.type === 'mcp_operation' && (
+                <>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.mcpServer')}:{' '}
+                    {data.config?.mcpServer || t('flowBuilder.fields.notSet')}
+                  </div>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.mcpOperation')}:{' '}
+                    {data.config?.operation || t('flowBuilder.fields.notSet')}
+                  </div>
+                  {data.config?.params && (
+                    <div className="text-xs text-muted-foreground truncate">
+                      {t('flowBuilder.fields.mcpParams')}: &quot;
+                      {data.config.params.length > 30
+                        ? `${data.config.params.substring(0, 30)}...`
+                        : data.config.params}
+                      &quot;
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Конфигурация для сохранения данных */}
+              {data.type === 'store_data' && (
+                <>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.storageKey')}:{' '}
+                    {data.config?.storageKey || t('flowBuilder.fields.notSet')}
+                  </div>
+                  <div className="text-xs text-muted-foreground truncate">
+                    {t('flowBuilder.fields.storageValue')}: &quot;
+                    {data.config?.storageValue
+                      ? data.config.storageValue.substring(0, 30) + '...'
+                      : t('flowBuilder.fields.notSet')}
+                    &quot;
                   </div>
                 </>
               )}
