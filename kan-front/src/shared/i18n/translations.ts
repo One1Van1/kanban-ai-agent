@@ -381,18 +381,6 @@ export const translations = {
             name: 'Цикл',
             description: 'Повторить действия для каждого элемента',
           },
-          try_catch: {
-            name: 'Обработка ошибок',
-            description: 'Блок обработки ошибок',
-          },
-          ai_result: {
-            name: 'AI результат',
-            description:
-              'Ветвление по результату ответа AI (текст / пусто / ошибка)',
-            textHelp: 'AI вернул непустой текстовый ответ',
-            emptyHelp: 'Ответ AI не содержит полезного текста',
-            errorHelp: 'Ошибка обработки или получения ответа AI',
-          },
 
           // ===========================
           // ACTIONS - RENAMED & EXPANDED
@@ -1072,17 +1060,6 @@ export const translations = {
           loop: {
             name: 'Loop',
             description: 'Repeat actions for each item',
-          },
-          try_catch: {
-            name: 'Try/Catch',
-            description: 'Error handling block',
-          },
-          ai_result: {
-            name: 'AI Result',
-            description: 'Branch by AI response result (text / empty / error)',
-            textHelp: 'AI returned non-empty textual content',
-            emptyHelp: 'AI response contained no meaningful text',
-            errorHelp: 'There was an error processing the AI response',
           },
 
           // ===========================

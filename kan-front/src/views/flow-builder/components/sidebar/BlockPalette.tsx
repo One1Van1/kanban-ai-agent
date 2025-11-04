@@ -874,11 +874,10 @@ const getIconSVG = (blockType: string): string => {
     get_card_data: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M5 12c0 1.66 3.13 3 7 3s7-1.34 7-3"/><path d="M5 17c0 1.66 3.13 3 7 3s7-1.34 7-3"/><path d="M5 7v10"/><path d="M19 7v10"/></svg>`,
     set_variable: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></svg>`,
 
-    // Logic
+    // Logic - 3 blocks only
     if_else: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="m18 9 2.5-2.5L18 4l-2.5 2.5L18 9z"/></svg>`,
     switch: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6"/><path d="m15.5 3.5-1.5 1.5"/><path d="m10 8.5-1.5 1.5"/><path d="m15.5 20.5-1.5-1.5"/><path d="m10 15.5-1.5-1.5"/><path d="m20.5 15.5-1.5-1.5"/></svg>`,
     loop: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5H6a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-5m-1.414-9.414a2 2 0 0 1 2.828 0L22 4.828a2 2 0 0 1 0 2.828L11.828 18H9v-2.828l10.586-10.586z"/></svg>`,
-    try_catch: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>`,
 
     // Actions
     comment: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`,
@@ -1066,12 +1065,10 @@ const getBlockInfo = (blockType: string, blockCategory: string) => {
     get_card_data: Database,
     set_variable: Variable,
 
-    // Logic
+    // Logic - 3 blocks only
     if_else: GitBranch,
     switch: Settings,
     loop: RotateCcw,
-    try_catch: AlertTriangle,
-    ai_result: Brain,
 
     // Actions
     comment: MessageSquare,
@@ -1121,12 +1118,10 @@ const getBlockDisplayName = (blockType: string) => {
     rag_processing: 'RAG Processing',
     transform_data: 'Transform Data',
 
-    // Logic - UNCHANGED
+    // Logic - 3 blocks only (If/Else, Switch, Loop)
     if_else: 'If/Else',
     switch: 'Switch',
     loop: 'Loop',
-    try_catch: 'Try/Catch',
-    ai_result: 'AI Result',
 
     // Actions - RENAMED & EXPANDED
     comment: 'Add Comment',
@@ -1243,7 +1238,7 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
   },
 
   // ===========================
-  // LOGIC - UNCHANGED (5 blocks)
+  // LOGIC - 3 blocks (If/Else, Switch, Loop)
   // ===========================
   {
     type: 'if_else',
@@ -1261,18 +1256,6 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     type: 'loop',
     category: 'logic',
     icon: <RotateCcw className="w-4 h-4" />,
-    color: 'text-yellow-600',
-  },
-  {
-    type: 'try_catch',
-    category: 'logic',
-    icon: <AlertTriangle className="w-4 h-4" />,
-    color: 'text-yellow-600',
-  },
-  {
-    type: 'ai_result',
-    category: 'logic',
-    icon: <Brain className="w-4 h-4" />,
     color: 'text-yellow-600',
   },
 

@@ -10,14 +10,7 @@ import {
 } from '@/src/shared/components/ui/card';
 import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
-import {
-  GitBranch,
-  RotateCcw,
-  AlertTriangle,
-  Brain,
-  Pencil,
-  Trash2,
-} from 'lucide-react';
+import { GitBranch, RotateCcw, Pencil, Trash2 } from 'lucide-react';
 import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
 import {
@@ -59,10 +52,6 @@ export function LogicBlock({
         return <GitBranch className="w-4 h-4" />;
       case 'loop':
         return <RotateCcw className="w-4 h-4" />;
-      case 'try_catch':
-        return <AlertTriangle className="w-4 h-4" />;
-      case 'ai_result':
-        return <Brain className="w-4 h-4" />;
       default:
         return <GitBranch className="w-4 h-4" />;
     }
@@ -227,83 +216,6 @@ export function LogicBlock({
                     />
                   </>
                 )}
-
-                {/* Поля для try_catch */}
-                {data.type === 'try_catch' && (
-                  <>
-                    <input
-                      type="text"
-                      placeholder="Error Variable"
-                      defaultValue={data.config?.errorVariable || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        updateFormData('errorVariable', e.target.value)
-                      }
-                      ref={(el) => registerFieldRef('errorVariable', el)}
-                    />
-                    <select
-                      defaultValue={data.config?.errorType || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        updateFormData('errorType', e.target.value)
-                      }
-                      ref={(el) => registerFieldRef('errorType', el)}
-                    >
-                      <option value="">Error Type</option>
-                      <option value="all">All Errors</option>
-                      <option value="api">API Errors</option>
-                      <option value="validation">Validation Errors</option>
-                      <option value="timeout">Timeout Errors</option>
-                    </select>
-                  </>
-                )}
-
-                {/* Поля для ai_result */}
-                {data.type === 'ai_result' && (
-                  <>
-                    <input
-                      type="text"
-                      placeholder={t('flowBuilder.fields.variable')}
-                      defaultValue={data.config?.responseVariable || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        updateFormData('responseVariable', e.target.value)
-                      }
-                      ref={(el) => registerFieldRef('responseVariable', el)}
-                    />
-                    <select
-                      defaultValue={data.config?.aiModel || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        updateFormData('aiModel', e.target.value)
-                      }
-                      ref={(el) => registerFieldRef('aiModel', el)}
-                    >
-                      <option value="">Выберите AI модель</option>
-                      <option value="gpt-4">GPT-4</option>
-                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                      <option value="claude-3">Claude 3</option>
-                      <option value="claude-3.5-sonnet">
-                        Claude 3.5 Sonnet
-                      </option>
-                      <option value="gemini-pro">Gemini Pro</option>
-                      <option value="llama-2">Llama 2</option>
-                    </select>
-                    <textarea
-                      placeholder="AI Prompt (опционально)"
-                      defaultValue={data.config?.prompt || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[60px] resize-none"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => updateFormData('prompt', e.target.value)}
-                      ref={(el) => registerFieldRef('prompt', el)}
-                      rows={3}
-                    />
-                  </>
-                )}
               </div>
 
               {/* ✅ ВСТРОЕН: Variable Storage Control */}
@@ -373,44 +285,6 @@ export function LogicBlock({
                     {t('flowBuilder.fields.maxIterations')}:{' '}
                     {data.config?.maxIterations ||
                       t('flowBuilder.fields.notSet')}
-                  </div>
-                </>
-              )}
-
-              {/* Отображение для try_catch */}
-              {data.type === 'try_catch' && (
-                <>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.errorVariable')}:{' '}
-                    {data.config?.errorVariable ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {t('flowBuilder.fields.errorType')}:{' '}
-                    {data.config?.errorType || t('flowBuilder.fields.notSet')}
-                  </div>
-                </>
-              )}
-
-              {/* Отображение для ai_result */}
-              {data.type === 'ai_result' && (
-                <>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.variable')}:{' '}
-                    {data.config?.responseVariable ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.aiModel')}:{' '}
-                    {data.config?.aiModel || t('flowBuilder.fields.notSet')}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    Prompt:{' '}
-                    {data.config?.prompt
-                      ? data.config.prompt.length > 50
-                        ? data.config.prompt.substring(0, 50) + '...'
-                        : data.config.prompt
-                      : t('flowBuilder.fields.notSet')}
                   </div>
                 </>
               )}
@@ -511,29 +385,7 @@ export function LogicBlock({
         </>
       )}
 
-      {data.type === 'ai_result' && (
-        <>
-          <LogicOutputHandle
-            condition="text"
-            id="text"
-            style={{ left: '25%', transform: 'translateX(-50%)' }}
-            showLabel={false}
-          />
-          <LogicOutputHandle
-            condition="empty"
-            id="empty"
-            style={{ left: '50%', transform: 'translateX(-50%)' }}
-            showLabel={false}
-          />
-          <LogicOutputHandle
-            condition="error"
-            id="error"
-            style={{ left: '75%', transform: 'translateX(-50%)' }}
-            showLabel={false}
-          />
-        </>
-      )}
-
+      {/* Switch handles */}
       {data.type === 'switch' && (
         <>
           <LogicOutputHandle
@@ -564,9 +416,9 @@ export function LogicBlock({
       )}
 
       {/* Выходные handles - ВЫНЕСЕНЫ ЗА ГРАНИЦЫ блока */}
-      {data.type !== 'if_else' &&
-        data.type !== 'ai_result' &&
-        data.type !== 'switch' && <LogicOutputHandle showLabel={true} />}
+      {data.type !== 'if_else' && data.type !== 'switch' && (
+        <LogicOutputHandle showLabel={true} />
+      )}
     </div>
   );
 }
