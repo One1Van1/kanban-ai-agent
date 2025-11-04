@@ -268,12 +268,8 @@ export function TriggerBlock({
                       }
                       ref={(el) => registerFieldRef('scheduleExpression', el)}
                     />
-                    <input
-                      type="text"
-                      placeholder={t(
-                        'flowBuilder.triggerSettings.timezonePlaceholder',
-                      )}
-                      defaultValue={data.config?.schedule?.timezone || ''}
+                    <select
+                      defaultValue={data.config?.schedule?.timezone || 'UTC'}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
@@ -283,7 +279,201 @@ export function TriggerBlock({
                         })
                       }
                       ref={(el) => registerFieldRef('scheduleTimezone', el)}
-                    />
+                    >
+                      <option value="">
+                        {t('flowBuilder.triggerSettings.selectTimezone')}
+                      </option>
+                      <optgroup label="Popular / Популярные">
+                        <option value="UTC">
+                          UTC (Coordinated Universal Time)
+                        </option>
+                        <option value="Europe/Moscow">
+                          Europe/Moscow (МСК, UTC+3)
+                        </option>
+                        <option value="Europe/London">
+                          Europe/London (GMT/BST, UTC+0/+1)
+                        </option>
+                        <option value="America/New_York">
+                          America/New_York (EST/EDT, UTC-5/-4)
+                        </option>
+                        <option value="America/Los_Angeles">
+                          America/Los_Angeles (PST/PDT, UTC-8/-7)
+                        </option>
+                        <option value="Asia/Tokyo">
+                          Asia/Tokyo (JST, UTC+9)
+                        </option>
+                        <option value="Asia/Shanghai">
+                          Asia/Shanghai (CST, UTC+8)
+                        </option>
+                        <option value="Australia/Sydney">
+                          Australia/Sydney (AEST/AEDT, UTC+10/+11)
+                        </option>
+                      </optgroup>
+                      <optgroup label="Russia / Россия">
+                        <option value="Europe/Kaliningrad">
+                          Europe/Kaliningrad (Калининград, UTC+2)
+                        </option>
+                        <option value="Europe/Moscow">
+                          Europe/Moscow (Москва, UTC+3)
+                        </option>
+                        <option value="Europe/Samara">
+                          Europe/Samara (Самара, UTC+4)
+                        </option>
+                        <option value="Asia/Yekaterinburg">
+                          Asia/Yekaterinburg (Екатеринбург, UTC+5)
+                        </option>
+                        <option value="Asia/Omsk">
+                          Asia/Omsk (Омск, UTC+6)
+                        </option>
+                        <option value="Asia/Novosibirsk">
+                          Asia/Novosibirsk (Новосибирск, UTC+7)
+                        </option>
+                        <option value="Asia/Krasnoyarsk">
+                          Asia/Krasnoyarsk (Красноярск, UTC+7)
+                        </option>
+                        <option value="Asia/Irkutsk">
+                          Asia/Irkutsk (Иркутск, UTC+8)
+                        </option>
+                        <option value="Asia/Yakutsk">
+                          Asia/Yakutsk (Якутск, UTC+9)
+                        </option>
+                        <option value="Asia/Vladivostok">
+                          Asia/Vladivostok (Владивосток, UTC+10)
+                        </option>
+                        <option value="Asia/Magadan">
+                          Asia/Magadan (Магадан, UTC+11)
+                        </option>
+                        <option value="Asia/Kamchatka">
+                          Asia/Kamchatka (Камчатка, UTC+12)
+                        </option>
+                      </optgroup>
+                      <optgroup label="Europe / Европа">
+                        <option value="Europe/Berlin">
+                          Europe/Berlin (CET/CEST)
+                        </option>
+                        <option value="Europe/Paris">
+                          Europe/Paris (CET/CEST)
+                        </option>
+                        <option value="Europe/Rome">
+                          Europe/Rome (CET/CEST)
+                        </option>
+                        <option value="Europe/Madrid">
+                          Europe/Madrid (CET/CEST)
+                        </option>
+                        <option value="Europe/Amsterdam">
+                          Europe/Amsterdam (CET/CEST)
+                        </option>
+                        <option value="Europe/Brussels">
+                          Europe/Brussels (CET/CEST)
+                        </option>
+                        <option value="Europe/Vienna">
+                          Europe/Vienna (CET/CEST)
+                        </option>
+                        <option value="Europe/Warsaw">
+                          Europe/Warsaw (CET/CEST)
+                        </option>
+                        <option value="Europe/Prague">
+                          Europe/Prague (CET/CEST)
+                        </option>
+                        <option value="Europe/Stockholm">
+                          Europe/Stockholm (CET/CEST)
+                        </option>
+                        <option value="Europe/Helsinki">
+                          Europe/Helsinki (EET/EEST)
+                        </option>
+                        <option value="Europe/Athens">
+                          Europe/Athens (EET/EEST)
+                        </option>
+                        <option value="Europe/Istanbul">
+                          Europe/Istanbul (TRT)
+                        </option>
+                        <option value="Europe/Kiev">
+                          Europe/Kiev (Киев, EET/EEST)
+                        </option>
+                        <option value="Europe/Minsk">
+                          Europe/Minsk (Минск, MSK)
+                        </option>
+                      </optgroup>
+                      <optgroup label="Americas / Америка">
+                        <option value="America/Chicago">
+                          America/Chicago (CST/CDT)
+                        </option>
+                        <option value="America/Denver">
+                          America/Denver (MST/MDT)
+                        </option>
+                        <option value="America/Phoenix">
+                          America/Phoenix (MST)
+                        </option>
+                        <option value="America/Toronto">
+                          America/Toronto (EST/EDT)
+                        </option>
+                        <option value="America/Vancouver">
+                          America/Vancouver (PST/PDT)
+                        </option>
+                        <option value="America/Mexico_City">
+                          America/Mexico_City (CST/CDT)
+                        </option>
+                        <option value="America/Sao_Paulo">
+                          America/Sao_Paulo (BRT/BRST)
+                        </option>
+                        <option value="America/Buenos_Aires">
+                          America/Buenos_Aires (ART)
+                        </option>
+                        <option value="America/Santiago">
+                          America/Santiago (CLT/CLST)
+                        </option>
+                      </optgroup>
+                      <optgroup label="Asia / Азия">
+                        <option value="Asia/Dubai">
+                          Asia/Dubai (GST, UTC+4)
+                        </option>
+                        <option value="Asia/Kolkata">
+                          Asia/Kolkata (IST, UTC+5:30)
+                        </option>
+                        <option value="Asia/Bangkok">
+                          Asia/Bangkok (ICT, UTC+7)
+                        </option>
+                        <option value="Asia/Singapore">
+                          Asia/Singapore (SGT, UTC+8)
+                        </option>
+                        <option value="Asia/Hong_Kong">
+                          Asia/Hong_Kong (HKT, UTC+8)
+                        </option>
+                        <option value="Asia/Seoul">
+                          Asia/Seoul (KST, UTC+9)
+                        </option>
+                        <option value="Asia/Taipei">
+                          Asia/Taipei (CST, UTC+8)
+                        </option>
+                        <option value="Asia/Jakarta">
+                          Asia/Jakarta (WIB, UTC+7)
+                        </option>
+                        <option value="Asia/Manila">
+                          Asia/Manila (PHT, UTC+8)
+                        </option>
+                      </optgroup>
+                      <optgroup label="Pacific / Тихий океан">
+                        <option value="Pacific/Auckland">
+                          Pacific/Auckland (NZST/NZDT)
+                        </option>
+                        <option value="Pacific/Fiji">
+                          Pacific/Fiji (FJT/FJST)
+                        </option>
+                        <option value="Pacific/Honolulu">
+                          Pacific/Honolulu (HST)
+                        </option>
+                      </optgroup>
+                      <optgroup label="Africa / Африка">
+                        <option value="Africa/Cairo">Africa/Cairo (EET)</option>
+                        <option value="Africa/Johannesburg">
+                          Africa/Johannesburg (SAST)
+                        </option>
+                        <option value="Africa/Lagos">Africa/Lagos (WAT)</option>
+                        <option value="Africa/Nairobi">
+                          Africa/Nairobi (EAT)
+                        </option>
+                      </optgroup>
+                    </select>
                   </>
                 )}
 
