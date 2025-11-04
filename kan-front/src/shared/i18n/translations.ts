@@ -344,10 +344,6 @@ export const translations = {
             name: 'Извлечь медиа',
             description: 'Извлечь изображения, видео и аудио из источников',
           },
-          get_card_data: {
-            name: 'Получить данные карточки',
-            description: 'Извлечь данные из полей карточки',
-          },
           get_data: {
             name: 'Получить данные',
             description: 'Получить данные из любого источника',
@@ -360,10 +356,6 @@ export const translations = {
           transform_data: {
             name: 'Преобразовать данные',
             description: 'Преобразовать и отформатировать данные',
-          },
-          set_variable: {
-            name: 'Установить переменную',
-            description: 'Создать или обновить переменную',
           },
 
           // ===========================
@@ -1025,10 +1017,6 @@ export const translations = {
             name: 'Extract Media',
             description: 'Extract images, videos and audio from sources',
           },
-          get_card_data: {
-            name: 'Get Card Data',
-            description: 'Extract data from card fields',
-          },
           get_data: {
             name: 'Get Data',
             description: 'Get data from any source',
@@ -1040,10 +1028,6 @@ export const translations = {
           transform_data: {
             name: 'Transform Data',
             description: 'Transform and format data',
-          },
-          set_variable: {
-            name: 'Set Variable',
-            description: 'Create or update a variable',
           },
 
           // ===========================

@@ -18,7 +18,6 @@ import {
   LogicOutputHandle,
   ConnectionHandle,
 } from './ConnectionHandle';
-import { VariableStorageControl } from './VariableStorageControl';
 
 interface LogicBlockProps {
   data: { type: string; name: string; config: any; isEditing?: boolean };
@@ -217,12 +216,6 @@ export function LogicBlock({
                   </>
                 )}
               </div>
-
-              {/* ✅ ВСТРОЕН: Variable Storage Control */}
-              <VariableStorageControl
-                config={data.config || {}}
-                onChange={updateFormData}
-              />
 
               <div className="flex gap-1 pt-1">
                 <Button

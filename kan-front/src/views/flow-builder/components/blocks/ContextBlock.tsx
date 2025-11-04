@@ -12,7 +12,6 @@ import { Badge } from '@/src/shared/components/ui/badge';
 import { Button } from '@/src/shared/components/ui/button';
 import {
   FileText,
-  Archive,
   Variable,
   Pencil,
   Trash2,
@@ -60,8 +59,6 @@ export function ContextBlock({
     switch (data.type) {
       case 'extract_files':
         return <FileText className="w-4 h-4" />;
-      case 'get_card_data':
-        return <Archive className="w-4 h-4" />;
       case 'extract_text':
         return <FileImage className="w-4 h-4" />;
       case 'extract_media':

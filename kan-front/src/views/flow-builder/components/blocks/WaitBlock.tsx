@@ -274,11 +274,13 @@ export function WaitBlock({
                   )}
               </div>
 
-              {/* ✅ ВСТРОЕН: Variable Storage Control */}
-              <VariableStorageControl
-                config={data.config || {}}
-                onChange={updateFormData}
-              />
+              {/* ✅ ВСТРОЕН: Variable Storage Control (only for wait_response) */}
+              {data.type === 'wait_response' && (
+                <VariableStorageControl
+                  config={data.config || {}}
+                  onChange={updateFormData}
+                />
+              )}
 
               <div className="flex gap-1 pt-1">
                 <Button

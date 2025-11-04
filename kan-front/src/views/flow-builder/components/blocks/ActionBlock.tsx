@@ -411,11 +411,16 @@ export function ActionBlock({
                 )}
               </div>
 
-              {/* ✅ ВСТРОЕН: Variable Storage Control */}
-              <VariableStorageControl
-                config={data.config || {}}
-                onChange={updateFormData}
-              />
+              {/* ✅ ВСТРОЕН: Variable Storage Control (only for data-processing actions) */}
+              {(data.type === 'ai_request' ||
+                data.type === 'api_call' ||
+                data.type === 'generate_file' ||
+                data.type === 'mcp_operation') && (
+                <VariableStorageControl
+                  config={data.config || {}}
+                  onChange={updateFormData}
+                />
+              )}
 
               {/* ✅ ВСТРОЕН: Async Control (for AI, API, MCP) */}
               {(data.type === 'ai_request' ||

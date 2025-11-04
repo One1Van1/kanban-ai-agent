@@ -948,7 +948,6 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
 
         // Context
         extract_files: 'Extract Files',
-        get_card_data: 'Get Card Data',
         external_api: 'External API',
         variable: 'Set Variable',
 
@@ -1005,11 +1004,6 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
             variableName: 'files',
             source: 'card_attachments',
             filter: {},
-          };
-        case 'get_card_data':
-          return {
-            variableName: 'cardData',
-            source: 'current_card',
           };
         case 'if_else':
           return {

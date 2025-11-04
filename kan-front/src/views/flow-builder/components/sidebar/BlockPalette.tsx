@@ -871,8 +871,6 @@ const getIconSVG = (blockType: string): string => {
 
     // Context
     extract_files: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14,2 14,8 20,8"/></svg>`,
-    get_card_data: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M5 12c0 1.66 3.13 3 7 3s7-1.34 7-3"/><path d="M5 17c0 1.66 3.13 3 7 3s7-1.34 7-3"/><path d="M5 7v10"/><path d="M19 7v10"/></svg>`,
-    set_variable: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></svg>`,
 
     // Logic - 3 blocks only
     if_else: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" x2="6" y1="3" y2="15"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="m18 9 2.5-2.5L18 4l-2.5 2.5L18 9z"/></svg>`,
@@ -1062,8 +1060,6 @@ const getBlockInfo = (blockType: string, blockCategory: string) => {
 
     // Context
     extract_files: FileText,
-    get_card_data: Database,
-    set_variable: Variable,
 
     // Logic - 3 blocks only
     if_else: GitBranch,
@@ -1110,8 +1106,6 @@ const getBlockDisplayName = (blockType: string) => {
 
     // Context - EXPANDED
     extract_files: 'Extract Files',
-    get_card_data: 'Get Card Data',
-    set_variable: 'Set Variable',
     extract_text: 'Extract Text',
     extract_media: 'Extract Media',
     get_data: 'Get Data',
@@ -1207,12 +1201,6 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     color: 'text-blue-600',
   },
   {
-    type: 'get_card_data',
-    category: 'context',
-    icon: <Database className="w-4 h-4" />,
-    color: 'text-blue-600',
-  },
-  {
     type: 'get_data',
     category: 'context',
     icon: <Database className="w-4 h-4" />,
@@ -1228,12 +1216,6 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
     type: 'transform_data',
     category: 'context',
     icon: <RefreshCw className="w-4 h-4" />,
-    color: 'text-blue-600',
-  },
-  {
-    type: 'set_variable',
-    category: 'context',
-    icon: <Variable className="w-4 h-4" />,
     color: 'text-blue-600',
   },
 

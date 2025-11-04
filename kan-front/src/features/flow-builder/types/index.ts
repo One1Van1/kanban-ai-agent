@@ -132,7 +132,6 @@ export interface ContextBlock {
   id: string;
   type: // Existing types
   | 'extract_files'
-    | 'get_card_data'
     | 'external_api'
     | 'variable'
     // NEW TYPES - Universal context extraction
