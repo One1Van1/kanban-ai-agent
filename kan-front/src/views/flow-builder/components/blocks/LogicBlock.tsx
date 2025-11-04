@@ -179,7 +179,9 @@ export function LogicBlock({
                   <>
                     <input
                       type="text"
-                      placeholder="Collection/Array"
+                      placeholder={t(
+                        'flowBuilder.fields.collectionPlaceholder',
+                      )}
                       defaultValue={data.config?.collection || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
@@ -190,7 +192,9 @@ export function LogicBlock({
                     />
                     <input
                       type="text"
-                      placeholder="Item Variable"
+                      placeholder={t(
+                        'flowBuilder.fields.itemVariablePlaceholder',
+                      )}
                       defaultValue={data.config?.itemVariable || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
@@ -201,7 +205,9 @@ export function LogicBlock({
                     />
                     <input
                       type="number"
-                      placeholder="Max Iterations"
+                      placeholder={t(
+                        'flowBuilder.fields.maxIterationsPlaceholder',
+                      )}
                       defaultValue={data.config?.maxIterations || ''}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
