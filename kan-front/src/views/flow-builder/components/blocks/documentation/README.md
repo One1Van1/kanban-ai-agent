@@ -11,14 +11,12 @@
 
 ## Контекст (Context)
 
-Получают данные для работы
+Получают и обрабатывают данные
 
-- [Board Data](./context/board-data.md) - Данные досок
-- [User Data](./context/user-data.md) - Данные пользователей
-- [Task Data](./context/task-data.md) - Данные задач
-- [Extract Text](./context/extract-text.md) - Извлечь текст из файлов
+- [Extract Files](./context/extract-files.md) - Извлечь файлы из источников
+- [Extract Text](./context/extract-text.md) - Извлечь текст из файлов (OCR)
 - [Extract Media](./context/extract-media.md) - Извлечь медиа из файлов
-- [Get Data](./context/get-data.md) - Получить данные из БД/API
+- [Get Data](./context/get-data.md) - Получить данные из любого источника
 - [RAG Processing](./context/rag-processing.md) - RAG обработка текста
 - [Transform Data](./context/transform-data.md) - Преобразовать данные
 
@@ -26,28 +24,26 @@
 
 Управляют потоком выполнения
 
-- [Condition](./logic/condition.md) - Условие (if/else)
-- [Loop](./logic/loop.md) - Цикл (for/while)
-- [Try/Catch](./logic/try-catch.md) - Обработка ошибок
+- [If/Else](./logic/if-else.md) - Условное ветвление
 - [Switch](./logic/switch.md) - Множественный выбор
-- [Parallel](./logic/parallel.md) - Параллельное выполнение
+- [Loop](./logic/loop.md) - Цикл по коллекции
 
 ## Действия (Actions)
 
 Выполняют операции
 
-- [AI Request](./actions/ai-request.md) - Запрос к AI
-- [Create Task](./actions/create-task.md) - Создать задачу
-- [Update Task](./actions/update-task.md) - Обновить задачу
-- [Generate File](./actions/generate-file.md) - Создать файл
+- [Comment](./actions/comment.md) - Добавить комментарий
+- [AI Request](./actions/ai-request.md) - Запрос к AI модели
+- [Generate File](./actions/generate-file.md) - Сгенерировать файл
 - [Send Message](./actions/send-message.md) - Отправить сообщение
-- [API Call](./actions/api-call.md) - HTTP запрос к API
-- [MCP Operation](./actions/mcp-operation.md) - MCP операция
+- [API Call](./actions/api-call.md) - HTTP запрос к внешнему API
+- [MCP Operation](./actions/mcp-operation.md) - Model Context Protocol операция
+- [Store Data](./actions/store-data.md) - Сохранить данные в хранилище
 
 ## Ожидание (Wait)
 
-Паузы и сохранение
+Управление временем выполнения
 
-- [Delay](./wait/delay.md) - Пауза на время
-- [Wait for Event](./wait/wait-for-event.md) - Ждать события
-- [Store Data](./wait/store-data.md) - Сохранить данные
+- [Wait Response](./wait/wait-response.md) - Ожидать ответ от пользователя
+- [Wait Timeout](./wait/wait-timeout.md) - Пауза на заданное время
+- [Wait Condition](./wait/wait-condition.md) - Ждать выполнения условия
