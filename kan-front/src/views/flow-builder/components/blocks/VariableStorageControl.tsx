@@ -3,6 +3,7 @@ import { Checkbox } from '@/src/shared/components/ui/checkbox';
 import { Input } from '@/src/shared/components/ui/input';
 import { Label } from '@/src/shared/components/ui/label';
 import { Variable } from 'lucide-react';
+import { useTranslation } from '@/src/shared/i18n';
 
 interface VariableStorageControlProps {
   config: {
@@ -22,12 +23,14 @@ export function VariableStorageControl({
   onChange,
   disabled = false,
 }: VariableStorageControlProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="space-y-3 rounded-md border border-purple-200 bg-purple-50/50 p-3">
       <div className="flex items-center space-x-2">
         <Variable className="h-4 w-4 text-purple-600" />
         <Label className="text-sm font-medium text-purple-900">
-          Save Result to Variable
+          {t('flowBuilder.variableStorage.title')}
         </Label>
       </div>
 
@@ -44,19 +47,21 @@ export function VariableStorageControl({
           htmlFor="saveToVariable"
           className="text-sm font-normal text-gray-700 cursor-pointer"
         >
-          Store block output in a variable
+          {t('flowBuilder.variableStorage.checkboxLabel')}
         </Label>
       </div>
 
       {config.saveToVariable && (
         <div className="space-y-1.5 pl-6">
           <Label htmlFor="variableName" className="text-xs text-gray-600">
-            Variable Name
+            {t('flowBuilder.variableStorage.variableNameLabel')}
           </Label>
           <Input
             id="variableName"
             type="text"
-            placeholder="e.g., extracted_text, api_response"
+            placeholder={t(
+              'flowBuilder.variableStorage.variableNamePlaceholder',
+            )}
             value={config.variableName || ''}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
               onChange('variableName', e.target.value)
@@ -65,13 +70,13 @@ export function VariableStorageControl({
             className="h-8 text-sm bg-white"
           />
           <p className="text-xs text-gray-500">
-            Use{' '}
+            {t('flowBuilder.variableStorage.usageHint')}{' '}
             <code className="px-1 py-0.5 bg-gray-100 rounded">
               {'{'}
               {config.variableName || 'variable_name'}
               {'}'}
             </code>{' '}
-            in subsequent blocks
+            {t('flowBuilder.variableStorage.usageHintSuffix')}
           </p>
         </div>
       )}

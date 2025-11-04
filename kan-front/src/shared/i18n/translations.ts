@@ -588,6 +588,16 @@ export const translations = {
         responseVariable: 'Переменная ответа',
       },
 
+      // Variable Storage Control
+      variableStorage: {
+        title: 'Сохранить результат в переменную',
+        checkboxLabel: 'Сохранить вывод блока в переменную',
+        variableNameLabel: 'Имя переменной',
+        variableNamePlaceholder: 'например, извлеченный_текст, ответ_api',
+        usageHint: 'Используйте',
+        usageHintSuffix: 'в последующих блоках',
+      },
+
       // Events
       events: {
         card_moved: 'Карточка перемещена',
@@ -1225,6 +1235,16 @@ export const translations = {
         apiSuccess: 'API call succeeds',
         branches: 'Branches',
         responseVariable: 'Response Variable',
+      },
+
+      // Variable Storage Control
+      variableStorage: {
+        title: 'Save Result to Variable',
+        checkboxLabel: 'Store block output in a variable',
+        variableNameLabel: 'Variable Name',
+        variableNamePlaceholder: 'e.g., extracted_text, api_response',
+        usageHint: 'Use',
+        usageHintSuffix: 'in subsequent blocks',
       },
 
       // Events
