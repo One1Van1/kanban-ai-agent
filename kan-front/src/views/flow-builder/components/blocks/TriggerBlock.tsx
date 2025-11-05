@@ -84,10 +84,6 @@ export function TriggerBlock({
     dataType: data.type,
   });
 
-  const [isSaveToVariableChecked, setIsSaveToVariableChecked] = useState(
-    data.config?.saveToVariable || false,
-  );
-
   const getIcon = () => {
     switch (data.type) {
       // NEW UNIVERSAL TRIGGERS
@@ -649,34 +645,6 @@ export function TriggerBlock({
                     </label>
                   </>
                 )}
-              </div>
-
-              {/* ✅ Чекбокс "Сохранить результат в переменную" */}
-              <div
-                className={`flex items-center space-x-2 p-2 rounded border transition-all ${
-                  isSaveToVariableChecked
-                    ? 'bg-green-100 border-green-400 shadow-sm'
-                    : 'bg-green-50/50 border-green-200'
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  id={`saveToVariable-${id}`}
-                  defaultChecked={data.config?.saveToVariable || false}
-                  onChange={(e) => {
-                    setIsSaveToVariableChecked(e.target.checked);
-                    updateFormData('saveToVariable', e.target.checked);
-                  }}
-                  ref={(el) => registerFieldRef('saveToVariable', el)}
-                  className="h-4 w-4 rounded border-green-300 text-green-600 focus:ring-green-500"
-                  onClick={(e) => e.stopPropagation()}
-                />
-                <label
-                  htmlFor={`saveToVariable-${id}`}
-                  className="text-xs text-green-900 cursor-pointer font-medium"
-                >
-                  Сохранить результат в переменную
-                </label>
               </div>
 
               <div className="flex gap-1 pt-1">

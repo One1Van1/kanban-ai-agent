@@ -5,15 +5,6 @@
 // ===========================
 
 /**
- * Universal interface for blocks that can save their output to a variable
- * Can be embedded in any block type (Trigger, Context, Logic, Action, Wait)
- */
-export interface WithVariableStorage {
-  saveToVariable?: boolean;
-  variableName?: string;
-}
-
-/**
  * Universal interface for async operations (AI, API, MCP)
  * Controls waiting behavior and timeout handling
  */
@@ -124,7 +115,7 @@ export interface TriggerBlock {
       maxExecutions: number; // Max executions per period
       period: 'minute' | 'hour' | 'day';
     };
-  } & WithVariableStorage;
+  };
 }
 
 // Context Block Types
@@ -171,7 +162,7 @@ export interface ContextBlock {
     // For transform_data
     transformationType?: 'format' | 'filter' | 'aggregate' | 'map';
     transformationScript?: string;
-  } & WithVariableStorage;
+  };
 }
 
 // Logic Block Types
@@ -189,7 +180,7 @@ export interface LogicBlock {
     falseBranch?: string[]; // IDs следующих блоков
     // For ai_result type
     responseVariable?: string;
-  } & WithVariableStorage;
+  };
 }
 
 // Action Block Types
@@ -216,7 +207,7 @@ export interface ActionBlock {
     // attachments references variable names that contain file lists (e.g. extracted card attachments)
     attachments?: string[]; // variable names with files
     // name of variable where AI response (text) will be stored
-    outputVariable?: string;
+    responseVariable?: string;
 
     // Для файлов (generate_file)
     fileName?: string;
@@ -247,8 +238,7 @@ export interface ActionBlock {
     storageType?: 'database' | 's3' | 'local';
     storagePath?: string;
     dataFormat?: 'json' | 'csv' | 'xml';
-  } & WithVariableStorage &
-    WithAsyncControl;
+  } & WithAsyncControl;
 }
 
 // Wait Block Types
@@ -264,7 +254,7 @@ export interface WaitBlock {
     onTimeout?: string[]; // IDs следующих блоков
     // variable containing awaited data (e.g. AI response text) for subsequent branching
     responseVariable?: string;
-  } & WithVariableStorage;
+  };
 }
 
 // Flow Definition

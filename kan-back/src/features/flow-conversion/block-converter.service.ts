@@ -133,9 +133,6 @@ export class BlockConverterService {
         if (block.config.attachments && block.config.attachments.length > 0) {
           instruction += `. Include attachments: ${block.config.attachments.join(', ')}`;
         }
-        if (block.config.outputVariable) {
-          instruction += `. Store response in variable: ${block.config.outputVariable}`;
-        }
         break;
 
       case 'create_file':

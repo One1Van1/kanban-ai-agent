@@ -129,7 +129,6 @@ export interface ActionBlockData extends BaseBlockData {
     aiModel?: 'claude' | 'gpt' | 'gemini';
     prompt?: string;
     attachments?: string[];
-    outputVariable?: string;
 
     // Файлы
     fileName?: string;

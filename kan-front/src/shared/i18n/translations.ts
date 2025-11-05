@@ -582,7 +582,6 @@ export const translations = {
         transformationCode: 'Код преобразования',
         transformationCodePlaceholder:
           'JavaScript код (доступна переменная data)',
-        returnedStructure: 'Структура возвращаемых данных',
         mapExpression: 'Map выражение',
         mapExpressionPlaceholder: '{ name: item.firstName, age: item.age }',
         filterCondition: 'Условие фильтра',
@@ -1293,7 +1292,6 @@ export const translations = {
         transformationCode: 'Transformation Code',
         transformationCodePlaceholder:
           'JavaScript code (data variable available)',
-        returnedStructure: 'Returned Data Structure',
         mapExpression: 'Map Expression',
         mapExpressionPlaceholder: '{ name: item.firstName, age: item.age }',
         filterCondition: 'Filter Condition',
