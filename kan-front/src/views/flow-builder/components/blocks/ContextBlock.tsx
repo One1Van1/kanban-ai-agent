@@ -20,17 +20,19 @@ import {
   Database,
   Brain,
   RefreshCw,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
 import { ContextInputHandle, ContextOutputHandle } from './ConnectionHandle';
-import { VariableStorageControl } from './VariableStorageControl';
 
 interface ContextBlockProps {
   data: {
     type: string;
     name: string;
     config: any;
+    isStructureExpanded?: boolean;
   };
   id: string;
   selected: boolean;
@@ -46,6 +48,12 @@ export function ContextBlock({
   onUpdateBlock,
 }: ContextBlockProps) {
   const { t } = useLanguage();
+
+  console.log('🔵 ContextBlock render:', id, {
+    'data.config.saveToVariable': data.config?.saveToVariable,
+    selected,
+  });
+
   const {
     isEditing,
     toggleEdit,
@@ -54,6 +62,10 @@ export function ContextBlock({
     updateFormData,
     registerFieldRef,
   } = useBlockEdit(id, onUpdateBlock);
+
+  const [isSaveToVariableChecked, setIsSaveToVariableChecked] = useState(
+    data.config?.saveToVariable || false,
+  );
 
   const getIcon = () => {
     switch (data.type) {
@@ -330,11 +342,33 @@ export function ContextBlock({
                 )}
               </div>
 
-              {/* ✅ ВСТРОЕН: Variable Storage Control */}
-              <VariableStorageControl
-                config={data.config || {}}
-                onChange={updateFormData}
-              />
+              {/* ✅ Чекбокс "Сохранить результат в переменную" */}
+              <div
+                className={`flex items-center space-x-2 p-2 rounded border transition-all ${
+                  isSaveToVariableChecked
+                    ? 'bg-blue-100 border-blue-400 shadow-sm'
+                    : 'bg-blue-50/50 border-blue-200'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  id={`saveToVariable-${id}`}
+                  defaultChecked={data.config?.saveToVariable || false}
+                  onChange={(e) => {
+                    setIsSaveToVariableChecked(e.target.checked);
+                    updateFormData('saveToVariable', e.target.checked);
+                  }}
+                  ref={(el) => registerFieldRef('saveToVariable', el)}
+                  className="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <label
+                  htmlFor={`saveToVariable-${id}`}
+                  className="text-xs text-blue-900 cursor-pointer font-medium"
+                >
+                  Сохранить результат в переменную
+                </label>
+              </div>
 
               <div className="flex gap-1 pt-1">
                 <Button
@@ -381,27 +415,6 @@ export function ContextBlock({
                     {data.config?.filter?.fileType?.join(', ') ||
                       t('flowBuilder.fields.notSet')}
                   </div>
-                  {/* Показываем структуру возвращаемых данных */}
-                  {data.config?.saveToVariable && data.config?.variableName && (
-                    <div className="text-xs mt-2 p-2 bg-muted/30 rounded border border-border/50">
-                      <div className="font-medium text-muted-foreground mb-1 flex items-center gap-1">
-                        <span>💡</span>
-                        <span>
-                          {t('flowBuilder.fields.returnedStructure')}:
-                        </span>
-                      </div>
-                      <div className="font-mono text-[10px] text-muted-foreground/80 space-y-0.5">
-                        <div>{'{'}</div>
-                        <div className="ml-2">files: {'Array<{'}</div>
-                        <div className="ml-4">name: string,</div>
-                        <div className="ml-4">path: string,</div>
-                        <div className="ml-4">size: number,</div>
-                        <div className="ml-4">mimeType: string</div>
-                        <div className="ml-2">{'}>'}</div>
-                        <div>{'}'}</div>
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
 
@@ -441,6 +454,80 @@ export function ContextBlock({
                     </div>
                   )}
                 </>
+              )}
+
+              {/* 💡 УНИВЕРСАЛЬНАЯ структура возвращаемых данных для ВСЕХ типов контекста */}
+              {data.config?.saveToVariable && data.config?.variableName && (
+                <div className="text-xs mt-2 p-2 bg-muted/30 rounded border border-border/50">
+                  <div
+                    className="font-medium text-muted-foreground mb-1 flex items-center gap-1 cursor-pointer hover:text-foreground transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onUpdateBlock?.(id, {
+                        ...data,
+                        isStructureExpanded: !data.isStructureExpanded,
+                      });
+                    }}
+                  >
+                    <span>💡</span>
+                    <span>{t('flowBuilder.fields.returnedStructure')}:</span>
+                    {data.isStructureExpanded ? (
+                      <ChevronUp className="w-3 h-3 ml-auto" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3 ml-auto" />
+                    )}
+                  </div>
+                  {data.isStructureExpanded && (
+                    <div className="font-mono text-[10px] text-muted-foreground/80 space-y-0.5 mt-1">
+                      <div>{'{'}</div>
+                      {data.type === 'extract_files' && (
+                        <>
+                          <div className="ml-2">files: {'Array<{'}</div>
+                          <div className="ml-4">name: string,</div>
+                          <div className="ml-4">path: string,</div>
+                          <div className="ml-4">size: number,</div>
+                          <div className="ml-4">mimeType: string</div>
+                          <div className="ml-2">{'}>'}</div>
+                        </>
+                      )}
+                      {data.type === 'extract_text' && (
+                        <>
+                          <div className="ml-2">text: string,</div>
+                          <div className="ml-2">length: number</div>
+                        </>
+                      )}
+                      {data.type === 'extract_media' && (
+                        <>
+                          <div className="ml-2">media: {'Array<{'}</div>
+                          <div className="ml-4">url: string,</div>
+                          <div className="ml-4">type: string</div>
+                          <div className="ml-2">{'}>'}</div>
+                        </>
+                      )}
+                      {data.type === 'get_data' && (
+                        <>
+                          <div className="ml-2">data: any</div>
+                        </>
+                      )}
+                      {data.type === 'transform_data' && (
+                        <>
+                          <div className="ml-2">result: any</div>
+                        </>
+                      )}
+                      {data.type === 'rag_processing' && (
+                        <>
+                          <div className="ml-2">
+                            chunks: Array&lt;string&gt;,
+                          </div>
+                          <div className="ml-2">
+                            embeddings: Array&lt;number[]&gt;
+                          </div>
+                        </>
+                      )}
+                      <div>{'}'}</div>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}

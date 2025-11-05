@@ -28,7 +28,6 @@ import {
 import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
 import { ActionInputHandle, ActionOutputHandle } from './ConnectionHandle';
-import { VariableStorageControl } from './VariableStorageControl';
 import { AsyncControl } from './AsyncControl';
 
 interface ActionBlockProps {
@@ -60,6 +59,10 @@ export function ActionBlock({
     updateFormData,
     registerFieldRef,
   } = useBlockEdit(id, onUpdateBlock);
+
+  const [isSaveToVariableChecked, setIsSaveToVariableChecked] = useState(
+    data.config?.saveToVariable || false,
+  );
 
   const getIcon = () => {
     switch (data.type) {
@@ -495,15 +498,37 @@ export function ActionBlock({
                 )}
               </div>
 
-              {/* ✅ ВСТРОЕН: Variable Storage Control (only for data-processing actions) */}
+              {/* ✅ Чекбокс "Сохранить результат в переменную" (only for data-processing actions) */}
               {(data.type === 'ai_request' ||
                 data.type === 'api_call' ||
                 data.type === 'generate_file' ||
                 data.type === 'mcp_operation') && (
-                <VariableStorageControl
-                  config={data.config || {}}
-                  onChange={updateFormData}
-                />
+                <div
+                  className={`flex items-center space-x-2 p-2 rounded border transition-all ${
+                    isSaveToVariableChecked
+                      ? 'bg-purple-100 border-purple-400 shadow-sm'
+                      : 'bg-purple-50/50 border-purple-200'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    id={`saveToVariable-${id}`}
+                    defaultChecked={data.config?.saveToVariable || false}
+                    onChange={(e) => {
+                      setIsSaveToVariableChecked(e.target.checked);
+                      updateFormData('saveToVariable', e.target.checked);
+                    }}
+                    ref={(el) => registerFieldRef('saveToVariable', el)}
+                    className="h-4 w-4 rounded border-purple-300 text-purple-600 focus:ring-purple-500"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <label
+                    htmlFor={`saveToVariable-${id}`}
+                    className="text-xs text-purple-900 cursor-pointer font-medium"
+                  >
+                    Сохранить результат в переменную
+                  </label>
+                </div>
               )}
 
               {/* ✅ ВСТРОЕН: Async Control (for AI, API, MCP) */}

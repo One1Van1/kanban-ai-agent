@@ -23,17 +23,21 @@ export function useBlockEdit(
 
   const saveEdit = useCallback(
     (e: React.MouseEvent, currentConfig?: any) => {
-      console.log('💾 Save edit for block:', id);
-      console.log('📊 Current formData:', formDataRef.current);
-      console.log('📊 Form field refs:', Object.keys(fieldRefsRef.current));
-      console.log('📊 Current config:', currentConfig);
       e.stopPropagation();
 
       // Собираем данные из полей формы
       const formValues: Record<string, any> = {};
       Object.entries(fieldRefsRef.current).forEach(([fieldName, element]) => {
         if (element) {
-          let value: any = element.value;
+          let value: any;
+
+          // Для checkbox читаем checked, а не value!
+          if (element.type === 'checkbox') {
+            value = (element as HTMLInputElement).checked;
+          } else {
+            value = element.value;
+          }
+
           // Обрабатываем числовые поля
           if (element.type === 'number') {
             value = parseInt(element.value) || 0;
@@ -64,8 +68,6 @@ export function useBlockEdit(
         }
       });
 
-      console.log('📋 Collected form values:', formValues);
-
       // Сохраняем изменения через функцию onUpdateBlock
       if (onUpdateBlock) {
         // Мержим данные из формы и formDataRef
@@ -85,12 +87,7 @@ export function useBlockEdit(
           onUpdateBlock(id, {
             config: mergedConfig,
           });
-          console.log('✅ Block data updated:', id, 'merged:', mergedConfig);
-        } else {
-          console.log('⚠️ No form data changes to save');
         }
-      } else {
-        console.log('❌ onUpdateBlock not provided');
       }
 
       // Выключаем режим редактирования
@@ -105,7 +102,6 @@ export function useBlockEdit(
 
   const cancelEdit = useCallback(
     (e: React.MouseEvent) => {
-      console.log('❌ Cancel edit for block:', id);
       e.stopPropagation();
       setBlockEdit(id, false);
       // Очищаем временные данные
@@ -120,7 +116,6 @@ export function useBlockEdit(
       ...formDataRef.current,
       [field]: value,
     };
-    console.log('📝 Form data updated:', field, value, formDataRef.current);
   }, []);
 
   const registerFieldRef = useCallback(
@@ -134,7 +129,6 @@ export function useBlockEdit(
     ) => {
       if (element) {
         fieldRefsRef.current[fieldName] = element;
-        console.log('📝 Field ref registered:', fieldName);
       }
     },
     [],

@@ -18,7 +18,6 @@ import {
   WaitOutputHandle,
   ConnectionHandle,
 } from './ConnectionHandle';
-import { VariableStorageControl } from './VariableStorageControl';
 
 interface WaitBlockProps {
   data: {
@@ -48,6 +47,10 @@ export function WaitBlock({
     updateFormData,
     registerFieldRef,
   } = useBlockEdit(id, onUpdateBlock);
+
+  const [isSaveToVariableChecked, setIsSaveToVariableChecked] = useState(
+    data.config?.saveToVariable || false,
+  );
 
   const getIcon = () => {
     switch (data.type) {
@@ -274,12 +277,34 @@ export function WaitBlock({
                   )}
               </div>
 
-              {/* ✅ ВСТРОЕН: Variable Storage Control (only for wait_response) */}
+              {/* ✅ Чекбокс "Сохранить результат в переменную" (only for wait_response) */}
               {data.type === 'wait_response' && (
-                <VariableStorageControl
-                  config={data.config || {}}
-                  onChange={updateFormData}
-                />
+                <div
+                  className={`flex items-center space-x-2 p-2 rounded border transition-all ${
+                    isSaveToVariableChecked
+                      ? 'bg-orange-100 border-orange-400 shadow-sm'
+                      : 'bg-orange-50/50 border-orange-200'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    id={`saveToVariable-${id}`}
+                    defaultChecked={data.config?.saveToVariable || false}
+                    onChange={(e) => {
+                      setIsSaveToVariableChecked(e.target.checked);
+                      updateFormData('saveToVariable', e.target.checked);
+                    }}
+                    ref={(el) => registerFieldRef('saveToVariable', el)}
+                    className="h-4 w-4 rounded border-orange-300 text-orange-600 focus:ring-orange-500"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <label
+                    htmlFor={`saveToVariable-${id}`}
+                    className="text-xs text-orange-900 cursor-pointer font-medium"
+                  >
+                    Сохранить результат в переменную
+                  </label>
+                </div>
               )}
 
               <div className="flex gap-1 pt-1">
