@@ -1066,8 +1066,7 @@ const getBlockInfo = (blockType: string, blockCategory: string) => {
     switch: Settings,
     loop: RotateCcw,
 
-    // Actions
-    comment: MessageSquare,
+    // Actions (6 official blocks)
     ai_request: Brain,
     move_card: Move,
     create_file: FileUp,
@@ -1242,14 +1241,8 @@ const PALETTE_BLOCKS: PaletteBlock[] = [
   },
 
   // ===========================
-  // ACTIONS - RENAMED & EXPANDED (7 blocks)
+  // ACTIONS - RENAMED & EXPANDED (6 blocks - official schema)
   // ===========================
-  {
-    type: 'comment',
-    category: 'action',
-    icon: <MessageSquare className="w-4 h-4" />,
-    color: 'text-purple-600',
-  },
   {
     type: 'ai_request',
     category: 'action',

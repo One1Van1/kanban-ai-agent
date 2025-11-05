@@ -63,8 +63,6 @@ export function ActionBlock({
 
   const getIcon = () => {
     switch (data.type) {
-      case 'comment':
-        return <MessageSquare className="w-4 h-4" />;
       case 'ai_request':
         return <Brain className="w-4 h-4" />;
       case 'api_call':
@@ -163,19 +161,6 @@ export function ActionBlock({
                 {t('flowBuilder.editMode')}
               </div>
               <div className="space-y-1">
-                {data.type === 'comment' && (
-                  <input
-                    type="text"
-                    placeholder={t('flowBuilder.fields.commentText')}
-                    defaultValue={data.config?.commentText || ''}
-                    className="w-full text-xs px-2 py-1 border rounded bg-background"
-                    onClick={(e) => e.stopPropagation()}
-                    onChange={(e) =>
-                      updateFormData('commentText', e.target.value)
-                    }
-                    ref={(el) => registerFieldRef('commentText', el)}
-                  />
-                )}
                 {data.type === 'ai_request' && (
                   <>
                     <select
@@ -554,15 +539,6 @@ export function ActionBlock({
               <div className="text-xs font-medium mb-2">
                 {t(`flowBuilder.blockPalette.blocks.${data.type}.name`)}
               </div>
-
-              {/* Конфигурация для комментариев */}
-              {data.type === 'comment' && (
-                <div className="text-xs text-muted-foreground truncate">
-                  &quot;
-                  {data.config?.commentText || t('flowBuilder.fields.notSet')}
-                  &quot;
-                </div>
-              )}
 
               {/* Конфигурация для AI запросов */}
               {data.type === 'ai_request' && (

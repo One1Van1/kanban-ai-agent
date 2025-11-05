@@ -14,190 +14,304 @@
 
 ## Поля
 
-### AI Provider
+### AI Модель
 
-Какой AI использовать
+Выберите модель AI для обработки запроса.
 
-**OpenAI** - GPT-4, GPT-3.5
-**Anthropic** - Claude-3 (Opus, Sonnet, Haiku)
-**Google** - Gemini Pro
-**Local/Custom** - свой AI
+**Доступные модели:**
 
-### Model
+- **GPT-4** - самый умный, лучше для сложных задач
+- **GPT-3.5 Turbo** - быстрый и эффективный
+- **Claude-3** - хорош для анализа и творчества
+- **Gemini Pro** - универсальный от Google
 
-Модель AI
+### Промпт
 
-**OpenAI:**
-
-- `gpt-4o` - самый умный, дорогой
-- `gpt-4-turbo` - быстрый, умный
-- `gpt-3.5-turbo` - быстрый, дешёвый
-
-**Anthropic:**
-
-- `claude-3-opus` - самый умный
-- `claude-3-sonnet` - баланс
-- `claude-3-haiku` - быстрый
-
-**Google:**
-
-- `gemini-pro` - универсальный
-
-### System Message
-
-Инструкция для AI (роль, контекст)
+Ваш запрос к AI. Может включать переменные из предыдущих блоков.
 
 **Примеры:**
 
 ```
-Ты помощник менеджера проектов.
-Анализируй задачи и предлагай улучшения.
+Проанализируй эту задачу: {task.description}
 ```
 
 ```
-Ты эксперт по HR.
-Оценивай резюме кандидатов объективно.
+Ответь на вопрос пользователя: {user.question}
 ```
 
-### User Message / Prompt
-
-Сам запрос к AI
-
-Может содержать переменные: `{task.description}`, `{user.question}`
-
-**Пример:**
-
 ```
-Проанализируй эту задачу и предложи:
-1. Приоритет (low/medium/high)
-2. Примерное время выполнения
-3. Подходящего исполнителя
-
-Задача: {task.description}
+Сгенерируй краткое описание для товара:
+Название: {product.title}
+Характеристики: {product.specs}
 ```
 
-### Temperature
+**Советы по написанию промптов:**
 
-Креативность ответа (0.0 - 2.0)
+- Будьте конкретны в инструкциях
+- Используйте переменные в фигурных скобках: `{variable.field}`
+- Для JSON ответов опишите желаемую структуру в промпте
+- Примеры помогают AI понять что вы хотите
 
-- `0.0` - детерминированный, точный
-- `0.7` - баланс (по умолчанию)
-- `1.5` - креативный, непредсказуемый
+### Сохранить результат в переменную
 
-### Max Tokens
+Имя переменной для сохранения ответа AI.
 
-Максимальная длина ответа
+**Примеры:**
 
-- `100` - короткий ответ
-- `500` - средний
-- `2000` - длинный
+- `ai_analysis` → использовать как `{ai_analysis}`
+- `generated_text` → использовать как `{generated_text}`
+- `ai_decision` → использовать как `{ai_decision}`
 
-### Response Format
+---
 
-Формат ответа
-
-**Text** - обычный текст
-**JSON** - структурированный JSON
-**Markdown** - форматированный текст
-
-Для JSON укажите JSON Schema
-
-### Save Response to Variable
-
-Имя переменной для ответа
-
-Пример: `ai_response` → `{ai_response.text}`
+> **💡 Примечание:** Продвинутые настройки AI (System Prompt, Temperature, Max Tokens, Response Format, JSON Schema) планируются в следующих версиях. Сейчас доступны базовые возможности отправки запроса и получения ответа.
 
 ## Примеры использования
 
 ### Анализ задачи
 
 ```
-AI Request:
-  Provider: OpenAI
-  Model: gpt-4o
-  System: "Ты менеджер проектов"
-  Prompt: "Проанализируй задачу и определи приоритет:
-           {task.description}"
-  Response Format: JSON
-  Schema: {"priority": "string", "estimatedHours": "number"}
-  Save to: analysis
-→ Update Task: priority = {analysis.priority}
+Блок: Get Data (Получение данных)
+  Переменная: task_info
+  Источник: api/tasks/123
+  Сохранить результат в переменную: ✓ task
+
+⭐ Блок: AI Request (AI запрос) ⭐
+  AI Модель: GPT-4
+  Промпт: Проанализируй задачу и определи:
+    1. Приоритет (low/medium/high)
+    2. Примерное время выполнения в часах
+    3. Подходящего исполнителя (frontend/backend/design)
+
+    Задача: {task.title}
+    Описание: {task.description}
+
+    Ответь в формате JSON:
+    {
+      "priority": "string",
+      "estimatedHours": "number",
+      "assignee": "string"
+    }
+  Сохранить результат в переменную: ✓ analysis
+
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: {task.id}
+  Текст комментария: 🤖 AI Анализ:
+    Приоритет: {analysis.priority}
+    Время: {analysis.estimatedHours}ч
+    Назначить на: {analysis.assignee}
 ```
 
-### Генерация описания
+---
+
+### Генерация описания продукта
 
 ```
-AI Request:
-  Model: gpt-4-turbo
-  System: "Ты копирайтер"
-  Prompt: "Создай описание продукта:
-           Название: {product.name}
-           Характеристики: {product.features}"
-  Temperature: 1.0 (креативно)
-  Max Tokens: 300
-  Save to: description
-→ Update Product: description = {description}
+Блок: Get Data (Получение данных)
+  Переменная: product_data
+  Источник: api/products/{product_id}
+  Сохранить результат в переменную: ✓ product
+
+⭐ Блок: AI Request (AI запрос) ⭐
+  AI Модель: GPT-4
+  Промпт: Ты профессиональный копирайтер. Создай привлекательное описание продукта для интернет-магазина (2-3 абзаца):
+
+    Название: {product.name}
+    Категория: {product.category}
+    Характеристики: {product.features}
+    Цена: {product.price} руб
+  Сохранить результат в переменную: ✓ description
+
+Блок: API Call (API вызов)
+  URL: api/products/{product_id}
+  HTTP Method: PUT
+  Body: {"description": "{description}"}
+  Сохранить результат в переменную: ✓ updated
 ```
 
-### Chatbot
+---
+
+### Chatbot поддержки
 
 ```
-User Message: {message}
-AI Request:
-  Provider: OpenAI
-  Model: gpt-3.5-turbo
-  System: "Ты помощник службы поддержки компании"
-  Prompt: "{message}"
-  Temperature: 0.7
-  Save to: bot_response
-→ Send Message: {bot_response} пользователю
+Блок: Webhook (Вебхук)
+  Webhook URL: https://flow.kanban.com/webhook/abc123
+  HTTP Method: POST
+  Webhook Secret: secret_key_123
+
+Блок: Get Data (Получение данных)
+  Переменная: chat_history
+  Источник: api/chat/{webhook_data.body.user_id}/history
+  Сохранить результат в переменную: ✓ history
+
+⭐ Блок: AI Request (AI запрос) ⭐
+  AI Модель: GPT-3.5 Turbo
+  Промпт: Ты вежливый помощник службы поддержки компании TechCorp. Отвечай кратко и по делу.
+
+    История чата: {history}
+    Новое сообщение: {webhook_data.body.message}
+  Сохранить результат в переменную: ✓ bot_response
+
+Блок: Send Message (Отправка сообщения)
+  Канал отправки: Telegram
+  Получатель: {webhook_data.body.chat_id}
+  Сообщение: {bot_response}
 ```
 
-### Извлечение данных из текста
+---
+
+### Извлечение данных из резюме
 
 ```
-Extract Text: {resume_file} → resume_text
-AI Request:
-  Model: gpt-4o
-  Prompt: "Извлеки из резюме:
-           {resume_text}"
-  Response Format: JSON
-  Schema: {
-    "name": "string",
-    "email": "string",
-    "phone": "string",
-    "skills": ["string"],
-    "experience_years": "number"
-  }
-  Save to: candidate_data
-→ Store Data: Сохранить в БД
+Блок: Webhook (Вебхук)
+  Webhook URL: https://flow.kanban.com/webhook/hr_123
+  HTTP Method: POST
+  Webhook Secret: hr_secret
+
+Блок: Extract Text (Извлечение текста)
+  Переменная: resume_file
+  Источник: {webhook_data.body.resume_url}
+  Сохранить результат в переменную: ✓ resume_text
+
+⭐ Блок: AI Request (AI запрос) ⭐
+  AI Модель: GPT-4
+  Промпт: Ты HR специалист. Извлеки из резюме структурированную информацию в формате JSON:
+
+    Текст резюме: {resume_text}
+
+    Верни JSON с полями:
+    {
+      "name": "ФИО",
+      "email": "email",
+      "phone": "телефон",
+      "skills": ["навык1", "навык2"],
+      "experience_years": число_лет,
+      "education": "образование",
+      "last_position": "последняя должность"
+    }
+  Сохранить результат в переменную: ✓ candidate_data
+
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: hr_applications
+  Текст комментария: 📄 Новое резюме:
+    Имя: {candidate_data.name}
+    Email: {candidate_data.email}
+    Опыт: {candidate_data.experience_years} лет
+    Навыки: {candidate_data.skills}
 ```
 
-### Саммаризация комментариев
+---
+
+### Анализ тональности отзывов
 
 ```
+Блок: Get Data (Получение данных)
+  Переменная: reviews_data
+  Источник: api/products/{product_id}/reviews
+  Сохранить результат в переменную: ✓ reviews
+
+Блок: Loop (Цикл)
+  Коллекция/Массив: {reviews}
+  Переменная элемента: review
+  Максимум итераций: 100
+
+  ⭐ Блок: AI Request (AI запрос) ⭐
+    AI Модель: GPT-3.5 Turbo
+    Промпт: Определи тональность отзыва (positive/neutral/negative) и оцени от 1 до 10:
+
+      Отзыв: "{review.text}"
+
+      Ответь в JSON формате:
+      {
+        "sentiment": "positive|neutral|negative",
+        "score": число_1_10,
+        "key_points": ["ключевой момент 1", "момент 2"]
+      }
+    Сохранить результат в переменную: ✓ sentiment
+
+  ⭐ Блок: MCP Operation (Операция с объектом) ⭐
+    Операция: add_comment
+    ID карточки: {review.id}
+    Текст комментария: 📊 Тональность: {sentiment.sentiment} ({sentiment.score}/10)
+      Ключевые моменты: {sentiment.key_points}
+```
+
+---
+
+### Генерация отчёта
+
+```
+Блок: Get Data (Получение данных)
+  Переменная: sales_data
+  Источник: api/sales?period=last_month
+  Сохранить результат в переменную: ✓ sales
+
+Блок: Transform Data (Преобразование данных)
+  Переменная: sales
+  Источник: {sales}
+  Тип преобразования: Custom
+  Код преобразования:
+    {
+      total: data.reduce((sum, s) => sum + s.amount, 0),
+      count: data.length,
+      avg: data.reduce((sum, s) => sum + s.amount, 0) / data.length
+    }
+  Сохранить результат в переменную: ✓ stats
+
+⭐ Блок: AI Request (AI запрос) ⭐
+  AI Модель: GPT-4
+  Промпт: Ты бизнес-аналитик. Создай детальный отчёт о продажах за месяц:
+
+    Всего продаж: {stats.count}
+    Общая сумма: {stats.total} руб
+    Средний чек: {stats.avg} руб
+    Данные по дням: {sales}
+
+    Отчёт должен включать:
+    1. Краткую сводку
+    2. Анализ тенденций
+    3. Рекомендации
+  Сохранить результат в переменную: ✓ report
+
+Блок: Generate File (Генерация файла)
+  Имя файла: monthly_sales_report.md
+  Формат: Markdown
+  Содержимое файла: {report}
+
+Блок: Send Message (Отправка сообщения)
+  Канал отправки: Email
+  Получатель: management@company.com
+  Сообщение: Отчёт о продажах за месяц готов
+```
+
 Task Data: Get Task → task
 AI Request:
-  Model: claude-3-haiku (быстрый, дешёвый для саммари)
-  Prompt: "Сделай краткое резюме обсуждения:
-           {task.comments}"
-  Max Tokens: 200
-  Save to: summary
+Model: claude-3-haiku (быстрый, дешёвый для саммари)
+Prompt: "Сделай краткое резюме обсуждения:
+{task.comments}"
+Max Tokens: 200
+Save to: summary
 → Update Task: Добавить summary в описание
+
 ```
 
 ### Принятие решения
 
 ```
+
 AI Request:
-  Model: gpt-4o
-  System: "Ты эксперт по приоритизации"
-  Prompt: "У нас 20 задач. Какие 5 самые важные?
-           Задачи: {tasks}
-           Критерии: срочность, важность, зависимости"
-  Response Format: JSON
-  Save to: top_tasks
+Model: gpt-4o
+System: "Ты эксперт по приоритизации"
+Prompt: "У нас 20 задач. Какие 5 самые важные?
+Задачи: {tasks}
+Критерии: срочность, важность, зависимости"
+Response Format: JSON
+Save to: top_tasks
 → For Each {top_tasks}:
-  → Update Task: priority = "high"
+→ Update Task: priority = "high"
+
+```
+
 ```

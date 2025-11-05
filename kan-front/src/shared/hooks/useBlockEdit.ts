@@ -69,9 +69,10 @@ export function useBlockEdit(
       // Сохраняем изменения через функцию onUpdateBlock
       if (onUpdateBlock) {
         // Мержим данные из формы и formDataRef
+        // ВАЖНО: formValues перезаписывает formDataRef (приоритет у зарегистрированных полей)
         const allFormData = {
-          ...formDataRef.current,
           ...formValues,
+          ...formDataRef.current, // ← данные из onChange (чекбоксы, селекты)
         };
 
         if (Object.keys(allFormData).length > 0) {

@@ -109,73 +109,256 @@ RAG (Retrieval-Augmented Generation) - поиск релевантной инф�
 
 ## Примеры использования
 
-### Chatbot с базой знаний
+### Chatbot с базой знаний компании
 
 ```
-User Question: {message}
-RAG Processing: Search
-  Query: {message}
-  Collection: company-docs
-  Top K: 3
-  Save to: relevant_info
-→ AI Request:
-  System: "Отвечай на основе этой информации"
-  Context: {relevant_info}
-  Question: {message}
-→ Send Message: Ответ пользователю
+Блок: Webhook (Вебхук)
+  HTTP Метод: Получение данных (POST)
+  Сохранить результат в переменную: ✓ user_message
+
+⭐ Блок: RAG Processing (RAG обработка) ⭐
+  Переменная: search_query
+  Действие: Search
+  Запрос: {user_message.body.question}
+  Vector Database: Pinecone
+  Коллекция: company-docs
+  Настройки поиска:
+    Top K: 3
+    Min Score: 0.7
+  Сохранить результат в переменную: ✓ relevant_info
+
+Блок: AI Request (AI запрос)
+  AI Модель: GPT-4
+  System Prompt: Ты помощник компании. Отвечай только на основе предоставленной информации. Если информации нет - скажи об этом.
+  Промпт: Контекст из базы знаний:
+    {relevant_info.map(r => r.text).join('\n\n')}
+
+    Вопрос пользователя: {user_message.body.question}
+  Temperature: 0.3
+  Сохранить результат в переменную: ✓ ai_answer
+
+Блок: Send Message (Отправка сообщения)
+  Канал отправки: {user_message.body.channel}
+  Получатель: {user_message.body.user_id}
+  Сообщение: {ai_answer.content}
+
+    Источники:
+    {relevant_info.map(r => `- ${r.metadata.source} (релевантность: ${r.score})`).join('\n')}
 ```
+
+---
 
 ### Индексация новых документов
 
 ```
-Event: Загружен новый документ
-Extract Text: {document}
-RAG Processing: Index Document
-  Text: {extracted_text}
-  Collection: product-manuals
-  Chunk Size: 800
-  Metadata: {
-    "filename": "{document.name}",
-    "uploadedBy": "{user.id}"
-  }
+Блок: Event Listener (Слушатель событий)
+  Event Type: document.uploaded
+  Event Filter: {"category": "documentation"}
+  Сохранить результат в переменную: ✓ doc_event
+
+Блок: Extract Text (Извлечение текста)
+  Переменная: doc_event
+  Источник: {doc_event.document.file_url}
+  Тип файла: PDF
+  Опции извлечения: With Formatting, Metadata
+  Сохранить результат в переменную: ✓ extracted_text
+
+⭐ Блок: RAG Processing (RAG обработка) ⭐
+  Переменная: extracted_text
+  Действие: Index Document
+  Источник текста: {extracted_text.content}
+  Vector Database: Weaviate
+  Коллекция: product-manuals
+  Настройки разбиения:
+    Размер фрагмента: 800 символов
+    Перекрытие: 100 символов
+  Метаданные:
+    {
+      "filename": {doc_event.document.name},
+      "uploadedBy": {doc_event.user.name},
+      "uploadedAt": {doc_event.timestamp},
+      "category": {doc_event.document.category},
+      "pages": {extracted_text.metadata.pages}
+    }
+  Сохранить результат в переменную: ✓ index_result
+
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: documentation_index
+  Текст комментария: ✅ Документ проиндексирован:
+    Название: {doc_event.document.name}
+    Фрагментов: {index_result.chunks_count}
+    Vector ID: {index_result.document_id}
+    Коллекция: product-manuals
 ```
+
+---
 
 ### Поиск похожих тикетов поддержки
 
 ```
-Event: Новый тикет создан
-RAG Processing: Search
-  Query: {ticket.description}
-  Collection: resolved-tickets
-  Top K: 5
-  Min Score: 0.75
-→ Если найдены похожие:
-  → Предложить решения из них
-  → Автоматически пометить похожими
+Блок: Event Listener (Слушатель событий)
+  Event Type: ticket.created
+  Сохранить результат в переменную: ✓ new_ticket
+
+⭐ Блок: RAG Processing (RAG обработка) ⭐
+  Переменная: ticket_search
+  Действие: Search
+  Запрос: {new_ticket.ticket.title} {new_ticket.ticket.description}
+  Vector Database: Qdrant
+  Коллекция: resolved-tickets
+  Настройки поиска:
+    Top K: 5
+    Min Score: 0.75
+  Сохранить результат в переменную: ✓ similar_tickets
+
+Блок: IF/ELSE
+  Условие: {similar_tickets.length} > 0
+
+  Если ИСТИНА:
+    Блок: Transform Data (Преобразование данных)
+      Переменная: similar_tickets
+      Источник: {similar_tickets}
+      Тип преобразования: Map
+      Map выражение:
+        {
+          ticket_id: item.metadata.ticket_id,
+          title: item.metadata.title,
+          solution: item.metadata.solution,
+          similarity: (item.score * 100).toFixed(1) + '%'
+        }
+      Сохранить результат в переменную: ✓ suggestions
+
+    ⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+      ID карточки: {new_ticket.ticket.id}
+      Текст комментария: 🔍 Найдены похожие решённые тикеты:
+
+        {suggestions.map(s => `
+        **Тикет #${s.ticket_id}** (похожесть: ${s.similarity})
+        ${s.title}
+        Решение: ${s.solution}
+        `).join('\n---\n')}
+
+    Блок: Send Message (Отправка сообщения)
+      Канал отправки: Email
+      Получатель: {new_ticket.ticket.assignee.email}
+      Сообщение: Новый тикет #{new_ticket.ticket.id} похож на {similar_tickets.length} решённых тикетов. Проверь комментарии.
+
+  Если ЛОЖЬ:
+    ⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+      ID карточки: {new_ticket.ticket.id}
+      Текст комментария: ℹ️ Похожих тикетов не найдено - новая проблема
 ```
 
-### Обновление документации
+---
+
+### Обновление раздела документации
 
 ```
-Manual Trigger: "Обновить раздел документации"
-  Parameters: section_id, new_text
-RAG Processing: Update Index
-  Document ID: {section_id}
-  Text: {new_text}
-  Collection: docs
+Блок: Manual Trigger (Ручной запуск)
+  Trigger Name: Обновить раздел документации
+  Input Parameters:
+    [
+      {
+        "name": "section_id",
+        "type": "text",
+        "label": "ID раздела",
+        "required": true
+      },
+      {
+        "name": "new_content",
+        "type": "textarea",
+        "label": "Новый текст",
+        "required": true
+      },
+      {
+        "name": "change_note",
+        "type": "text",
+        "label": "Что изменилось"
+      }
+    ]
+  Сохранить результат в переменную: ✓ update_params
+
+⭐ Блок: RAG Processing (RAG обработка) ⭐
+  Переменная: update_doc
+  Действие: Update Index
+  Document ID: {update_params.section_id}
+  Источник текста: {update_params.new_content}
+  Vector Database: Pinecone
+  Коллекция: company-docs
+  Метаданные:
+    {
+      "last_updated": new Date().toISOString(),
+      "updated_by": {current_user.name},
+      "change_note": {update_params.change_note}
+    }
+  Сохранить результат в переменную: ✓ update_result
+
+Блок: Send Message (Отправка сообщения)
+  Канал отправки: Slack
+  Получатель: #documentation
+  Сообщение: 📝 Документация обновлена:
+    Раздел: {update_params.section_id}
+    Изменения: {update_params.change_note}
+    Автор: {current_user.name}
 ```
 
-### FAQ бот
+---
+
+### FAQ бот с автоматическим ответом
 
 ```
-Webhook: Вопрос от пользователя
-RAG Processing: Search
-  Query: {question}
-  Collection: faq
-  Top K: 1
-  Min Score: 0.8
-→ Если нашёлся хороший ответ (score > 0.8):
-  → Отправить готовый ответ
-→ Иначе:
-  → Переключить на человека
+Блок: Webhook (Вебхук)
+  HTTP Метод: Получение данных (POST)
+  Сохранить результат в переменную: ✓ faq_question
+
+⭐ Блок: RAG Processing (RAG обработка) ⭐
+  Переменная: faq_search
+  Действие: Search
+  Запрос: {faq_question.body.question}
+  Vector Database: Weaviate
+  Коллекция: faq
+  Настройки поиска:
+    Top K: 1
+    Min Score: 0.8
+  Сохранить результат в переменную: ✓ faq_match
+
+Блок: IF/ELSE
+  Условие: {faq_match.length} > 0 && {faq_match[0].score} >= 0.8
+
+  Если ИСТИНА (найден точный ответ):
+    Блок: Send Message (Отправка сообщения)
+      Канал отправки: {faq_question.body.channel}
+      Получатель: {faq_question.body.user_id}
+      Сообщение: {faq_match[0].text}
+
+        📚 FAQ: {faq_match[0].metadata.category}
+        Релевантность: {(faq_match[0].score * 100).toFixed(1)}%
+
+    ⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+      ID карточки: faq_stats
+      Текст комментария: ✅ Автоответ FAQ:
+        Вопрос: {faq_question.body.question}
+        Совпадение: {(faq_match[0].score * 100).toFixed(1)}%
+
+  Если ЛОЖЬ (точного ответа нет):
+    Блок: AI Request (AI запрос)
+      AI Модель: GPT-3.5 Turbo
+      Промпт: Вежливо скажи что не нашёл точного ответа на вопрос: "{faq_question.body.question}". Предложи связаться с поддержкой.
+      Сохранить результат в переменную: ✓ fallback_answer
+
+    Блок: Send Message (Отправка сообщения)
+      Канал отправки: {faq_question.body.channel}
+      Получатель: {faq_question.body.user_id}
+      Сообщение: {fallback_answer.content}
+
+    ⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+      ID карточки: support_queue
+      Текст комментария: ❓ Нужна помощь support:
+        Вопрос: {faq_question.body.question}
+        Пользователь: {faq_question.body.user_id}
 ```

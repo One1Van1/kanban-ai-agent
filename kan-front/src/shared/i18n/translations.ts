@@ -375,12 +375,8 @@ export const translations = {
           },
 
           // ===========================
-          // ACTIONS - RENAMED & EXPANDED
+          // ACTIONS - RENAMED & EXPANDED (6 official blocks)
           // ===========================
-          comment: {
-            name: 'Комментарий',
-            description: 'Добавить комментарий к карточке',
-          },
           ai_request: {
             name: 'AI запрос',
             description: 'Отправить запрос к AI модели',
@@ -586,6 +582,7 @@ export const translations = {
         transformationCode: 'Код преобразования',
         transformationCodePlaceholder:
           'JavaScript код (доступна переменная data)',
+        returnedStructure: 'Структура возвращаемых данных',
         mapExpression: 'Map выражение',
         mapExpressionPlaceholder: '{ name: item.firstName, age: item.age }',
         filterCondition: 'Условие фильтра',
@@ -633,14 +630,25 @@ export const translations = {
           'Временная зона (необязательно, например, UTC, Europe/Moscow)',
 
         // Event Listener fields
-        boardEvents: 'События доски',
+        externalEvents: 'Внешние события',
         userEvents: 'События пользователя',
         systemEvents: 'Системные события',
         customEvents: 'Пользовательские события',
         eventTypePlaceholder:
           'Тип события (например, card_moved, user_created)',
-        boardTypePlaceholder:
-          'Тип доски (необязательно, например, jira, trello)',
+        externalTypePlaceholder:
+          'Тип внешней системы (например, jira, trello, crm)',
+        userIdPlaceholder:
+          'ID пользователя (например, user-123, admin@example.com)',
+        systemModulePlaceholder:
+          'Системный модуль (например, auth, database, cache)',
+        customFilterPlaceholder: 'Пользовательский фильтр (JSON или строка)',
+
+        // Labels for filters
+        externalType: 'Тип внешней системы',
+        userId: 'ID пользователя',
+        systemModule: 'Системный модуль',
+        customFilter: 'Фильтр',
 
         // Manual Trigger fields
         allowedUsersPlaceholder: 'Разрешенные ID пользователей (через запятую)',
@@ -1082,10 +1090,6 @@ export const translations = {
           // ===========================
           // ACTIONS - RENAMED & EXPANDED
           // ===========================
-          comment: {
-            name: 'Comment',
-            description: 'Add comment to card',
-          },
           ai_request: {
             name: 'AI Request',
             description: 'Send request to AI model',
@@ -1289,6 +1293,7 @@ export const translations = {
         transformationCode: 'Transformation Code',
         transformationCodePlaceholder:
           'JavaScript code (data variable available)',
+        returnedStructure: 'Returned Data Structure',
         mapExpression: 'Map Expression',
         mapExpressionPlaceholder: '{ name: item.firstName, age: item.age }',
         filterCondition: 'Filter Condition',
@@ -1335,12 +1340,22 @@ export const translations = {
         timezonePlaceholder: 'Timezone (optional, e.g., UTC, America/New_York)',
 
         // Event Listener fields
-        boardEvents: 'Board Events',
+        externalEvents: 'External Events',
         userEvents: 'User Events',
         systemEvents: 'System Events',
         customEvents: 'Custom Events',
         eventTypePlaceholder: 'Event Type (e.g., card_moved, user_created)',
-        boardTypePlaceholder: 'Board Type (optional, e.g., jira, trello)',
+        externalTypePlaceholder:
+          'External System Type (e.g., jira, trello, crm)',
+        userIdPlaceholder: 'User ID (e.g., user-123, admin@example.com)',
+        systemModulePlaceholder: 'System Module (e.g., auth, database, cache)',
+        customFilterPlaceholder: 'Custom Filter (JSON or string)',
+
+        // Labels for filters
+        externalType: 'External System Type',
+        userId: 'User ID',
+        systemModule: 'System Module',
+        customFilter: 'Filter',
 
         // Manual Trigger fields
         allowedUsersPlaceholder: 'Allowed User IDs (comma-separated)',

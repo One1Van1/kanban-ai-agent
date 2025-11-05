@@ -220,22 +220,28 @@ new Date(item.dueDate) <
 ### 1. Map - Преобразовать задачи для отчёта
 
 ```
-Get Data: Получить все задачи → tasks
+Блок: Get Data (Получение данных)
+  Переменная: all_tasks
+  Источник: api/tasks
+  Сохранить результат в переменную: ✓ tasks
 
-Transform Data:
-  Variable: tasks
-  Source: {tasks}
-  Type: Map
-  Map Expression:
+⭐ Блок: Transform Data (Преобразование данных) ⭐
+  Переменная: tasks
+  Источник: {tasks}
+  Тип преобразования: Map
+  Map выражение:
     {
       "Название": item.title,
       "Статус": item.status,
       "Ответственный": item.assignee.name,
       "Просрочена": new Date(item.dueDate) < new Date()
     }
-  Save to: report_data
+  Сохранить результат в переменную: ✓ report_data
 
-Generate File: Создать Excel с {report_data}
+Блок: Generate File (Генерация файла)
+  Имя файла: report.xlsx
+  Формат: Excel
+  Содержимое файла: {report_data}
 ```
 
 ---
@@ -243,16 +249,22 @@ Generate File: Создать Excel с {report_data}
 ### 2. Filter - Активные пользователи
 
 ```
-Get Data: Получить пользователей → users
+Блок: Get Data (Получение данных)
+  Переменная: users_list
+  Источник: api/users
+  Сохранить результат в переменную: ✓ users
 
-Transform Data:
-  Variable: users
-  Source: {users}
-  Type: Filter
-  Filter Condition: item.isActive && item.lastLoginDays < 30
-  Save to: active_users
+⭐ Блок: Transform Data (Преобразование данных) ⭐
+  Переменная: users
+  Источник: {users}
+  Тип преобразования: Filter
+  Условие фильтра: item.isActive && item.lastLoginDays < 30
+  Сохранить результат в переменную: ✓ active_users
 
-Send Message: Отправить рассылку {active_users}
+Блок: Send Message (Отправка сообщения)
+  Канал отправки: Email
+  Получатель: team@company.com
+  Сообщение: Активных пользователей: {active_users.length}
 ```
 
 ---
@@ -260,17 +272,23 @@ Send Message: Отправить рассылку {active_users}
 ### 3. Sort - Задачи по приоритету
 
 ```
-Get Data: Задачи проекта → project_tasks
+Блок: Get Data (Получение данных)
+  Переменная: project_data
+  Источник: api/projects/123/tasks
+  Сохранить результат в переменную: ✓ project_tasks
 
-Transform Data:
-  Variable: project_tasks
-  Source: {project_tasks}
-  Type: Sort
-  Sort Field: priority
-  Order: По убыванию (desc)
-  Save to: sorted_tasks
+⭐ Блок: Transform Data (Преобразование данных) ⭐
+  Переменная: project_tasks
+  Источник: {project_tasks}
+  Тип преобразования: Sort
+  Поле сортировки: priority
+  Порядок: По убыванию (desc)
+  Сохранить результат в переменную: ✓ sorted_tasks
 
-Comment: Топ задачи: {sorted_tasks[0].title}
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: {sorted_tasks[0].id}
+  Текст комментария: Самая приоритетная задача: {sorted_tasks[0].title}
 ```
 
 ---
@@ -278,27 +296,30 @@ Comment: Топ задачи: {sorted_tasks[0].title}
 ### 4. Group By - Статистика по статусам
 
 ```
-Get Data: Все задачи → all_tasks
+Блок: Get Data (Получение данных)
+  Переменная: tasks_data
+  Источник: api/tasks
+  Сохранить результат в переменную: ✓ all_tasks
 
-Transform Data:
-  Variable: all_tasks
-  Source: {all_tasks}
-  Type: Group By
-  Group By Field: status
-  Save to: grouped_by_status
+⭐ Блок: Transform Data (Преобразование данных) ⭐
+  Переменная: all_tasks
+  Источник: {all_tasks}
+  Тип преобразования: Group By
+  Группировать по полю: status
+  Сохранить результат в переменную: ✓ grouped_by_status
 
-Результат в {grouped_by_status}:
-{
-  "todo": [задача1, задача2],
-  "in_progress": [задача3, задача4],
-  "done": [задача5, задача6, задача7]
-}
+Результат:
+  {grouped_by_status.todo} → массив задач со статусом "todo"
+  {grouped_by_status.in_progress} → массив задач "in_progress"
+  {grouped_by_status.done} → массив задач "done"
 
-AI Request:
-  Prompt: "Проанализируй статистику:
+Блок: AI Request (AI запрос)
+  AI Модель: GPT-4
+  Промпт: Проанализируй статистику задач:
     Todo: {grouped_by_status.todo.length}
     В работе: {grouped_by_status.in_progress.length}
-    Готово: {grouped_by_status.done.length}"
+    Готово: {grouped_by_status.done.length}
+  Сохранить результат в переменную: ✓ analysis
 ```
 
 ---
@@ -306,22 +327,28 @@ AI Request:
 ### 5. Reduce - Подсчёт статистики
 
 ```
-Get Data: Заказы за месяц → orders
+Блок: Get Data (Получение данных)
+  Переменная: orders_data
+  Источник: api/orders?month=current
+  Сохранить результат в переменную: ✓ orders
 
-Transform Data:
-  Variable: orders
-  Source: {orders}
-  Type: Reduce
-  Transformation Code:
+⭐ Блок: Transform Data (Преобразование данных) ⭐
+  Переменная: orders
+  Источник: {orders}
+  Тип преобразования: Reduce
+  Код преобразования:
     {
       totalOrders: data.length,
       totalRevenue: data.reduce((sum, o) => sum + o.total, 0),
       avgOrderValue: data.reduce((sum, o) => sum + o.total, 0) / data.length,
       topCustomer: data.sort((a, b) => b.total - a.total)[0].customer
     }
-  Save to: stats
+  Сохранить результат в переменную: ✓ stats
 
-Comment: Выручка за месяц: {stats.totalRevenue} руб
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: monthly_report
+  Текст комментария: Выручка за месяц: {stats.totalRevenue} руб. Средний чек: {stats.avgOrderValue} руб.
 ```
 
 ---
@@ -329,13 +356,16 @@ Comment: Выручка за месяц: {stats.totalRevenue} руб
 ### 6. JavaScript Expression - Сложная трансформация
 
 ```
-API Call: Получить данные CRM → crm_data
+Блок: API Call (API вызов)
+  Адрес сервиса: https://crm.company.com/api/leads
+  Тип запроса: GET
+  Сохранить результат в переменную: ✓ crm_data
 
-Transform Data:
-  Variable: crm_data
-  Source: {crm_data.leads}
-  Type: JavaScript Expression
-  Code:
+⭐ Блок: Transform Data (Преобразование данных) ⭐
+  Переменная: crm_data
+  Источник: {crm_data.leads}
+  Тип преобразования: JavaScript Expression
+  Код преобразования:
     data
       .filter(lead => lead.score > 70)
       .map(lead => ({
@@ -349,12 +379,16 @@ Transform Data:
         assignedTo: lead.score > 90 ? 'senior_manager' : 'junior_manager'
       }))
       .sort((a, b) => b.score - a.score)
-  Save to: qualified_leads
+  Сохранить результат в переменную: ✓ qualified_leads
 
-Loop: Для каждого лида в {qualified_leads}
-  → Создать задачу
-  → Назначить менеджера
-  → Отправить уведомление
+Блок: Loop (Цикл)
+  Коллекция/Массив: {qualified_leads}
+  Переменная элемента: lead
+  Максимум итераций: 50
+
+  Внутри цикла:
+    → Создать задачу для {lead.assignedTo}
+    → Отправить уведомление на {lead.email}
 ```
 
 ---
@@ -362,59 +396,72 @@ Loop: Для каждого лида в {qualified_leads}
 ### 7. Format Conversion - Экспорт в CSV
 
 ```
-Get Data: Все пользователи → users
+Блок: Get Data (Получение данных)
+  Переменная: users_export
+  Источник: api/users?active=true
+  Сохранить результат в переменную: ✓ users
 
-Transform Data:
-  Variable: users
-  Source: {users}
-  Type: Format Conversion
-  Output Format: CSV
-  Save to: users_csv
+⭐ Блок: Transform Data (Преобразование данных) ⭐
+  Переменная: users
+  Источник: {users}
+  Тип преобразования: Format Conversion
+  Формат вывода: CSV
+  Сохранить результат в переменную: ✓ users_csv
 
-Generate File:
-  File Name: users_export.csv
-  Content: {users_csv}
+Блок: Generate File (Генерация файла)
+  Имя файла: users_export.csv
+  Формат: CSV
+  Содержимое файла: {users_csv}
 
-Send Message:
-  Channel: Email
-  To: admin@company.com
-  Message: Экспорт пользователей
-  Attachment: {users_csv}
+Блок: Send Message (Отправка сообщения)
+  Канал отправки: Email
+  Получатель: admin@company.com
+  Сообщение: Экспорт активных пользователей
+  Вложение: users_export.csv
 ```
 
 ---
 
 ### 8. Цепочка преобразований
 
-```
-Get Data: Задачи → raw_tasks
+````
+Блок: Get Data (Получение данных)
+  Переменная: all_data
+  Источник: api/tasks
+  Сохранить результат в переменную: ✓ raw_tasks
 
-Transform Data #1: Фильтр
-  Type: Filter
-  Condition: item.status !== 'archived'
-  Save to: active_tasks
+Блок: Transform Data #1
+  Переменная: raw_tasks
+  Источник: {raw_tasks}
+  Тип преобразования: Filter
+  Условие фильтра: item.status !== 'archived'
+  Сохранить результат в переменную: ✓ active_tasks
 
-Transform Data #2: Map
-  Source: {active_tasks}
-  Type: Map
-  Expression: {
-    id: item.id,
-    title: item.title,
-    daysOpen: Math.floor((new Date() - new Date(item.createdAt)) / (1000*60*60*24))
-  }
-  Save to: tasks_with_age
+Блок: Transform Data #2
+  Переменная: active_tasks
+  Источник: {active_tasks}
+  Тип преобразования: Map
+  Map выражение:
+    {
+      id: item.id,
+      title: item.title,
+      daysOpen: Math.floor((new Date() - new Date(item.createdAt)) / (1000*60*60*24))
+    }
+  Сохранить результат в переменную: ✓ tasks_with_age
 
-Transform Data #3: Sort
-  Source: {tasks_with_age}
-  Type: Sort
-  Field: daysOpen
-  Order: desc
-  Save to: oldest_tasks
+Блок: Transform Data #3
+  Переменная: tasks_with_age
+  Источник: {tasks_with_age}
+  Тип преобразования: Sort
+  Поле сортировки: daysOpen
+  Порядок: По убыванию (desc)
+  Сохранить результат в переменную: ✓ oldest_tasks
 
-Comment: Самая старая задача открыта {oldest_tasks[0].daysOpen} дней
-```
-
----
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: project_dashboard
+  Текст комментария: Самая старая задача открыта {oldest_tasks[0].daysOpen} дней: {oldest_tasks[0].title}
+```---
 
 ## Советы
 
@@ -461,3 +508,4 @@ Comment: Самая старая задача открыта {oldest_tasks[0].da
 - Экспорт данных
 - Создание файлов отчётов
 - Интеграция с внешними системами
+````

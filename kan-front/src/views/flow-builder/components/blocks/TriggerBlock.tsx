@@ -483,7 +483,7 @@ export function TriggerBlock({
                 {data.type === 'event_listener' && (
                   <>
                     <select
-                      defaultValue={data.config?.eventSource || 'board'}
+                      defaultValue={data.config?.eventSource || 'external'}
                       className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
@@ -491,8 +491,8 @@ export function TriggerBlock({
                       }
                       ref={(el) => registerFieldRef('eventSource', el)}
                     >
-                      <option value="board">
-                        {t('flowBuilder.triggerSettings.boardEvents')}
+                      <option value="external">
+                        {t('flowBuilder.triggerSettings.externalEvents')}
                       </option>
                       <option value="user">
                         {t('flowBuilder.triggerSettings.userEvents')}
@@ -517,24 +517,83 @@ export function TriggerBlock({
                       }
                       ref={(el) => registerFieldRef('eventType', el)}
                     />
-                    {data.config?.eventSource === 'board' && (
+                    {/* Динамические фильтры в зависимости от источника события */}
+                    {data.config?.eventSource === 'external' && (
                       <input
                         type="text"
                         placeholder={t(
-                          'flowBuilder.triggerSettings.boardTypePlaceholder',
+                          'flowBuilder.triggerSettings.externalTypePlaceholder',
                         )}
                         defaultValue={
-                          data.config?.eventFilters?.boardType || ''
+                          data.config?.eventFilters?.externalType || ''
                         }
                         className="w-full text-xs px-2 py-1 border rounded bg-background"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('eventFilters', {
                             ...data.config?.eventFilters,
-                            boardType: e.target.value,
+                            externalType: e.target.value,
                           })
                         }
-                        ref={(el) => registerFieldRef('boardType', el)}
+                        ref={(el) => registerFieldRef('externalType', el)}
+                      />
+                    )}
+                    {data.config?.eventSource === 'user' && (
+                      <input
+                        type="text"
+                        placeholder={t(
+                          'flowBuilder.triggerSettings.userIdPlaceholder',
+                        )}
+                        defaultValue={data.config?.eventFilters?.userId || ''}
+                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData('eventFilters', {
+                            ...data.config?.eventFilters,
+                            userId: e.target.value,
+                          })
+                        }
+                        ref={(el) => registerFieldRef('userId', el)}
+                      />
+                    )}
+                    {data.config?.eventSource === 'system' && (
+                      <input
+                        type="text"
+                        placeholder={t(
+                          'flowBuilder.triggerSettings.systemModulePlaceholder',
+                        )}
+                        defaultValue={
+                          data.config?.eventFilters?.systemModule || ''
+                        }
+                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData('eventFilters', {
+                            ...data.config?.eventFilters,
+                            systemModule: e.target.value,
+                          })
+                        }
+                        ref={(el) => registerFieldRef('systemModule', el)}
+                      />
+                    )}
+                    {data.config?.eventSource === 'custom' && (
+                      <input
+                        type="text"
+                        placeholder={t(
+                          'flowBuilder.triggerSettings.customFilterPlaceholder',
+                        )}
+                        defaultValue={
+                          data.config?.eventFilters?.customFilter || ''
+                        }
+                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData('eventFilters', {
+                            ...data.config?.eventFilters,
+                            customFilter: e.target.value,
+                          })
+                        }
+                        ref={(el) => registerFieldRef('customFilter', el)}
                       />
                     )}
                   </>
@@ -669,12 +728,35 @@ export function TriggerBlock({
                     {t('flowBuilder.triggerSettings.event')}:{' '}
                     {data.config?.eventType || t('flowBuilder.fields.notSet')}
                   </div>
-                  {data.config?.eventFilters?.boardType && (
-                    <div className="text-xs text-muted-foreground mb-1">
-                      {t('flowBuilder.triggerSettings.boardType')}:{' '}
-                      {data.config.eventFilters.boardType}
-                    </div>
-                  )}
+                  {/* Динамическое отображение фильтров */}
+                  {data.config?.eventSource === 'external' &&
+                    data.config?.eventFilters?.externalType && (
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {t('flowBuilder.triggerSettings.externalType')}:{' '}
+                        {data.config.eventFilters.externalType}
+                      </div>
+                    )}
+                  {data.config?.eventSource === 'user' &&
+                    data.config?.eventFilters?.userId && (
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {t('flowBuilder.triggerSettings.userId')}:{' '}
+                        {data.config.eventFilters.userId}
+                      </div>
+                    )}
+                  {data.config?.eventSource === 'system' &&
+                    data.config?.eventFilters?.systemModule && (
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {t('flowBuilder.triggerSettings.systemModule')}:{' '}
+                        {data.config.eventFilters.systemModule}
+                      </div>
+                    )}
+                  {data.config?.eventSource === 'custom' &&
+                    data.config?.eventFilters?.customFilter && (
+                      <div className="text-xs text-muted-foreground mb-1">
+                        {t('flowBuilder.triggerSettings.customFilter')}:{' '}
+                        {data.config.eventFilters.customFilter}
+                      </div>
+                    )}
                 </>
               )}
 

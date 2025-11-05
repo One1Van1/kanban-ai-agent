@@ -47,12 +47,6 @@ export function convertNodesToFlowDefinition(
         config: {
           ...data.config,
           // Добавляем стандартные поля если их нет
-          ...(blockType === 'comment' && {
-            message:
-              data.config?.message ||
-              data.name ||
-              'Comment added by Flow Builder',
-          }),
           ...(blockType === 'ai_request' && {
             prompt:
               data.config?.prompt || 'Analyze this task and provide insights',

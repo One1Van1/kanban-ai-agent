@@ -2,7 +2,12 @@
 
 import React from 'react';
 import { Node } from '@xyflow/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/src/shared/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/src/shared/components/ui/card';
 import { Button } from '@/src/shared/components/ui/button';
 import { Input } from '@/src/shared/components/ui/input';
 import { Label } from '@/src/shared/components/ui/label';
@@ -358,23 +363,6 @@ export function PropertiesPanel({
   };
 
   const renderActionProperties = () => {
-    if (node.data.type === 'comment') {
-      return (
-        <div className="space-y-4">
-          <div>
-            <Label htmlFor="commentText">Comment Text</Label>
-            <Textarea
-              id="commentText"
-              value={getConfig('commentText') || ''}
-              onChange={(e) => updateConfig('commentText', e.target.value)}
-              placeholder="Enter comment text"
-              rows={4}
-            />
-          </div>
-        </div>
-      );
-    }
-
     if (node.data.type === 'ai_request') {
       return (
         <div className="space-y-4">

@@ -375,11 +375,34 @@ export function ContextBlock({
 
               {/* Дополнительные поля для extract_files */}
               {data.type === 'extract_files' && (
-                <div className="text-xs text-muted-foreground">
-                  {t('flowBuilder.fields.types')}:{' '}
-                  {data.config?.filter?.fileType?.join(', ') ||
-                    t('flowBuilder.fields.notSet')}
-                </div>
+                <>
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t('flowBuilder.fields.types')}:{' '}
+                    {data.config?.filter?.fileType?.join(', ') ||
+                      t('flowBuilder.fields.notSet')}
+                  </div>
+                  {/* Показываем структуру возвращаемых данных */}
+                  {data.config?.saveToVariable && data.config?.variableName && (
+                    <div className="text-xs mt-2 p-2 bg-muted/30 rounded border border-border/50">
+                      <div className="font-medium text-muted-foreground mb-1 flex items-center gap-1">
+                        <span>💡</span>
+                        <span>
+                          {t('flowBuilder.fields.returnedStructure')}:
+                        </span>
+                      </div>
+                      <div className="font-mono text-[10px] text-muted-foreground/80 space-y-0.5">
+                        <div>{'{'}</div>
+                        <div className="ml-2">files: {'Array<{'}</div>
+                        <div className="ml-4">name: string,</div>
+                        <div className="ml-4">path: string,</div>
+                        <div className="ml-4">size: number,</div>
+                        <div className="ml-4">mimeType: string</div>
+                        <div className="ml-2">{'}>'}</div>
+                        <div>{'}'}</div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Дополнительные поля для transform_data */}

@@ -1021,10 +1021,6 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
           return {
             responseVariable: 'ai_response',
           };
-        case 'comment':
-          return {
-            commentText: 'Enter your comment here',
-          };
         case 'ai_request':
           return {
             aiModel: 'claude',

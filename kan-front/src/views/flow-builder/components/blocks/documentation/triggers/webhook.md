@@ -41,8 +41,6 @@
 
 **Рекомендуется** для безопасности
 
-### Headers to Extract
-
 Какие заголовки сохранить в переменные
 
 Пример: `Authorization`, `X-GitHub-Event`
@@ -58,44 +56,119 @@
 ### GitHub - уведомление о push
 
 ```
-Когда кто-то делает push в репозиторий:
-1. GitHub отправляет POST на ваш webhook
-2. Webhook получает данные коммита
-3. Создаётся задача "Проверить код"
+⭐ Блок: Webhook (Вебхук) ⭐
+  HTTP Метод: Получение данных (POST)
+  Webhook URL: https://api.app.com/webhooks/github-123
+  Webhook Secret: github_secret_key_2024
+  Сохранить результат в переменную: ✓ webhook_data
+
+Блок: Extract Text (Извлечение текста)
+  Переменная: webhook_data
+  Источник: {webhook_data.body.commits[0].message}
+  Сохранить результат в переменную: ✓ commit_message
+
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: {webhook_data.body.repository.id}
+  Текст комментария: Новый коммит от {webhook_data.body.pusher.name}: {commit_message}
 ```
+
+---
 
 ### Stripe - оплата прошла
 
 ```
-Когда клиент оплатил:
-1. Stripe отправляет webhook о payment.succeeded
-2. Webhook получает данные платежа
-3. Обновляется статус заказа на "Оплачено"
+⭐ Блок: Webhook (Вебхук) ⭐
+  HTTP Метод: Получение данных (POST)
+  Webhook URL: https://api.app.com/webhooks/stripe-456
+  Webhook Secret: whsec_stripe_secret_123
+  Сохранить результат в переменную: ✓ payment_data
+
+Блок: IF/ELSE
+  Условие: {payment_data.body.type} === "payment_intent.succeeded"
+
+  Если ИСТИНА:
+    Блок: Get Data (Получение данных)
+      Переменная: order_data
+      Источник: api/orders/{payment_data.body.data.object.metadata.order_id}
+      Сохранить результат в переменную: ✓ order
+
+    ⭐ Блок: MCP Operation (Операция с объектом) ⭐
+      Операция: add_comment
+      ID карточки: {order.card_id}
+      Текст комментария: Оплата получена! Сумма: {payment_data.body.data.object.amount} руб.
 ```
+
+---
 
 ### Форма на сайте
 
 ```
-Когда пользователь заполнил форму:
-1. Сайт отправляет POST с данными формы
-2. Webhook получает имя, email, сообщение
-3. Создаётся задача для менеджера
+⭐ Блок: Webhook (Вебхук) ⭐
+  HTTP Метод: Получение данных (POST)
+  Webhook URL: https://api.app.com/webhooks/contact-form
+  Сохранить результат в переменную: ✓ form_data
+
+⭐ Блок: MCP Operation (Операция с объектом) ⭐
+  Операция: add_comment
+  ID карточки: contact_requests
+  Текст комментария: Новая заявка:
+    Имя: {form_data.body.name}
+    Email: {form_data.body.email}
+    Сообщение: {form_data.body.message}
+
+Блок: Send Message (Отправка сообщения)
+  Канал отправки: Email
+  Получатель: manager@company.com
+  Сообщение: Новая заявка с сайта от {form_data.body.name}
 ```
+
+---
 
 ### Jira - новая задача
 
 ```
-Когда в Jira создаётся задача:
-1. Jira отправляет webhook
-2. Webhook получает данные задачи
-3. Задача дублируется в вашу систему
+⭐ Блок: Webhook (Вебхук) ⭐
+  HTTP Метод: Получение данных (POST)
+  Webhook URL: https://api.app.com/webhooks/jira-789
+  Webhook Secret: jira_webhook_secret
+  Сохранить результат в переменную: ✓ jira_event
+
+Блок: IF/ELSE
+  Условие: {jira_event.body.webhookEvent} === "jira:issue_created"
+
+  Если ИСТИНА:
+    ⭐ Блок: MCP Operation (Операция с объектом) ⭐
+      Операция: add_comment
+      ID карточки: jira_sync_board
+      Текст комментария: Создана задача в Jira:
+        Ключ: {jira_event.body.issue.key}
+        Название: {jira_event.body.issue.fields.summary}
+        Автор: {jira_event.body.issue.fields.reporter.displayName}
 ```
+
+---
 
 ### Telegram бот
 
 ```
-Когда пользователь пишет боту:
-1. Telegram отправляет webhook с сообщением
-2. Webhook получает текст и user_id
-3. Отправляется в AI для ответа
+⭐ Блок: Webhook (Вебхук) ⭐
+  HTTP Метод: Получение данных (POST)
+  Webhook URL: https://api.app.com/webhooks/telegram-bot
+  Webhook Secret: telegram_bot_secret_token
+  Сохранить результат в переменную: ✓ telegram_update
+
+Блок: AI Request (AI запрос)
+  AI Модель: GPT-4
+  Промпт: Пользователь написал: "{telegram_update.body.message.text}". Сформулируй вежливый ответ.
+  Сохранить результат в переменную: ✓ ai_response
+
+Блок: API Call (API вызов)
+  Адрес сервиса: https://api.telegram.org/bot{BOT_TOKEN}/sendMessage
+  Тип запроса: POST
+  Данные для отправки:
+    {
+      "chat_id": {telegram_update.body.message.chat.id},
+      "text": {ai_response.content}
+    }
 ```
