@@ -33,6 +33,7 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { AutoExpandTextarea } from '../fields/AutoExpandTextarea';
 
 interface ActionBlockProps {
   data: {
@@ -183,14 +184,14 @@ export function ActionBlock({
                       <option value="claude-3">Claude 3</option>
                       <option value="gemini-pro">Gemini Pro</option>
                     </select>
-                    <textarea
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.promptPlaceholder')}
                       defaultValue={data.config?.prompt || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[60px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => updateFormData('prompt', e.target.value)}
-                      ref={(el) => registerFieldRef('prompt', el)}
-                      rows={3}
+                      fieldRef={(el) => registerFieldRef('prompt', el)}
+                      minRows={3}
+                      maxRows={10}
                     />
 
                     {/* Output Variable Field */}
@@ -238,18 +239,18 @@ export function ActionBlock({
                       <option value="pdf">PDF (.pdf)</option>
                       <option value="doc">Document (.doc)</option>
                     </select>
-                    <textarea
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.fileContent')}
                       defaultValue={
                         data.config?.content || data.config?.path || ''
                       }
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('content', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('content', el)}
-                      rows={2}
+                      fieldRef={(el) => registerFieldRef('content', el)}
+                      minRows={2}
+                      maxRows={8}
                     />
 
                     {/* Output Variable Field */}
@@ -290,25 +291,27 @@ export function ActionBlock({
                       <option value="DELETE">DELETE</option>
                       <option value="PATCH">PATCH</option>
                     </select>
-                    <textarea
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.headersPlaceholder')}
                       defaultValue={data.config?.headers || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[40px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('headers', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('headers', el)}
-                      rows={2}
+                      fieldRef={(el) => registerFieldRef('headers', el)}
+                      monospace={true}
+                      minRows={2}
+                      maxRows={6}
                     />
-                    <textarea
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.bodyPlaceholder')}
                       defaultValue={data.config?.body || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => updateFormData('body', e.target.value)}
-                      ref={(el) => registerFieldRef('body', el)}
-                      rows={3}
+                      fieldRef={(el) => registerFieldRef('body', el)}
+                      monospace={true}
+                      minRows={3}
+                      maxRows={10}
                     />
 
                     {/* Output Variable Field */}
@@ -359,16 +362,16 @@ export function ActionBlock({
                       }
                       ref={(el) => registerFieldRef('recipient', el)}
                     />
-                    <textarea
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.message')}
                       defaultValue={data.config?.message || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('message', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('message', el)}
-                      rows={2}
+                      fieldRef={(el) => registerFieldRef('message', el)}
+                      minRows={2}
+                      maxRows={8}
                     />
                   </>
                 )}
@@ -472,14 +475,15 @@ export function ActionBlock({
                       <option value="execute">Execute</option>
                       <option value="query">Query</option>
                     </select>
-                    <textarea
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.paramsPlaceholder')}
                       defaultValue={data.config?.params || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => updateFormData('params', e.target.value)}
-                      ref={(el) => registerFieldRef('params', el)}
-                      rows={2}
+                      fieldRef={(el) => registerFieldRef('params', el)}
+                      monospace={true}
+                      minRows={2}
+                      maxRows={8}
                     />
 
                     {/* Output Variable Field */}
@@ -507,18 +511,19 @@ export function ActionBlock({
                       }
                       ref={(el) => registerFieldRef('storageKey', el)}
                     />
-                    <textarea
+                    <AutoExpandTextarea
                       placeholder={t(
                         'flowBuilder.fields.storageValuePlaceholder',
                       )}
                       defaultValue={data.config?.storageValue || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background min-h-[50px] resize-none"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('storageValue', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('storageValue', el)}
-                      rows={2}
+                      fieldRef={(el) => registerFieldRef('storageValue', el)}
+                      monospace={true}
+                      minRows={2}
+                      maxRows={6}
                     />
 
                     {/* Output Variable Field */}

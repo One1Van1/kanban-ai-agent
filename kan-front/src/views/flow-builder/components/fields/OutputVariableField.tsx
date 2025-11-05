@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLanguage } from '@/src/shared/i18n';
 import { Save } from 'lucide-react';
+import { AutoExpandTextarea } from './AutoExpandTextarea';
 
 interface OutputVariableFieldProps {
   /**
@@ -33,7 +34,7 @@ interface OutputVariableFieldProps {
   /**
    * Ref for form registration (for useBlockEdit hook)
    */
-  fieldRef?: (el: HTMLInputElement | null) => void;
+  fieldRef?: (el: HTMLTextAreaElement | null) => void;
 
   /**
    * Additional CSS classes
@@ -67,17 +68,17 @@ export function OutputVariableField({
         <span>{t('flowBuilder.fields.saveToVariable')}</span>
       </label>
 
-      {/* Input Field */}
-      <input
-        type="text"
+      {/* Input Field - Auto-expanding textarea */}
+      <AutoExpandTextarea
         defaultValue={value || ''}
         placeholder={
           placeholder || t('flowBuilder.fields.outputVariablePlaceholder')
         }
-        className="w-full text-xs px-2 py-1 border rounded bg-background focus:outline-none focus:ring-1 focus:ring-blue-500"
         onChange={(e) => onChange(e.target.value)}
         onClick={(e) => e.stopPropagation()}
-        ref={fieldRef}
+        fieldRef={fieldRef}
+        minRows={1}
+        maxRows={3}
       />
 
       {/* Hint Text */}
@@ -108,10 +109,10 @@ export function OutputVariableDisplay({
 
   return (
     <div
-      className={`text-xs font-medium text-green-600 dark:text-green-400 flex items-center gap-1 ${className}`}
+      className={`text-xs font-medium text-green-600 dark:text-green-400 flex items-start gap-1 ${className}`}
     >
-      <Save className="w-3 h-3" />
-      <span>→ {value}</span>
+      <Save className="w-3 h-3 mt-0.5 flex-shrink-0" />
+      <span className="break-words whitespace-pre-wrap">→ {value}</span>
     </div>
   );
 }

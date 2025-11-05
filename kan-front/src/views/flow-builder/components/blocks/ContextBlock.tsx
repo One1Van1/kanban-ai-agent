@@ -30,6 +30,7 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { AutoExpandTextarea } from '../fields/AutoExpandTextarea';
 
 interface ContextBlockProps {
   data: {
@@ -144,36 +145,34 @@ export function ContextBlock({
               </div>
               <div className="space-y-1">
                 {/* Поля для всех типов */}
-                <input
-                  type="text"
+                <AutoExpandTextarea
                   placeholder={t('flowBuilder.fields.variable')}
                   defaultValue={data.config?.variableName || ''}
-                  className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) =>
                     updateFormData('variableName', e.target.value)
                   }
-                  ref={(el) => registerFieldRef('variableName', el)}
+                  fieldRef={(el) => registerFieldRef('variableName', el)}
+                  minRows={1}
+                  maxRows={3}
                 />
-                <input
-                  type="text"
+                <AutoExpandTextarea
                   placeholder={t('flowBuilder.fields.source')}
                   defaultValue={data.config?.source || ''}
-                  className="w-full text-xs px-2 py-1 border rounded bg-background"
                   onClick={(e) => e.stopPropagation()}
                   onChange={(e) => updateFormData('source', e.target.value)}
-                  ref={(el) => registerFieldRef('source', el)}
+                  fieldRef={(el) => registerFieldRef('source', el)}
+                  minRows={1}
+                  maxRows={3}
                 />
 
                 {/* Поле типов только для extract_files */}
                 {data.type === 'extract_files' && (
-                  <input
-                    type="text"
+                  <AutoExpandTextarea
                     placeholder={t('flowBuilder.fields.types')}
                     defaultValue={
                       data.config?.filter?.fileType?.join(', ') || ''
                     }
-                    className="w-full text-xs px-2 py-1 border rounded bg-background"
                     onClick={(e) => e.stopPropagation()}
                     onChange={(e) => {
                       const types = e.target.value
@@ -184,7 +183,9 @@ export function ContextBlock({
                         fileType: types,
                       });
                     }}
-                    ref={(el) => registerFieldRef('fileType', el)}
+                    fieldRef={(el) => registerFieldRef('fileType', el)}
+                    minRows={1}
+                    maxRows={3}
                   />
                 )}
 
@@ -218,7 +219,7 @@ export function ContextBlock({
                       data.config?.transformationType === 'map' ||
                       data.config?.transformationType === 'reduce' ||
                       !data.config?.transformationType) && (
-                      <textarea
+                      <AutoExpandTextarea
                         placeholder={
                           data.config?.transformationType === 'map'
                             ? t('flowBuilder.fields.mapExpressionPlaceholder')
@@ -231,7 +232,6 @@ export function ContextBlock({
                           data.config?.mapExpression ||
                           ''
                         }
-                        className="w-full text-xs px-2 py-1 border rounded bg-background font-mono min-h-[60px]"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData(
@@ -241,40 +241,48 @@ export function ContextBlock({
                             e.target.value,
                           )
                         }
-                        ref={(el) => registerFieldRef('transformationCode', el)}
+                        fieldRef={(el) =>
+                          registerFieldRef('transformationCode', el)
+                        }
+                        monospace={true}
+                        minRows={2}
+                        maxRows={8}
                       />
                     )}
 
                     {/* Filter condition */}
                     {data.config?.transformationType === 'filter' && (
-                      <input
-                        type="text"
+                      <AutoExpandTextarea
                         placeholder={t(
                           'flowBuilder.fields.filterConditionPlaceholder',
                         )}
                         defaultValue={data.config?.filterCondition || ''}
-                        className="w-full text-xs px-2 py-1 border rounded bg-background font-mono"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('filterCondition', e.target.value)
                         }
-                        ref={(el) => registerFieldRef('filterCondition', el)}
+                        fieldRef={(el) =>
+                          registerFieldRef('filterCondition', el)
+                        }
+                        monospace={true}
+                        minRows={1}
+                        maxRows={4}
                       />
                     )}
 
                     {/* Sort options */}
                     {data.config?.transformationType === 'sort' && (
                       <>
-                        <input
-                          type="text"
+                        <AutoExpandTextarea
                           placeholder={t('flowBuilder.fields.sortField')}
                           defaultValue={data.config?.sortField || ''}
-                          className="w-full text-xs px-2 py-1 border rounded bg-background"
                           onClick={(e) => e.stopPropagation()}
                           onChange={(e) =>
                             updateFormData('sortField', e.target.value)
                           }
-                          ref={(el) => registerFieldRef('sortField', el)}
+                          fieldRef={(el) => registerFieldRef('sortField', el)}
+                          minRows={1}
+                          maxRows={2}
                         />
                         <select
                           className="w-full text-xs px-2 py-1 border rounded bg-background"
@@ -297,18 +305,18 @@ export function ContextBlock({
 
                     {/* Group By field */}
                     {data.config?.transformationType === 'groupBy' && (
-                      <input
-                        type="text"
+                      <AutoExpandTextarea
                         placeholder={t(
                           'flowBuilder.fields.groupByFieldPlaceholder',
                         )}
                         defaultValue={data.config?.groupByField || ''}
-                        className="w-full text-xs px-2 py-1 border rounded bg-background"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('groupByField', e.target.value)
                         }
-                        ref={(el) => registerFieldRef('groupByField', el)}
+                        fieldRef={(el) => registerFieldRef('groupByField', el)}
+                        minRows={1}
+                        maxRows={2}
                       />
                     )}
 
@@ -372,21 +380,33 @@ export function ContextBlock({
 
               {/* Общие поля для всех типов контекста */}
               <div className="text-xs text-muted-foreground mb-1">
-                {t('flowBuilder.fields.variable')}:{' '}
-                {data.config?.variableName || t('flowBuilder.fields.notSet')}
+                <span className="font-medium">
+                  {t('flowBuilder.fields.variable')}:
+                </span>{' '}
+                <span className="break-words whitespace-pre-wrap">
+                  {data.config?.variableName || t('flowBuilder.fields.notSet')}
+                </span>
               </div>
               <div className="text-xs text-muted-foreground mb-1">
-                {t('flowBuilder.fields.source')}:{' '}
-                {data.config?.source || t('flowBuilder.fields.notSet')}
+                <span className="font-medium">
+                  {t('flowBuilder.fields.source')}:
+                </span>{' '}
+                <span className="break-words whitespace-pre-wrap">
+                  {data.config?.source || t('flowBuilder.fields.notSet')}
+                </span>
               </div>
 
               {/* Дополнительные поля для extract_files */}
               {data.type === 'extract_files' && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.types')}:{' '}
-                    {data.config?.filter?.fileType?.join(', ') ||
-                      t('flowBuilder.fields.notSet')}
+                    <span className="font-medium">
+                      {t('flowBuilder.fields.types')}:
+                    </span>{' '}
+                    <span className="break-words whitespace-pre-wrap">
+                      {data.config?.filter?.fileType?.join(', ') ||
+                        t('flowBuilder.fields.notSet')}
+                    </span>
                   </div>
                 </>
               )}
@@ -395,35 +415,50 @@ export function ContextBlock({
               {data.type === 'transform_data' && (
                 <>
                   <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.transformationType')}:{' '}
-                    {data.config?.transformationType ||
-                      t('flowBuilder.fields.notSet')}
+                    <span className="font-medium">
+                      {t('flowBuilder.fields.transformationType')}:
+                    </span>{' '}
+                    <span className="break-words">
+                      {data.config?.transformationType ||
+                        t('flowBuilder.fields.notSet')}
+                    </span>
                   </div>
                   {data.config?.transformationCode && (
-                    <div className="text-xs text-muted-foreground mb-1 font-mono bg-muted/30 p-1 rounded">
-                      {data.config.transformationCode.substring(0, 50)}
-                      {data.config.transformationCode.length > 50 && '...'}
+                    <div className="text-xs text-muted-foreground mb-1 font-mono bg-muted/30 p-2 rounded break-words whitespace-pre-wrap">
+                      {data.config.transformationCode}
                     </div>
                   )}
                   {data.config?.filterCondition && (
                     <div className="text-xs text-muted-foreground mb-1">
-                      Filter: {data.config.filterCondition}
+                      <span className="font-medium">Filter:</span>{' '}
+                      <span className="break-words whitespace-pre-wrap font-mono">
+                        {data.config.filterCondition}
+                      </span>
                     </div>
                   )}
                   {data.config?.sortField && (
                     <div className="text-xs text-muted-foreground mb-1">
-                      Sort: {data.config.sortField} (
-                      {data.config.sortOrder || 'asc'})
+                      <span className="font-medium">Sort:</span>{' '}
+                      <span className="break-words">
+                        {data.config.sortField} (
+                        {data.config.sortOrder || 'asc'})
+                      </span>
                     </div>
                   )}
                   {data.config?.groupByField && (
                     <div className="text-xs text-muted-foreground mb-1">
-                      Group by: {data.config.groupByField}
+                      <span className="font-medium">Group by:</span>{' '}
+                      <span className="break-words whitespace-pre-wrap">
+                        {data.config.groupByField}
+                      </span>
                     </div>
                   )}
                   {data.config?.outputFormat && (
                     <div className="text-xs text-muted-foreground mb-1">
-                      Format: {data.config.outputFormat}
+                      <span className="font-medium">Format:</span>{' '}
+                      <span className="break-words">
+                        {data.config.outputFormat}
+                      </span>
                     </div>
                   )}
                 </>
