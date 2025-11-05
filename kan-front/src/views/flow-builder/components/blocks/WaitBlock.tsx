@@ -18,6 +18,10 @@ import {
   WaitOutputHandle,
   ConnectionHandle,
 } from './ConnectionHandle';
+import {
+  OutputVariableField,
+  OutputVariableDisplay,
+} from '../fields/OutputVariableField';
 
 interface WaitBlockProps {
   data: {
@@ -192,16 +196,21 @@ export function WaitBlock({
                   data.type === 'wait_condition' ||
                   data.type === 'wait') && (
                   <>
-                    <input
-                      type="text"
-                      placeholder={t('flowBuilder.fields.responseVariable')}
-                      defaultValue={data.config?.responseVariable || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        updateFormData('responseVariable', e.target.value)
+                    {/* Output Variable Field */}
+                    <OutputVariableField
+                      value={
+                        data.config?.outputVariable ||
+                        data.config?.responseVariable ||
+                        ''
                       }
-                      ref={(el) => registerFieldRef('responseVariable', el)}
+                      onChange={(value) =>
+                        updateFormData('outputVariable', value)
+                      }
+                      fieldRef={(el) => registerFieldRef('outputVariable', el)}
+                      hintText={
+                        t('flowBuilder.fields.outputVariableHint') +
+                        ' (waited response)'
+                      }
                     />
                     <input
                       type="number"
@@ -322,11 +331,14 @@ export function WaitBlock({
                 data.type === 'wait_condition' ||
                 data.type === 'wait') && (
                 <>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.responseVariable')}:{' '}
-                    {data.config?.responseVariable ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
+                  {/* Output Variable Display */}
+                  <OutputVariableDisplay
+                    value={
+                      data.config?.outputVariable ||
+                      data.config?.responseVariable
+                    }
+                    className="mb-1"
+                  />
                   <div className="text-xs text-muted-foreground mb-1">
                     {t('flowBuilder.fields.timeout')}:{' '}
                     {data.config?.timeout

@@ -115,6 +115,15 @@ export interface TriggerBlock {
       maxExecutions: number; // Max executions per period
       period: 'minute' | 'hour' | 'day';
     };
+
+    // ===========================
+    // OUTPUT VARIABLE
+    // ===========================
+    /**
+     * Variable name to store trigger event data
+     * Example: "webhook_payload", "task_data", "event_data"
+     */
+    outputVariable?: string;
   };
 }
 
@@ -133,6 +142,10 @@ export interface ContextBlock {
     | 'transform_data'; // Transform/format data
   name: string;
   config: {
+    /**
+     * INPUT: Variable name to read data FROM
+     * Example: "task_id" - use this task ID to fetch files
+     */
     variableName: string;
     source:
       | 'card_attachments'
@@ -162,6 +175,12 @@ export interface ContextBlock {
     // For transform_data
     transformationType?: 'format' | 'filter' | 'aggregate' | 'map';
     transformationScript?: string;
+
+    /**
+     * OUTPUT: Variable name to store extracted/processed data
+     * Example: "extracted_files", "api_response", "processed_data"
+     */
+    outputVariable?: string;
   };
 }
 
@@ -172,13 +191,26 @@ export interface LogicBlock {
   name: string;
   config: {
     condition: {
+      /**
+       * INPUT: Variable name to check in condition
+       */
       variable: string;
       operator: 'exists' | 'empty' | 'equals' | 'contains' | 'greater' | 'less';
       value?: any;
     };
     trueBranch?: string[]; // IDs следующих блоков
     falseBranch?: string[]; // IDs следующих блоков
-    // For ai_result type
+
+    /**
+     * OUTPUT: Variable name to store condition result (true/false)
+     * Example: "decision_result", "has_bugs", "is_valid"
+     */
+    outputVariable?: string;
+
+    /**
+     * @deprecated Use outputVariable instead
+     * For backward compatibility with ai_result type
+     */
     responseVariable?: string;
   };
 }
@@ -206,8 +238,6 @@ export interface ActionBlock {
     prompt?: string;
     // attachments references variable names that contain file lists (e.g. extracted card attachments)
     attachments?: string[]; // variable names with files
-    // name of variable where AI response (text) will be stored
-    responseVariable?: string;
 
     // Для файлов (generate_file)
     fileName?: string;
@@ -238,6 +268,18 @@ export interface ActionBlock {
     storageType?: 'database' | 's3' | 'local';
     storagePath?: string;
     dataFormat?: 'json' | 'csv' | 'xml';
+
+    /**
+     * OUTPUT: Variable name to store action result
+     * Example: "ai_response", "api_result", "file_path"
+     */
+    outputVariable?: string;
+
+    /**
+     * @deprecated Use outputVariable instead
+     * For backward compatibility
+     */
+    responseVariable?: string;
   } & WithAsyncControl;
 }
 
@@ -252,7 +294,17 @@ export interface WaitBlock {
     onSuccess?: string[]; // IDs следующих блоков
     onError?: string[]; // IDs следующих блоков
     onTimeout?: string[]; // IDs следующих блоков
-    // variable containing awaited data (e.g. AI response text) for subsequent branching
+
+    /**
+     * OUTPUT: Variable name to store awaited response
+     * Example: "user_response", "ai_result", "waited_data"
+     */
+    outputVariable?: string;
+
+    /**
+     * @deprecated Use outputVariable instead
+     * For backward compatibility
+     */
     responseVariable?: string;
   };
 }

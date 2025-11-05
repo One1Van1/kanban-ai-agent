@@ -18,6 +18,10 @@ import {
   LogicOutputHandle,
   ConnectionHandle,
 } from './ConnectionHandle';
+import {
+  OutputVariableField,
+  OutputVariableDisplay,
+} from '../fields/OutputVariableField';
 
 interface LogicBlockProps {
   data: { type: string; name: string; config: any; isEditing?: boolean };
@@ -223,6 +227,21 @@ export function LogicBlock({
                 )}
               </div>
 
+              {/* Output Variable Field - for logic blocks */}
+              <OutputVariableField
+                value={
+                  data.config?.outputVariable ||
+                  data.config?.responseVariable ||
+                  ''
+                }
+                onChange={(value) => updateFormData('outputVariable', value)}
+                fieldRef={(el) => registerFieldRef('outputVariable', el)}
+                hintText={
+                  t('flowBuilder.fields.outputVariableHint') +
+                  ' (condition result, loop state)'
+                }
+              />
+
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"
@@ -294,6 +313,14 @@ export function LogicBlock({
                   {t('flowBuilder.blockPalette.blocks.switch.description')}
                 </div>
               )}
+
+              {/* Output Variable Display - for logic blocks */}
+              <OutputVariableDisplay
+                value={
+                  data.config?.outputVariable || data.config?.responseVariable
+                }
+                className="mt-2"
+              />
             </div>
           )}
         </CardContent>

@@ -24,6 +24,10 @@ import {
 import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
 import { TriggerOutputHandle } from './ConnectionHandle';
+import {
+  OutputVariableField,
+  OutputVariableDisplay,
+} from '../fields/OutputVariableField';
 
 // Helper для отображения HTTP методов
 const getHttpMethodLabel = (
@@ -647,6 +651,17 @@ export function TriggerBlock({
                 )}
               </div>
 
+              {/* Output Variable Field - for all trigger types */}
+              <OutputVariableField
+                value={data.config?.outputVariable || ''}
+                onChange={(value) => updateFormData('outputVariable', value)}
+                fieldRef={(el) => registerFieldRef('outputVariable', el)}
+                hintText={
+                  t('flowBuilder.fields.outputVariableHint') +
+                  ' (event data, payload)'
+                }
+              />
+
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"
@@ -794,6 +809,12 @@ export function TriggerBlock({
                   )}
                 </>
               )}
+
+              {/* Output Variable Display - for all trigger types */}
+              <OutputVariableDisplay
+                value={data.config?.outputVariable}
+                className="mt-2"
+              />
             </div>
           )}
         </CardContent>

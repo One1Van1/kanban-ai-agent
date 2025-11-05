@@ -29,6 +29,10 @@ import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
 import { ActionInputHandle, ActionOutputHandle } from './ConnectionHandle';
 import { AsyncControl } from './AsyncControl';
+import {
+  OutputVariableField,
+  OutputVariableDisplay,
+} from '../fields/OutputVariableField';
 
 interface ActionBlockProps {
   data: {
@@ -188,16 +192,18 @@ export function ActionBlock({
                       ref={(el) => registerFieldRef('prompt', el)}
                       rows={3}
                     />
-                    <input
-                      type="text"
-                      placeholder={t('flowBuilder.fields.responseVariable')}
-                      defaultValue={data.config?.responseVariable || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        updateFormData('responseVariable', e.target.value)
+
+                    {/* Output Variable Field */}
+                    <OutputVariableField
+                      value={
+                        data.config?.outputVariable ||
+                        data.config?.responseVariable ||
+                        ''
                       }
-                      ref={(el) => registerFieldRef('responseVariable', el)}
+                      onChange={(value) =>
+                        updateFormData('outputVariable', value)
+                      }
+                      fieldRef={(el) => registerFieldRef('outputVariable', el)}
                     />
                   </>
                 )}
@@ -245,6 +251,19 @@ export function ActionBlock({
                       ref={(el) => registerFieldRef('content', el)}
                       rows={2}
                     />
+
+                    {/* Output Variable Field */}
+                    <OutputVariableField
+                      value={data.config?.outputVariable || ''}
+                      onChange={(value) =>
+                        updateFormData('outputVariable', value)
+                      }
+                      fieldRef={(el) => registerFieldRef('outputVariable', el)}
+                      hintText={
+                        t('flowBuilder.fields.outputVariableHint') +
+                        ' (file path)'
+                      }
+                    />
                   </>
                 )}
                 {data.type === 'api_call' && (
@@ -291,16 +310,18 @@ export function ActionBlock({
                       ref={(el) => registerFieldRef('body', el)}
                       rows={3}
                     />
-                    <input
-                      type="text"
-                      placeholder={t('flowBuilder.fields.responseVariable')}
-                      defaultValue={data.config?.responseVariable || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) =>
-                        updateFormData('responseVariable', e.target.value)
+
+                    {/* Output Variable Field */}
+                    <OutputVariableField
+                      value={
+                        data.config?.outputVariable ||
+                        data.config?.responseVariable ||
+                        ''
                       }
-                      ref={(el) => registerFieldRef('responseVariable', el)}
+                      onChange={(value) =>
+                        updateFormData('outputVariable', value)
+                      }
+                      fieldRef={(el) => registerFieldRef('outputVariable', el)}
                     />
                   </>
                 )}
@@ -460,6 +481,15 @@ export function ActionBlock({
                       ref={(el) => registerFieldRef('params', el)}
                       rows={2}
                     />
+
+                    {/* Output Variable Field */}
+                    <OutputVariableField
+                      value={data.config?.outputVariable || ''}
+                      onChange={(value) =>
+                        updateFormData('outputVariable', value)
+                      }
+                      fieldRef={(el) => registerFieldRef('outputVariable', el)}
+                    />
                   </>
                 )}
                 {data.type === 'store_data' && (
@@ -489,6 +519,15 @@ export function ActionBlock({
                       }
                       ref={(el) => registerFieldRef('storageValue', el)}
                       rows={2}
+                    />
+
+                    {/* Output Variable Field */}
+                    <OutputVariableField
+                      value={data.config?.outputVariable || ''}
+                      onChange={(value) =>
+                        updateFormData('outputVariable', value)
+                      }
+                      fieldRef={(el) => registerFieldRef('outputVariable', el)}
                     />
                   </>
                 )}
@@ -542,11 +581,15 @@ export function ActionBlock({
                       : t('flowBuilder.fields.notSet')}
                     &quot;
                   </div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.responseVariable')}:{' '}
-                    {data.config?.responseVariable ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
+
+                  {/* Output Variable Display */}
+                  <OutputVariableDisplay
+                    value={
+                      data.config?.outputVariable ||
+                      data.config?.responseVariable
+                    }
+                    className="mb-1"
+                  />
                 </>
               )}
 
@@ -603,11 +646,15 @@ export function ActionBlock({
                         : data.config.body}
                     </div>
                   )}
-                  <div className="text-xs text-muted-foreground mb-1">
-                    {t('flowBuilder.fields.responseVariable')}:{' '}
-                    {data.config?.responseVariable ||
-                      t('flowBuilder.fields.notSet')}
-                  </div>
+
+                  {/* Output Variable Display */}
+                  <OutputVariableDisplay
+                    value={
+                      data.config?.outputVariable ||
+                      data.config?.responseVariable
+                    }
+                    className="mb-1"
+                  />
                 </>
               )}
 

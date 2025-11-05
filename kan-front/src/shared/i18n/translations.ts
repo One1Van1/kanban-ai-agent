@@ -594,6 +594,13 @@ export const translations = {
         groupByFieldPlaceholder: 'Имя поля для группировки',
         outputFormat: 'Формат вывода',
         selectOutputFormat: 'Выберите формат',
+
+        // Output Variable - NEW
+        saveToVariable: 'Сохранить в переменную',
+        outputVariable: 'Переменная вывода',
+        outputVariablePlaceholder: 'имя_переменной',
+        outputVariableHint:
+          'Результат работы блока сохранится в эту переменную для использования в следующих блоках',
       },
 
       // Variable Storage Control
@@ -1304,6 +1311,13 @@ export const translations = {
         groupByFieldPlaceholder: 'Field name to group by',
         outputFormat: 'Output Format',
         selectOutputFormat: 'Select Format',
+
+        // Output Variable - NEW
+        saveToVariable: 'Save to Variable',
+        outputVariable: 'Output Variable',
+        outputVariablePlaceholder: 'variable_name',
+        outputVariableHint:
+          'Block result will be saved to this variable for use in subsequent blocks',
       },
 
       // Variable Storage Control

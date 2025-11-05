@@ -26,6 +26,10 @@ import {
 import { useLanguage } from '@/src/shared/i18n';
 import { useBlockEdit } from '@/src/shared/hooks/useBlockEdit';
 import { ContextInputHandle, ContextOutputHandle } from './ConnectionHandle';
+import {
+  OutputVariableField,
+  OutputVariableDisplay,
+} from '../fields/OutputVariableField';
 
 interface ContextBlockProps {
   data: {
@@ -332,6 +336,13 @@ export function ContextBlock({
                 )}
               </div>
 
+              {/* Output Variable Field - Universal for ALL context types */}
+              <OutputVariableField
+                value={data.config?.outputVariable || ''}
+                onChange={(value) => updateFormData('outputVariable', value)}
+                fieldRef={(el) => registerFieldRef('outputVariable', el)}
+              />
+
               <div className="flex gap-1 pt-1">
                 <Button
                   size="sm"
@@ -417,6 +428,12 @@ export function ContextBlock({
                   )}
                 </>
               )}
+
+              {/* Output Variable Display - Universal for ALL context types */}
+              <OutputVariableDisplay
+                value={data.config?.outputVariable}
+                className="mt-2"
+              />
             </div>
           )}
         </CardContent>
