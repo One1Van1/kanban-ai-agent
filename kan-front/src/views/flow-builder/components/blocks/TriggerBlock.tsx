@@ -211,7 +211,7 @@ const TriggerBlockComponent = ({
                       }
                       fieldRef={(el) => registerFieldRef('webhookSecret', el)}
                       minRows={1}
-                      maxRows={2}
+                      maxRows={3}
                     />
                   </>
                 )}
@@ -243,15 +243,13 @@ const TriggerBlockComponent = ({
                         {t('flowBuilder.triggerSettings.once')}
                       </option>
                     </select>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={
                         data.config?.schedule?.type === 'cron'
                           ? t('flowBuilder.triggerSettings.cronPlaceholder')
                           : t('flowBuilder.triggerSettings.intervalPlaceholder')
                       }
                       defaultValue={data.config?.schedule?.expression || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('schedule', {
@@ -259,7 +257,11 @@ const TriggerBlockComponent = ({
                           expression: e.target.value,
                         })
                       }
-                      ref={(el) => registerFieldRef('scheduleExpression', el)}
+                      fieldRef={(el) =>
+                        registerFieldRef('scheduleExpression', el)
+                      }
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.schedule?.timezone || 'UTC'}
@@ -497,30 +499,28 @@ const TriggerBlockComponent = ({
                         {t('flowBuilder.triggerSettings.customEvents')}
                       </option>
                     </select>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t(
                         'flowBuilder.triggerSettings.eventTypePlaceholder',
                       )}
                       defaultValue={data.config?.eventType || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('eventType', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('eventType', el)}
+                      fieldRef={(el) => registerFieldRef('eventType', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     {/* Динамические фильтры в зависимости от источника события */}
                     {data.config?.eventSource === 'external' && (
-                      <input
-                        type="text"
+                      <AutoExpandTextarea
                         placeholder={t(
                           'flowBuilder.triggerSettings.externalTypePlaceholder',
                         )}
                         defaultValue={
                           data.config?.eventFilters?.externalType || ''
                         }
-                        className="w-full text-xs px-2 py-1 border rounded bg-background"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('eventFilters', {
@@ -528,17 +528,17 @@ const TriggerBlockComponent = ({
                             externalType: e.target.value,
                           })
                         }
-                        ref={(el) => registerFieldRef('externalType', el)}
+                        fieldRef={(el) => registerFieldRef('externalType', el)}
+                        minRows={1}
+                        maxRows={3}
                       />
                     )}
                     {data.config?.eventSource === 'user' && (
-                      <input
-                        type="text"
+                      <AutoExpandTextarea
                         placeholder={t(
                           'flowBuilder.triggerSettings.userIdPlaceholder',
                         )}
                         defaultValue={data.config?.eventFilters?.userId || ''}
-                        className="w-full text-xs px-2 py-1 border rounded bg-background"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('eventFilters', {
@@ -546,19 +546,19 @@ const TriggerBlockComponent = ({
                             userId: e.target.value,
                           })
                         }
-                        ref={(el) => registerFieldRef('userId', el)}
+                        fieldRef={(el) => registerFieldRef('userId', el)}
+                        minRows={1}
+                        maxRows={3}
                       />
                     )}
                     {data.config?.eventSource === 'system' && (
-                      <input
-                        type="text"
+                      <AutoExpandTextarea
                         placeholder={t(
                           'flowBuilder.triggerSettings.systemModulePlaceholder',
                         )}
                         defaultValue={
                           data.config?.eventFilters?.systemModule || ''
                         }
-                        className="w-full text-xs px-2 py-1 border rounded bg-background"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('eventFilters', {
@@ -566,19 +566,19 @@ const TriggerBlockComponent = ({
                             systemModule: e.target.value,
                           })
                         }
-                        ref={(el) => registerFieldRef('systemModule', el)}
+                        fieldRef={(el) => registerFieldRef('systemModule', el)}
+                        minRows={1}
+                        maxRows={3}
                       />
                     )}
                     {data.config?.eventSource === 'custom' && (
-                      <input
-                        type="text"
+                      <AutoExpandTextarea
                         placeholder={t(
                           'flowBuilder.triggerSettings.customFilterPlaceholder',
                         )}
                         defaultValue={
                           data.config?.eventFilters?.customFilter || ''
                         }
-                        className="w-full text-xs px-2 py-1 border rounded bg-background"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('eventFilters', {
@@ -586,7 +586,9 @@ const TriggerBlockComponent = ({
                             customFilter: e.target.value,
                           })
                         }
-                        ref={(el) => registerFieldRef('customFilter', el)}
+                        fieldRef={(el) => registerFieldRef('customFilter', el)}
+                        minRows={1}
+                        maxRows={3}
                       />
                     )}
                   </>
@@ -597,13 +599,11 @@ const TriggerBlockComponent = ({
                 =========================== */}
                 {data.type === 'manual_trigger' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t(
                         'flowBuilder.triggerSettings.allowedUsersPlaceholder',
                       )}
                       defaultValue={data.config?.allowedUsers?.join(', ') || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData(
@@ -614,7 +614,9 @@ const TriggerBlockComponent = ({
                             .filter((u) => u),
                         )
                       }
-                      ref={(el) => registerFieldRef('allowedUsers', el)}
+                      fieldRef={(el) => registerFieldRef('allowedUsers', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <label className="flex items-center space-x-2 text-xs">
                       <input

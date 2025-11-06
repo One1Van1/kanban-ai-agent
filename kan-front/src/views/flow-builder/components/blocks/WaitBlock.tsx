@@ -22,6 +22,7 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { AutoExpandTextarea } from '../fields/AutoExpandTextarea';
 import { withBlockMemo, BlockProps } from './withBlockMemo';
 
 interface WaitBlockProps extends BlockProps {
@@ -154,12 +155,9 @@ const WaitBlockComponent = ({
                 {(data.type === 'wait_time' ||
                   data.type === 'wait_timeout') && (
                   <>
-                    <input
-                      type="number"
+                    <AutoExpandTextarea
                       placeholder={`${t('flowBuilder.fields.duration')} (${t('flowBuilder.fields.seconds')}/${t('flowBuilder.fields.minutes')}/${t('flowBuilder.fields.hours')})`}
-                      defaultValue={data.config?.duration || ''}
-                      min="1"
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      defaultValue={data.config?.duration?.toString() || ''}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData(
@@ -167,7 +165,9 @@ const WaitBlockComponent = ({
                           parseInt(e.target.value) || 0,
                         )
                       }
-                      ref={(el) => registerFieldRef('duration', el)}
+                      fieldRef={(el) => registerFieldRef('duration', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.unit || 'seconds'}
@@ -209,12 +209,9 @@ const WaitBlockComponent = ({
                         ' (waited response)'
                       }
                     />
-                    <input
-                      type="number"
+                    <AutoExpandTextarea
                       placeholder={`${t('flowBuilder.fields.timeoutSeconds')} (${t('flowBuilder.fields.seconds')})`}
-                      defaultValue={data.config?.timeout || '30'}
-                      min="1"
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
+                      defaultValue={data.config?.timeout?.toString() || '30'}
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData(
@@ -222,7 +219,9 @@ const WaitBlockComponent = ({
                           parseInt(e.target.value) || 30,
                         )
                       }
-                      ref={(el) => registerFieldRef('timeout', el)}
+                      fieldRef={(el) => registerFieldRef('timeout', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.condition || ''}
@@ -258,22 +257,30 @@ const WaitBlockComponent = ({
                   data.type !== 'wait_condition' &&
                   data.type !== 'wait' && (
                     <>
-                      <input
-                        type="text"
+                      <AutoExpandTextarea
                         placeholder={t('flowBuilder.fields.waitFor')}
                         defaultValue={data.config?.waitFor || ''}
-                        className="w-full text-xs px-2 py-1 border rounded bg-background"
                         onClick={(e) => e.stopPropagation()}
                         onChange={(e) =>
                           updateFormData('waitFor', e.target.value)
                         }
+                        fieldRef={(el) => registerFieldRef('waitFor', el)}
+                        minRows={1}
+                        maxRows={3}
                       />
-                      <input
-                        type="number"
+                      <AutoExpandTextarea
                         placeholder={t('flowBuilder.fields.timeout')}
-                        defaultValue={data.config?.timeout || ''}
-                        className="w-full text-xs px-2 py-1 border rounded bg-background"
+                        defaultValue={data.config?.timeout?.toString() || ''}
                         onClick={(e) => e.stopPropagation()}
+                        onChange={(e) =>
+                          updateFormData(
+                            'timeout',
+                            parseInt(e.target.value) || 0,
+                          )
+                        }
+                        fieldRef={(el) => registerFieldRef('timeout', el)}
+                        minRows={1}
+                        maxRows={3}
                       />
                     </>
                   )}

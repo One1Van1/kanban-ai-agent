@@ -22,6 +22,7 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { AutoExpandTextarea } from '../fields/AutoExpandTextarea';
 import { withBlockMemo, BlockProps } from './withBlockMemo';
 
 interface LogicBlockProps extends BlockProps {
@@ -123,11 +124,9 @@ const LogicBlockComponent = ({
                 {/* Поля для if_else */}
                 {data.type === 'if_else' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.variable')}
                       defaultValue={data.config?.condition?.variable || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('condition', {
@@ -135,7 +134,11 @@ const LogicBlockComponent = ({
                           variable: e.target.value,
                         })
                       }
-                      ref={(el) => registerFieldRef('condition.variable', el)}
+                      fieldRef={(el) =>
+                        registerFieldRef('condition.variable', el)
+                      }
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.condition?.operator || ''}
@@ -158,11 +161,9 @@ const LogicBlockComponent = ({
                       <option value="less">Less (&lt;)</option>
                       <option value="contains">Contains</option>
                     </select>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.value')}
                       defaultValue={data.config?.condition?.value || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('condition', {
@@ -170,7 +171,9 @@ const LogicBlockComponent = ({
                           value: e.target.value,
                         })
                       }
-                      ref={(el) => registerFieldRef('condition.value', el)}
+                      fieldRef={(el) => registerFieldRef('condition.value', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                   </>
                 )}
@@ -178,39 +181,37 @@ const LogicBlockComponent = ({
                 {/* Поля для loop */}
                 {data.type === 'loop' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t(
                         'flowBuilder.fields.collectionPlaceholder',
                       )}
                       defaultValue={data.config?.collection || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('collection', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('collection', el)}
+                      fieldRef={(el) => registerFieldRef('collection', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t(
                         'flowBuilder.fields.itemVariablePlaceholder',
                       )}
                       defaultValue={data.config?.itemVariable || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('itemVariable', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('itemVariable', el)}
+                      fieldRef={(el) => registerFieldRef('itemVariable', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
-                    <input
-                      type="number"
+                    <AutoExpandTextarea
                       placeholder={t(
                         'flowBuilder.fields.maxIterationsPlaceholder',
                       )}
                       defaultValue={data.config?.maxIterations || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData(
@@ -218,7 +219,9 @@ const LogicBlockComponent = ({
                           parseInt(e.target.value) || 0,
                         )
                       }
-                      ref={(el) => registerFieldRef('maxIterations', el)}
+                      fieldRef={(el) => registerFieldRef('maxIterations', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                   </>
                 )}

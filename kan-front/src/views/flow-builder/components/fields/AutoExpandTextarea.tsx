@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface AutoExpandTextareaProps {
   /**
@@ -71,6 +71,7 @@ export function AutoExpandTextarea({
   monospace = false,
 }: AutoExpandTextareaProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [hasOverflow, setHasOverflow] = useState(false);
 
   // Auto-expand function
   const adjustHeight = () => {
@@ -98,6 +99,13 @@ export function AutoExpandTextarea({
       maxHeight,
     );
     textarea.style.height = `${newHeight}px`;
+
+    // Проверяем, достигли ли максимальной высоты
+    if (maxRows && textarea.scrollHeight > maxHeight) {
+      setHasOverflow(true);
+    } else {
+      setHasOverflow(false);
+    }
   };
 
   // Adjust height on mount and when value changes
@@ -123,12 +131,15 @@ export function AutoExpandTextarea({
       placeholder={placeholder}
       onChange={handleChange}
       onClick={onClick}
-      className={`w-full text-xs px-2 py-1 border rounded bg-background resize-none overflow-hidden focus:outline-none focus:ring-1 focus:ring-blue-500 ${
-        monospace ? 'font-mono' : ''
-      } ${className}`}
+      className={`w-full text-xs px-2 py-1 border rounded bg-background resize-none focus:outline-none focus:ring-1 focus:ring-blue-500 ${
+        hasOverflow ? 'overflow-y-auto' : 'overflow-hidden'
+      } ${monospace ? 'font-mono' : ''} ${className}`}
       rows={minRows}
       style={{
         minHeight: minRows ? `${minRows * 1.5}em` : undefined,
+        wordBreak: 'break-word',
+        overflowWrap: 'break-word',
+        whiteSpace: 'pre-wrap',
       }}
     />
   );

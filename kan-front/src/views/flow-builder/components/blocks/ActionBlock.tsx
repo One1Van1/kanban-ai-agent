@@ -209,16 +209,16 @@ const ActionBlockComponent = ({
                   data.type === 'attach_file' ||
                   data.type === 'generate_file') && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.fileName')}
                       defaultValue={data.config?.fileName || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('fileName', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('fileName', el)}
+                      fieldRef={(el) => registerFieldRef('fileName', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.fileFormat || ''}
@@ -266,14 +266,14 @@ const ActionBlockComponent = ({
                 )}
                 {data.type === 'api_call' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.apiUrl')}
                       defaultValue={data.config?.url || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => updateFormData('url', e.target.value)}
-                      ref={(el) => registerFieldRef('url', el)}
+                      fieldRef={(el) => registerFieldRef('url', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.method || 'GET'}
@@ -348,16 +348,16 @@ const ActionBlockComponent = ({
                       <option value="sms">SMS</option>
                       <option value="webhook">Webhook</option>
                     </select>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.recipient')}
                       defaultValue={data.config?.recipient || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('recipient', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('recipient', el)}
+                      fieldRef={(el) => registerFieldRef('recipient', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.message')}
@@ -374,14 +374,14 @@ const ActionBlockComponent = ({
                 )}
                 {data.type === 'move_card' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.cardId')}
                       defaultValue={data.config?.cardId || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => updateFormData('cardId', e.target.value)}
-                      ref={(el) => registerFieldRef('cardId', el)}
+                      fieldRef={(el) => registerFieldRef('cardId', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.targetColumn || ''}
@@ -403,36 +403,36 @@ const ActionBlockComponent = ({
                 )}
                 {data.type === 'update_field' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.cardId')}
                       defaultValue={data.config?.cardId || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) => updateFormData('cardId', e.target.value)}
-                      ref={(el) => registerFieldRef('cardId', el)}
+                      fieldRef={(el) => registerFieldRef('cardId', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.fieldName')}
                       defaultValue={data.config?.fieldName || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('fieldName', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('fieldName', el)}
+                      fieldRef={(el) => registerFieldRef('fieldName', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t('flowBuilder.fields.newValue')}
                       defaultValue={data.config?.newValue || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('newValue', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('newValue', el)}
+                      fieldRef={(el) => registerFieldRef('newValue', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                   </>
                 )}
@@ -495,18 +495,18 @@ const ActionBlockComponent = ({
                 )}
                 {data.type === 'store_data' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder={t(
                         'flowBuilder.fields.storageKeyPlaceholder',
                       )}
                       defaultValue={data.config?.storageKey || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('storageKey', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('storageKey', el)}
+                      fieldRef={(el) => registerFieldRef('storageKey', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <AutoExpandTextarea
                       placeholder={t(
