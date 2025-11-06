@@ -34,27 +34,24 @@ import {
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
 import { AutoExpandTextarea } from '../fields/AutoExpandTextarea';
+import { withBlockMemo, BlockProps } from './withBlockMemo';
 
-interface ActionBlockProps {
+interface ActionBlockProps extends BlockProps {
   data: {
     type: string;
     name: string;
     config: any;
     isEditing?: boolean;
   };
-  id: string;
-  selected: boolean;
-  onDeleteBlock?: (nodeId: string) => void;
-  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
-export function ActionBlock({
+const ActionBlockComponent = ({
   data,
   id,
   selected,
   onDeleteBlock,
   onUpdateBlock,
-}: ActionBlockProps) {
+}: ActionBlockProps) => {
   const { t } = useLanguage();
   const {
     isEditing,
@@ -766,4 +763,7 @@ export function ActionBlock({
       <ActionOutputHandle showLabel={true} />
     </div>
   );
-}
+};
+
+// Экспортируем мемоизированную версию компонента
+export const ActionBlock = withBlockMemo(ActionBlockComponent, 'ActionBlock');

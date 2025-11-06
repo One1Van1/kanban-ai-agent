@@ -22,22 +22,19 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { withBlockMemo, BlockProps } from './withBlockMemo';
 
-interface LogicBlockProps {
+interface LogicBlockProps extends BlockProps {
   data: { type: string; name: string; config: any; isEditing?: boolean };
-  id: string;
-  selected: boolean;
-  onDeleteBlock?: (nodeId: string) => void;
-  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
-export function LogicBlock({
+const LogicBlockComponent = ({
   data,
   id,
   selected,
   onDeleteBlock,
   onUpdateBlock,
-}: LogicBlockProps) {
+}: LogicBlockProps) => {
   const { t } = useLanguage();
   const {
     isEditing,
@@ -447,4 +444,7 @@ export function LogicBlock({
       )}
     </div>
   );
-}
+};
+
+// Экспортируем мемоизированную версию компонента
+export const LogicBlock = withBlockMemo(LogicBlockComponent, 'LogicBlock');

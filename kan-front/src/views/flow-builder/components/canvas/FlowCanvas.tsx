@@ -50,19 +50,20 @@ import { SaveFlowDialog, SaveFlowData } from '../dialogs/SaveFlowDialog';
 import { DynamicConnectionLine } from './DynamicConnectionLine';
 import { StyledSmoothStepEdge } from '../edges/StyledSmoothStepEdge';
 
-// Мемоизируем кастомные типы блоков вне компонента
-const nodeTypes = {
+// Мемоизируем кастомные типы блоков вне компонента и замораживаем объект
+// Object.freeze предотвращает React Flow от детектирования "нового" объекта
+const nodeTypes = Object.freeze({
   trigger: TriggerBlock,
   context: ContextBlock,
   logic: LogicBlock,
   action: ActionBlock,
   wait: WaitBlock,
-} as const;
+});
 
-// Мемоизируем кастомные типы соединений вне компонента
-const edgeTypes = {
+// Мемоизируем кастомные типы соединений вне компонента и замораживаем объект
+const edgeTypes = Object.freeze({
   styledSmoothStep: StyledSmoothStepEdge,
-} as const;
+});
 
 export interface FlowCanvasRef {
   triggerCascadeDelete: () => void;
@@ -145,6 +146,11 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
     const { screenToFlowPosition, getZoom, setCenter } = useReactFlow();
     const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
     const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
+
+    // Используем ref для хранения стабильных ссылок на nodeTypes и edgeTypes
+    // Ref сохраняет ссылку между рендерами и не триггерит перерисовку
+    const nodeTypesRef = useRef(nodeTypes);
+    const edgeTypesRef = useRef(edgeTypes);
 
     // Ref для отслеживания, инициализированы ли уже nodes
     const nodesInitialized = useRef(false);
@@ -917,24 +923,51 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
       onQuickDeleteModeChange,
     ]);
 
-    // Создание динамических nodeTypes с передачей onDeleteBlock
-    const dynamicNodeTypes = useMemo(() => {
-      const result: Record<string, React.ComponentType<any>> = {};
-      Object.keys(nodeTypes).forEach((key) => {
-        const Component = nodeTypes[key as keyof typeof nodeTypes];
-        result[key] = React.memo((props: any) => (
+    // Стабильные коллбэки для передачи в блоки
+    const stableOnDeleteBlock = useCallback(
+      (nodeId: string) => {
+        onDeleteBlock(nodeId);
+      },
+      [onDeleteBlock],
+    );
+
+    const stableOnUpdateBlock = useCallback(
+      (blockId: string, newData: Partial<any>) => {
+        onUpdateBlock(blockId, newData);
+      },
+      [onUpdateBlock],
+    );
+
+    // Используем ref для хранения стабильной ссылки на dynamicNodeTypes
+    const dynamicNodeTypesRef = useRef<Record<
+      string,
+      React.ComponentType<any>
+    > | null>(null);
+
+    // Создаём dynamicNodeTypes только один раз и сохраняем в ref
+    if (!dynamicNodeTypesRef.current) {
+      const createNodeWrapper = (Component: React.ComponentType<any>) => {
+        const WrappedComponent = (props: any) => (
           <Component
             {...props}
-            onDeleteBlock={(nodeId: string) => {
-              onDeleteBlock(nodeId);
-            }}
-            onUpdateBlock={onUpdateBlock}
-            onCascadeDelete={handleDirectCascadeDelete}
+            onDeleteBlock={stableOnDeleteBlock}
+            onUpdateBlock={stableOnUpdateBlock}
           />
-        ));
-      });
-      return result;
-    }, [onDeleteBlock, onUpdateBlock, handleDirectCascadeDelete]);
+        );
+        WrappedComponent.displayName = `Wrapped(${Component.displayName || Component.name})`;
+        return WrappedComponent;
+      };
+
+      dynamicNodeTypesRef.current = {
+        trigger: createNodeWrapper(nodeTypesRef.current.trigger),
+        context: createNodeWrapper(nodeTypesRef.current.context),
+        logic: createNodeWrapper(nodeTypesRef.current.logic),
+        action: createNodeWrapper(nodeTypesRef.current.action),
+        wait: createNodeWrapper(nodeTypesRef.current.wait),
+      };
+    }
+
+    const dynamicNodeTypes = dynamicNodeTypesRef.current;
 
     // Получение правильного названия блока
     const getBlockDisplayName = (blockType: string) => {
@@ -1465,7 +1498,7 @@ const FlowCanvasInner = forwardRef<FlowCanvasRef, FlowCanvasProps>(
             onConnect={onConnect}
             onNodeClick={onNodeClick}
             nodeTypes={dynamicNodeTypes}
-            edgeTypes={edgeTypes}
+            edgeTypes={edgeTypesRef.current}
             fitView={false}
             fitViewOptions={{
               padding: 0.3,

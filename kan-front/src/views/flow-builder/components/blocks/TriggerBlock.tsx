@@ -28,6 +28,7 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { withBlockMemo, BlockProps } from './withBlockMemo';
 
 // Helper для отображения HTTP методов
 const getHttpMethodLabel = (
@@ -53,26 +54,22 @@ const getHttpMethodLabel = (
   return methodLabels[lang][method] || method;
 };
 
-interface TriggerBlockProps {
+interface TriggerBlockProps extends BlockProps {
   data: {
     type: string;
     name: string;
     config: any;
     isEditing?: boolean;
   };
-  id: string;
-  selected: boolean;
-  onDeleteBlock?: (nodeId: string) => void;
-  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
-export function TriggerBlock({
+const TriggerBlockComponent = ({
   data,
   id,
   selected,
   onDeleteBlock,
   onUpdateBlock,
-}: TriggerBlockProps) {
+}: TriggerBlockProps) => {
   const { t, language } = useLanguage();
   const {
     isEditing,
@@ -82,11 +79,6 @@ export function TriggerBlock({
     updateFormData,
     registerFieldRef,
   } = useBlockEdit(id, onUpdateBlock);
-  console.log('🔄 TriggerBlock render:', {
-    id,
-    isEditing,
-    dataType: data.type,
-  });
 
   const getIcon = () => {
     switch (data.type) {
@@ -162,10 +154,7 @@ export function TriggerBlock({
           </div>
         </CardHeader>
         <CardContent className="pt-0">
-          {(() => {
-            console.log('🎭 TriggerBlock rendering condition:', { isEditing });
-            return isEditing;
-          })() ? (
+          {isEditing ? (
             <div className="space-y-2">
               <div className="text-xs font-medium mb-2">
                 {t('flowBuilder.editMode')}
@@ -824,4 +813,10 @@ export function TriggerBlock({
       <TriggerOutputHandle showLabel={true} />
     </div>
   );
-}
+};
+
+// Экспортируем мемоизированную версию компонента
+export const TriggerBlock = withBlockMemo(
+  TriggerBlockComponent,
+  'TriggerBlock',
+);

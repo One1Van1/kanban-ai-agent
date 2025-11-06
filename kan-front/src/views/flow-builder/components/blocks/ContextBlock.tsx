@@ -31,26 +31,23 @@ import {
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
 import { AutoExpandTextarea } from '../fields/AutoExpandTextarea';
+import { withBlockMemo, BlockProps } from './withBlockMemo';
 
-interface ContextBlockProps {
+interface ContextBlockProps extends BlockProps {
   data: {
     type: string;
     name: string;
     config: any;
   };
-  id: string;
-  selected: boolean;
-  onDeleteBlock?: (nodeId: string) => void;
-  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
-export function ContextBlock({
+const ContextBlockComponent = ({
   data,
   id,
   selected,
   onDeleteBlock,
   onUpdateBlock,
-}: ContextBlockProps) {
+}: ContextBlockProps) => {
   const { t } = useLanguage();
 
   const {
@@ -478,4 +475,10 @@ export function ContextBlock({
       <ContextOutputHandle showLabel={true} />
     </div>
   );
-}
+};
+
+// Экспортируем мемоизированную версию компонента
+export const ContextBlock = withBlockMemo(
+  ContextBlockComponent,
+  'ContextBlock',
+);

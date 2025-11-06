@@ -22,26 +22,23 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { withBlockMemo, BlockProps } from './withBlockMemo';
 
-interface WaitBlockProps {
+interface WaitBlockProps extends BlockProps {
   data: {
     type: string;
     name: string;
     config: any;
   };
-  id: string;
-  selected: boolean;
-  onDeleteBlock?: (nodeId: string) => void;
-  onUpdateBlock?: (blockId: string, newData: Partial<any>) => void;
 }
 
-export function WaitBlock({
+const WaitBlockComponent = ({
   data,
   id,
   selected,
   onDeleteBlock,
   onUpdateBlock,
-}: WaitBlockProps) {
+}: WaitBlockProps) => {
   const { t } = useLanguage();
   const {
     isEditing,
@@ -451,4 +448,7 @@ export function WaitBlock({
       </div>
     </div>
   );
-}
+};
+
+// Экспортируем мемоизированную версию компонента
+export const WaitBlock = withBlockMemo(WaitBlockComponent, 'WaitBlock');
