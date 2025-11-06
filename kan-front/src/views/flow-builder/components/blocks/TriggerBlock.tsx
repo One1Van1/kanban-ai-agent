@@ -28,6 +28,7 @@ import {
   OutputVariableField,
   OutputVariableDisplay,
 } from '../fields/OutputVariableField';
+import { AutoExpandTextarea } from '../fields/AutoExpandTextarea';
 import { withBlockMemo, BlockProps } from './withBlockMemo';
 
 // Helper для отображения HTTP методов
@@ -165,16 +166,16 @@ const TriggerBlockComponent = ({
                 =========================== */}
                 {data.type === 'webhook' && (
                   <>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder="Webhook URL"
                       defaultValue={data.config?.webhookUrl || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('webhookUrl', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('webhookUrl', el)}
+                      fieldRef={(el) => registerFieldRef('webhookUrl', el)}
+                      minRows={1}
+                      maxRows={3}
                     />
                     <select
                       defaultValue={data.config?.webhookMethod || 'POST'}
@@ -201,16 +202,16 @@ const TriggerBlockComponent = ({
                         {getHttpMethodLabel('DELETE', language)}
                       </option>
                     </select>
-                    <input
-                      type="text"
+                    <AutoExpandTextarea
                       placeholder="Webhook Secret (optional)"
                       defaultValue={data.config?.webhookSecret || ''}
-                      className="w-full text-xs px-2 py-1 border rounded bg-background"
                       onClick={(e) => e.stopPropagation()}
                       onChange={(e) =>
                         updateFormData('webhookSecret', e.target.value)
                       }
-                      ref={(el) => registerFieldRef('webhookSecret', el)}
+                      fieldRef={(el) => registerFieldRef('webhookSecret', el)}
+                      minRows={1}
+                      maxRows={2}
                     />
                   </>
                 )}
